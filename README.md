@@ -1,2 +1,2 @@
-# tetrads
-interactive tetrahedron of JI tetrads with the ability to scale via common complexity models  
+# Tetrads
+Interactive tetrahedron of JI tetrads with the ability to scale via common complexity models.  
