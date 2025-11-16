@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tetrads</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+</head>
+<body>
+    <div id="container"></div>
+    <div id="loading-overlay">Loading Pyodide...</div>
+    <div id="settings-menu">
+        <div id="settings-header">
+            <span>Settings</span>
+            <span class="toggle-icon">▼</span>
+        </div>
+        <div id="settings-content">
+            <label for="limitValue">Odd-Limit</label>
+            <input type="number" id="limitValue" value="13" min="1" step="1">
+            <label for="equaveRatio">Register</label>
+            <input type="number" id="equaveRatio" value="2" min="1" step="0.1">
+            <label for="complexityMethod">Complexity</label>
+            <select id="complexityMethod">
+                <option value="Tenney">Tenney</option>
+                <option value="Weil">Weil</option>
+                <option value="Wilson">Wilson</option>
+                <option value="Gradus">Gradus</option>
+            </select>
+            <label for="layoutDisplay">Display</label>
+            <select id="layoutDisplay">
+                <option value="points">Points</option>
+                <option value="labels">Labels</option>
+            </select>
+            <div class="checkbox-row">
+                <label for="enableSize">Enable Size</label> 
+                <input type="checkbox" id="enableSize" checked>
+                <label for="enableColor">Enable Color</label> 
+                <input type="checkbox" id="enableColor" checked>
+            </div>
+            <label for="baseSize">Base Size</label>
+            <input type="number" id="baseSize" value="1" min="0.1" step="0.1">
+            <label for="scalingFactor">Scaling Factor</label>
+            <input type="number" id="scalingFactor" value="2" min="0.1" step="0.1">
+            <div class="checkbox-row">
+                <label for="hideUnisonVoices">Omit Unisons</label>
+                <input type="checkbox" id="hideUnisonVoices">
+                <label for="omitOctaves">Omit Octaves</label>
+                <input type="checkbox" id="omitOctaves">
+            </div>
+            <div class="settings-row">
+                <label>Pivot</label>
+                <div class="pivot-buttons">
+                    <button id="pivotSoprano" class="pivot-button" data-pivot-index="3">S</button>
+                    <button id="pivotAlto" class="pivot-button" data-pivot-index="2">A</button>
+                    <button id="pivotTenor" class="pivot-button" data-pivot-index="1">T</button>
+                    <button id="pivotBass" class="pivot-button selected" data-pivot-index="0">B</button>
+                </div>
+            </div>
+            <button id="playButton">Play (⇧)</button>
+            <button id="updateButton">Update (↵)</button>
+        </div>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
