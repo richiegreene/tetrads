@@ -16,17 +16,18 @@ let currentPivotVoiceIndex = 0; // 0: Bass, 1: Tenor, 2: Alto, 3: Soprano (defau
 let lastPlayedFrequencies = [];
 let lastPlayedRatios = [];
 const initialBaseFreq = 130.8128; // The fixed base frequency for the very first chord
+let enableSlide = false;
+let slideDuration = 0.25;
 
 // --- AUDIO ENGINE ---
 let audioCtx;
-let oscillators = [];
+let voices = []; // Array of { osc: OscillatorNode, gain: GainNode }
 let mainGainNode;
 
 function initAudio() {
     if (audioCtx) return; // Already initialized
     try {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        // --- Create a simple master gain node ---
         mainGainNode = audioCtx.createGain();
         mainGainNode.connect(audioCtx.destination);
     } catch (e) {
@@ -40,13 +41,9 @@ function playChord(ratioString) {
         return;
     }
     if (audioCtx.state === 'suspended') {
-        audioCtx.resume().then(() => {
-            playChord(ratioString);
-        });
+        audioCtx.resume().then(() => playChord(ratioString));
         return;
     }
-
-    stopChord(); // Clear previous oscillators
 
     const ratio = ratioString.split(':').map(Number);
     if (ratio.length !== 4 || ratio.some(isNaN)) {
@@ -55,12 +52,9 @@ function playChord(ratioString) {
     }
 
     let effectiveBaseFreq;
-
     if (lastPlayedFrequencies.length === 0) {
-        // First chord, or no previous chord to pivot from
         effectiveBaseFreq = initialBaseFreq;
     } else {
-        // Calculate baseFreq based on pivot
         const pivotFreqFromPrevChord = lastPlayedFrequencies[currentPivotVoiceIndex];
         const ratioComponentAtPivot = ratio[currentPivotVoiceIndex];
         const firstRatioComponent = ratio[0];
@@ -75,39 +69,63 @@ function playChord(ratioString) {
 
     const frequencies = ratio.map(r => effectiveBaseFreq * (r / ratio[0]));
 
-    // Store current chord's data for next pivot calculation
+    if (enableSlide && voices.length > 0) {
+        const slideEndTime = audioCtx.currentTime + slideDuration;
+        frequencies.forEach((freq, index) => {
+            if (voices[index]) {
+                const voice = voices[index];
+                voice.osc.frequency.cancelScheduledValues(audioCtx.currentTime);
+                // Set the starting point of the ramp to the current frequency
+                voice.osc.frequency.setValueAtTime(voice.osc.frequency.value, audioCtx.currentTime);
+                if (index === currentPivotVoiceIndex) {
+                    voice.osc.frequency.linearRampToValueAtTime(freq, slideEndTime);
+                } else {
+                    voice.osc.frequency.linearRampToValueAtTime(freq, slideEndTime);
+                }
+            }
+        });
+    } else {
+        stopChord(true); // Immediate stop
+        voices = [];
+        for (const freq of frequencies) {
+            const osc = audioCtx.createOscillator();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.5);
+
+            osc.connect(gainNode);
+            gainNode.connect(mainGainNode);
+            osc.start();
+            voices.push({ osc, gain: gainNode });
+        }
+    }
+
     lastPlayedFrequencies = frequencies;
     lastPlayedRatios = ratio;
-
-    for (const freq of frequencies) {
-        const osc = audioCtx.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        osc.connect(mainGainNode);
-        osc.start();
-        oscillators.push(osc);
-    }
-
-    mainGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-    mainGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-    mainGainNode.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.5); // fade-in
 }
 
-function stopChord() {
-    if (mainGainNode) {
-        mainGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-        mainGainNode.gain.setValueAtTime(mainGainNode.gain.value, audioCtx.currentTime);
-        mainGainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5); // fade-out
-    }
+function stopChord(immediate = false) {
+    const fadeOutTime = immediate ? 0.01 : 0.5;
+    const stopDelay = immediate ? 50 : 500;
 
-    const oldOscillators = oscillators;
-    oscillators = [];
+    voices.forEach(voice => {
+        voice.gain.gain.cancelScheduledValues(audioCtx.currentTime);
+        voice.gain.gain.setValueAtTime(voice.gain.gain.value, audioCtx.currentTime);
+        voice.gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + fadeOutTime);
+    });
+
+    const oldVoices = voices;
+    voices = [];
     setTimeout(() => {
-        oldOscillators.forEach(osc => {
-            osc.stop();
-            osc.disconnect();
+        oldVoices.forEach(voice => {
+            voice.osc.stop();
+            voice.osc.disconnect();
+            voice.gain.disconnect();
         });
-    }, 50); // Cleanup after 50ms
+    }, stopDelay);
 }
 
 // Plasma Colormap function
@@ -1147,6 +1165,17 @@ def generate_ji_triads(limit_value, equave=Fraction(2,1), limit_mode="odd", prim
 
     playButton = document.getElementById('playButton'); // Get reference to the new play button
     pivotButtons = document.querySelectorAll('.pivot-button'); // Initialize global pivotButtons
+    const enableSlideCheckbox = document.getElementById('enableSlide');
+    const slideDurationInput = document.getElementById('slideDuration');
+
+    enableSlideCheckbox.addEventListener('change', (event) => {
+        enableSlide = event.target.checked;
+        slideDurationInput.style.display = enableSlide ? 'block' : 'none';
+    });
+
+    slideDurationInput.addEventListener('change', (event) => {
+        slideDuration = parseFloat(event.target.value);
+    });
 
     // Set initial selection based on default currentPivotVoiceIndex (Bass, index 0)
     updatePivotButtonSelection(currentPivotVoiceIndex);
