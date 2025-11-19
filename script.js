@@ -1245,7 +1245,7 @@ settingsHeader.addEventListener('click', () => {
     const isCollapsed = settingsHeader.classList.toggle('collapsed');
     if (isCollapsed) {
         settingsContent.style.display = 'none';
-        toggleIcon.textContent = ' '; // Removing "▶" because its an ugly emoji on phone
+        toggleIcon.textContent = ''; // Removing "▶" because its renders as an ugly emoji on phone
     } else {
         settingsContent.style.display = 'grid'; // Or 'block', depending on its default display
         toggleIcon.textContent = '▼'; // Down arrow when expanded
@@ -1255,7 +1255,7 @@ settingsHeader.addEventListener('click', () => {
 // Initially set to collapsed state
 settingsHeader.classList.add('collapsed');
 settingsContent.style.display = 'none';
-toggleIcon.textContent = ' '; // Removing "▶" here too (because its an ugly emoji on phone)
+toggleIcon.textContent = ''; // Removing "▶" here too (because ugly emoji on phone)
 
 // Add event listener for layout display change
 document.getElementById('layoutDisplay').addEventListener('change', async () => {
