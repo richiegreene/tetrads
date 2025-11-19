@@ -200,3 +200,7 @@ body, html {
     margin-top: 0px;
     margin-bottom: 0px;
 }
+
+#slide-row input[type="checkbox"] {
+    margin-left: 5px;
+}
