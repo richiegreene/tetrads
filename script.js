@@ -16,7 +16,7 @@ let currentPivotVoiceIndex = 0; // 0: Bass, 1: Tenor, 2: Alto, 3: Soprano (defau
 let lastPlayedFrequencies = [];
 let lastPlayedRatios = [];
 const initialBaseFreq = 130.8128; // The fixed base frequency for the very first chord
-let enableSlide = false;
+let enableSlide = true;
 let slideDuration = 0.25;
 
 // --- AUDIO ENGINE ---
@@ -280,6 +280,7 @@ function updatePivotButtonSelection(selectedIndex) {
 
 function onKeyDown(event) {
     if (event.key === 'Shift' && !isShiftHeld) {
+        initAudio();
         isShiftHeld = true;
         if (controls) controls.enablePan = false;
         if (playButton) playButton.classList.add('play-button-active');
