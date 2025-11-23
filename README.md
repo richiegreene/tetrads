@@ -17,12 +17,12 @@ Sounds, shapes, colors ... Go nuts!
 * Set [Complexity Model](https://en.xen.wiki/w/User:Sintel/Validation_of_common_consonance_measures) that size/color displays correspond to
 * Display: Points (Dots) or Labels (Enumerated Ratios)
 * Notation: depicts played chord as ratio or cents
-  * Refference pitch (1/1) = C3 130.8128Hz
+  * Refference pitch: 1/1 = C3 130.8128Hz
 * Base Size: Set minimum size (e.g. 0.25) of Point/Label
 * Scaling Factor: adjust to change rate of sizing/coloration difference
 * Omit Unisons/Octaves to display only chords with unique pitch classes
 ### Playback Settings
-* Enable Slide: set duration (sec) plackback takes for SATB voices to slide from one chord to another
+* Enable Slide: set duration (sec) of portamento for adjacent SATB voices
 * Set pivot voice (common-tone) with S A T B buttons (or keys)
 ### Info
 Approaching this as a sort of 3D take off of Sintel's [triangle](https://sintel.website/posts/triangle.html). While drawing inspiration from tetradic [harmonic entropy](https://en.xen.wiki/w/Harmonic_entropy) (4HE) this does not render 3D gaussian (multivariate normal) distributions, which are certainly pivotal when considering HE.
