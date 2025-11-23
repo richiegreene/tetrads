@@ -21,7 +21,7 @@ let enableSlide = true;
 let slideDuration = 0.25;
 
 // Notation state
-let enableNotation = false;
+let enableNotation = true;
 let notationType = 'ratio';
 let notationDisplay;
 
@@ -1267,7 +1267,7 @@ def generate_ji_triads(limit_value, equave=Fraction(2,1), limit_mode="odd", prim
 
     enableSlideCheckbox.addEventListener('change', (event) => {
         enableSlide = event.target.checked;
-        slideDurationInput.style.display = enableSlide ? 'block' : 'none';
+        slideDurationInput.style.display = enableSlide ? 'inline-block' : 'none';
     });
 
     slideDurationInput.addEventListener('change', (event) => {
