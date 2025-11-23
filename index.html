@@ -48,6 +48,14 @@
                 <option value="points">Points</option>
                 <option value="labels">Labels</option>
             </select>
+            <div class="checkbox-row" id="notation-row" style="display: flex; align-items: center;">
+                <label for="enableNotation" style="margin: 0;">Notation</label>
+                <input type="checkbox" id="enableNotation" style="width: fit-content; margin: 0 0 0 32px;" checked>
+                <select id="notationType" style="display: inline-block; width: auto; margin: 0;">
+                    <option value="ratio">Ratioㅤㅤㅤㅤㅤㅤㅤ</option>
+                    <option value="cents">Centsㅤㅤㅤㅤㅤㅤㅤ</option>
+                </select>
+            </div>            
             <div class="checkbox-row" style="display: flex; align-items: center;">
                 <label for="enableSize" style="width: 80px;">Enable Size</label> 
                 <input type="checkbox" id="enableSize" checked style="margin-right: 16px;">
@@ -68,14 +76,6 @@
                 <label for="enableSlide" style="margin: 0;">Enable Slide</label>
                 <input type="checkbox" id="enableSlide" style="width: auto; margin: 0 0 0 8px;" checked>
                 <input type="number" id="slideDuration" value="0.25" min="0.01" step="0.01" style="width: fit-content; display: inline-block; margin: 0;">
-            </div>
-            <div class="checkbox-row" id="notation-row" style="display: flex; align-items: center;">
-                <label for="enableNotation" style="margin: 0;">Notation</label>
-                <input type="checkbox" id="enableNotation" style="width: fit-content; margin: 0 0 0 32px;" checked>
-                <select id="notationType" style="display: inline-block; width: auto; margin: 0;">
-                    <option value="ratio">Ratioㅤㅤㅤㅤㅤㅤㅤ</option>
-                    <option value="cents">Centsㅤㅤㅤㅤㅤㅤㅤ</option>
-                </select>
             </div>
             <div class="settings-row">
                 <label>Pivot</label>
