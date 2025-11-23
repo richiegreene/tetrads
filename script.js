@@ -16,8 +16,16 @@ let currentPivotVoiceIndex = 0; // 0: Bass, 1: Tenor, 2: Alto, 3: Soprano (defau
 let lastPlayedFrequencies = [];
 let lastPlayedRatios = [];
 const initialBaseFreq = 130.8128; // The fixed base frequency for the very first chord
+const rotationSpeed = 0.01;
 let enableSlide = true;
 let slideDuration = 0.25;
+
+const keyState = {
+    ArrowUp: false,
+    ArrowDown: false,
+    ArrowLeft: false,
+    ArrowRight: false
+};
 
 // --- AUDIO ENGINE ---
 let audioCtx;
@@ -297,6 +305,11 @@ function onKeyDown(event) {
         updatePivotButtonSelection(selectedIndex);
         event.preventDefault(); // Prevent any default browser action for these keys
     }
+
+    if (keyState.hasOwnProperty(event.key)) {
+        keyState[event.key] = true;
+        event.preventDefault();
+    }
 }
 
 function onKeyUp(event) {
@@ -310,6 +323,11 @@ function onKeyUp(event) {
         }
         stopChord(); // Stop any current chord when Shift is released
         currentlyHovered = null; // Clear hovered object
+    }
+
+    if (keyState.hasOwnProperty(event.key)) {
+        keyState[event.key] = false;
+        event.preventDefault();
     }
 }
 
@@ -421,6 +439,19 @@ function onWindowResize() {
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
+
+    if (keyState.ArrowUp) {
+        scene.rotation.x -= rotationSpeed;
+    }
+    if (keyState.ArrowDown) {
+        scene.rotation.x += rotationSpeed;
+    }
+    if (keyState.ArrowLeft) {
+        scene.rotation.y -= rotationSpeed;
+    }
+    if (keyState.ArrowRight) {
+        scene.rotation.y += rotationSpeed;
+    }
 
     if (currentLayoutDisplay === 'labels' || currentLayoutDisplay === 'points') {
         currentSprites.forEach(sprite => {
