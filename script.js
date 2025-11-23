@@ -454,8 +454,10 @@ function animate() {
     }
 
     if (currentLayoutDisplay === 'labels' || currentLayoutDisplay === 'points') {
+        const spriteWorldPosition = new THREE.Vector3();
         currentSprites.forEach(sprite => {
-            const distance = camera.position.distanceTo(sprite.position);
+            sprite.getWorldPosition(spriteWorldPosition);
+            const distance = camera.position.distanceTo(spriteWorldPosition);
             let currentSpriteSize = 0.5;
 
             if (sprite.userData.type === 'label') {
