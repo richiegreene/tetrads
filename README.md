@@ -1,9 +1,11 @@
 # Tetrads
+## https://tetrads.richiegreene.com/
+
 Interactive tetrahedron of JI tetrads with the ability to scale via harmonic complexity models.  
 Sounds, shapes, colors ... Go nuts!
 
 ### Display Controls
-* Rotate Tetrahedron: click/drag or arrow keys 
+* Rotate Tetrahedron: click/drag or arrow keys
 * Zoom: two-finger scroll/mouse-wheel
 ### Playback Controls
 * Shift: hover to play corresponding chord
