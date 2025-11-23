@@ -8,7 +8,7 @@ Sounds, shapes, colors ... Go nuts!
 ### Playback Controls
 * Shift: hover to play corresponding chord
 * Shift+Hover(Click Hold): sustain a chord; next chord on release
-* s, a, t, b keys to toggle the pivoting common tone between adjacent chords
+* s, a, t, b keys to toggle the pivot/common-tone between adjacent chords
 
 ### Display Settings
 * Select [Odd-limit](https://en.xen.wiki/w/Odd_limit) of considered JI tetrads
@@ -21,7 +21,7 @@ Sounds, shapes, colors ... Go nuts!
 * Omit Unisons/Octaves to display only chords with unique pitch classes
 ### Playback Settings
 * Enable Slide: set duration (sec) plackback takes for SATB voices to slide from one chord to another
-* Set pivot voice (common tone) with S A T B buttons (or keys)
+* Set pivot voice (common-tone) with S A T B buttons (or keys)
 ### Info
 Approaching this as a sort of 3D take off of [Sintel's very fun triangle](https://sintel.website/posts/triangle.html). While drawing inspiration from tetradic [harmonic entropy](https://en.xen.wiki/w/Harmonic_entropy) (4HE) this does not render 3D gaussian (multivariate normal) distributions, which are certainly pivotal when considering HE.
 ### Demo
