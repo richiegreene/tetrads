@@ -1,6 +1,6 @@
 # Tetrads
 Interactive tetrahedron of JI tetrads with the ability to scale via harmonic complexity models.  
-Sounds, shapes, colors ... Go nuts!
+Sounds, shapes, colors ... Go nuts! [PLAY HERE](https://tetrads.richiegreene.com/)
 
 ### Display Controls
 * Rotate Tetrahedron: click/drag or arrow keys
