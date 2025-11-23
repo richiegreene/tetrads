@@ -12,10 +12,12 @@ Sounds, shapes, colors ... Go nuts!
 
 ### Display Settings
 * Select [Odd-limit](https://en.xen.wiki/w/Odd_limit) of considered JI tetrads
-* Select the register considered (default "2" for a 2/1 octave)
+* Select the register considered
+  * default "2" for a 2/1 octave
 * Set [Complexity Model](https://en.xen.wiki/w/User:Sintel/Validation_of_common_consonance_measures) that size/color displays correspond to
 * Display: Points (Dots) or Labels (Enumerated Ratios)
-* Notation: depicts played chord as ratio or cents on the screen
+* Notation: depicts played chord as ratio or cents
+  * Refference pitch (1/1) = C3 130.8128Hz
 * Base Size: Set minimum size (e.g. 0.25) of Point/Label
 * Scaling Factor: adjust to change rate of sizing/coloration difference
 * Omit Unisons/Octaves to display only chords with unique pitch classes
