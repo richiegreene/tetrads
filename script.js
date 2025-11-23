@@ -20,12 +20,51 @@ const rotationSpeed = 0.01;
 let enableSlide = true;
 let slideDuration = 0.25;
 
+// Notation state
+let enableNotation = false;
+let notationType = 'ratio';
+let notationDisplay;
+
+
 const keyState = {
     ArrowUp: false,
     ArrowDown: false,
     ArrowLeft: false,
     ArrowRight: false
 };
+
+// --- NOTATION FUNCTIONS ---
+function toFraction(decimal, tolerance = 0.001) {
+    if (decimal === 0) return "0/1";
+    let h1 = 1, h2 = 0, k1 = 0, k2 = 1;
+    let b = decimal;
+    do {
+        let a = Math.floor(b);
+        let aux = h1; h1 = a * h1 + h2; h2 = aux;
+        aux = k1; k1 = a * k1 + k2; k2 = aux;
+        b = 1 / (b - a);
+    } while (Math.abs(decimal - h1 / k1) > decimal * tolerance && k1 < 1000);
+    return `${h1}/${k1}`;
+}
+
+function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
+    if (!enableNotation || !notationDisplay) return;
+
+    let output = '';
+    if (notationType === 'ratio') {
+        const baseRatio = effectiveBaseFreq / initialBaseFreq;
+        const fractionString = toFraction(baseRatio);
+        output = `${fractionString}<br>${ratioString}`;
+    } else if (notationType === 'cents') {
+        const cents = frequencies.map(freq => 1200 * Math.log2(freq / initialBaseFreq));
+        // Display in descending order as per user example
+        output = cents.reverse().map(c => Math.round(c)).join('<br>');
+    }
+
+    notationDisplay.innerHTML = output;
+    notationDisplay.style.display = 'block';
+}
+
 
 // --- AUDIO ENGINE ---
 let audioCtx;
@@ -113,6 +152,8 @@ function playChord(ratioString) {
 
     lastPlayedFrequencies = frequencies;
     lastPlayedRatios = ratio;
+
+    updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq);
 }
 
 function stopChord(immediate = false) {
@@ -124,6 +165,10 @@ function stopChord(immediate = false) {
         voice.gain.gain.setValueAtTime(voice.gain.gain.value, audioCtx.currentTime);
         voice.gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + fadeOutTime);
     });
+
+    if (notationDisplay) {
+        notationDisplay.style.display = 'none';
+    }
 
     const oldVoices = voices;
     voices = [];
@@ -1201,6 +1246,24 @@ def generate_ji_triads(limit_value, equave=Fraction(2,1), limit_mode="odd", prim
     pivotButtons = document.querySelectorAll('.pivot-button'); // Initialize global pivotButtons
     const enableSlideCheckbox = document.getElementById('enableSlide');
     const slideDurationInput = document.getElementById('slideDuration');
+
+    // Notation controls
+    notationDisplay = document.getElementById('notation-display');
+    const enableNotationCheckbox = document.getElementById('enableNotation');
+    const notationTypeSelect = document.getElementById('notationType');
+
+    enableNotationCheckbox.addEventListener('change', (event) => {
+        enableNotation = event.target.checked;
+        notationTypeSelect.style.display = enableNotation ? 'inline-block' : 'none';
+        if (!enableNotation) {
+            notationDisplay.style.display = 'none';
+        }
+    });
+
+    notationTypeSelect.addEventListener('change', (event) => {
+        notationType = event.target.value;
+    });
+
 
     enableSlideCheckbox.addEventListener('change', (event) => {
         enableSlide = event.target.checked;

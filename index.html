@@ -5,11 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tetrads</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        #notation-display {
+            position: fixed;
+            bottom: 10px;
+            left: 5px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 1.2em;
+            display: none; /* Initially hidden */
+            text-align: left;
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
 </head>
 <body>
     <div id="container"></div>
     <div id="loading-overlay">Loading Pyodide...</div>
+    <div id="notation-display"></div>
     <div id="settings-menu">
         <div id="settings-header">
             <span>Settings</span>
@@ -52,6 +68,14 @@
                 <label for="enableSlide" style="margin: 0;">Enable Slide</label>
                 <input type="checkbox" id="enableSlide" style="width: auto; margin: 0 0 0 8px;" checked>
                 <input type="number" id="slideDuration" value="0.25" min="0.01" step="0.01" style="width: fit-content; display: inline-block; margin: 0;">
+            </div>
+            <div class="checkbox-row" id="notation-row" style="display: flex; align-items: center; gap: 16px;">
+                <label for="enableNotation" style="margin: 0;">Notation</label>
+                <input type="checkbox" id="enableNotation" style="width: auto; margin: 0 0 0 8px;">
+                <select id="notationType" style="display: none;">
+                    <option value="ratio">Ratio</option>
+                    <option value="cents">Cents</option>
+                </select>
             </div>
             <div class="settings-row">
                 <label>Pivot</label>
