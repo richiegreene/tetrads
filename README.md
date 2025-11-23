@@ -23,6 +23,6 @@ Sounds, shapes, colors ... Go nuts!
 * Enable Slide: set duration (sec) plackback takes for SATB voices to slide from one chord to another
 * Set pivot voice (common-tone) with S A T B buttons (or keys)
 ### Info
-Approaching this as a sort of 3D take off of [Sintel's very fun triangle](https://sintel.website/posts/triangle.html). While drawing inspiration from tetradic [harmonic entropy](https://en.xen.wiki/w/Harmonic_entropy) (4HE) this does not render 3D gaussian (multivariate normal) distributions, which are certainly pivotal when considering HE.
+Approaching this as a sort of 3D take off of Sintel's [triangle](https://sintel.website/posts/triangle.html). While drawing inspiration from tetradic [harmonic entropy](https://en.xen.wiki/w/Harmonic_entropy) (4HE) this does not render 3D gaussian (multivariate normal) distributions, which are certainly pivotal when considering HE.
 ### Demo
 https://github.com/user-attachments/assets/bab0258a-64b1-49d3-8ee9-9ca662745278
