@@ -3,7 +3,7 @@ Interactive tetrahedron of JI tetrads with the ability to scale via harmonic com
 Sounds, shapes, colors ... Go nuts!
 
 ### Display Controls
-* Rotate Tetrahedron: click/drag or arrow keys to 
+* Rotate Tetrahedron: click/drag or arrow keys
 * Zoom: two-finger scroll/mouse-wheel
 ### Playback Controls
 * Shift: hover to play corresponding chord
