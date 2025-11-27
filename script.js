@@ -20,6 +20,7 @@ const rotationSpeed = 0.01;
 let enableSlide = true;
 let slideDuration = 0.25;
 let currentPeriodicWave = null; // For custom waveforms
+let compensationGainNode;
 
 // Notation state
 let enableNotation = true;
@@ -78,6 +79,8 @@ function initAudio() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         mainGainNode = audioCtx.createGain();
         mainGainNode.connect(audioCtx.destination);
+        compensationGainNode = audioCtx.createGain();
+        compensationGainNode.connect(mainGainNode);
     } catch (e) {
         console.error(`Error creating audio context: ${e.message}`);
     }
@@ -149,7 +152,7 @@ function playChord(ratioString) {
             gainNode.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.5);
 
             osc.connect(gainNode);
-            gainNode.connect(mainGainNode);
+            gainNode.connect(compensationGainNode);
             osc.start();
             voices.push({ osc, gain: gainNode });
         }
@@ -210,8 +213,23 @@ for (let i = 1; i < numHarmonics; i++) {
 const waveCoeffs = [sineCoeffs, triangleCoeffs, sawtoothCoeffs, squareCoeffs];
 const realCoeffs = new Float32Array(numHarmonics).fill(0); // All our waves are sine-based
 
+// Gain compensation values to normalize perceived loudness.
+// Sine, Triangle, Sawtooth, Square
+const loudnessCompensation = [1.0, 1.0, 0.6, 0.75]; 
+
 function updateWaveform(sliderValue) {
     if (!audioCtx) initAudio();
+
+    // Handle the edge case for a pure square wave at the slider's maximum
+    if (sliderValue >= 3) {
+        const pureSquareCoeffs = waveCoeffs[3];
+        if (compensationGainNode) {
+            compensationGainNode.gain.setTargetAtTime(loudnessCompensation[3], audioCtx.currentTime, 0.01);
+        }
+        currentPeriodicWave = audioCtx.createPeriodicWave(realCoeffs, pureSquareCoeffs, { disableNormalization: false });
+        drawWaveform(pureSquareCoeffs);
+        return;
+    }
 
     const floor = Math.floor(sliderValue);
     const ceil = Math.ceil(sliderValue);
@@ -225,6 +243,15 @@ function updateWaveform(sliderValue) {
         const from = fromCoeffs[i] || 0;
         const to = toCoeffs[i] || 0;
         interpolatedImag[i] = from + (to - from) * mix;
+    }
+
+    // Interpolate gain compensation
+    const fromGain = loudnessCompensation[floor];
+    const toGain = loudnessCompensation[ceil];
+    const interpolatedGain = fromGain + (toGain - fromGain) * mix;
+
+    if (compensationGainNode) {
+        compensationGainNode.gain.setTargetAtTime(interpolatedGain, audioCtx.currentTime, 0.01);
     }
 
     currentPeriodicWave = audioCtx.createPeriodicWave(realCoeffs, interpolatedImag, { disableNormalization: false });
