@@ -54,6 +54,27 @@ body, html {
     display: inline-block;
 }
 
+.settings-title-group {
+    display: flex;
+    align-items: center;
+}
+
+#info-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-left: 10px;
+}
+
+#info-link:hover {
+    color: #0056b3;
+}
+
+#settings-header.collapsed #info-link {
+    display: none;
+}
+
 #settings-header.collapsed .toggle-icon {
     transform: rotate(-90deg);
 }

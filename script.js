@@ -1493,6 +1493,11 @@ initPyodide();
 const settingsHeader = document.getElementById('settings-header');
 const settingsContent = document.getElementById('settings-content');
 const toggleIcon = settingsHeader.querySelector('.toggle-icon');
+const infoLink = document.getElementById('info-link');
+
+infoLink.addEventListener('click', (event) => {
+    event.stopPropagation();
+});
 
 settingsHeader.addEventListener('click', () => {
     const isCollapsed = settingsHeader.classList.toggle('collapsed');
