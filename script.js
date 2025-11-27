@@ -1108,6 +1108,14 @@ def gradus_norm(ratio):
     n = len(factors_n) + len(factors_d)
     return s - n + 1
 
+def benedetti_norm(ratio):
+    ratio = Fraction(ratio).limit_denominator(10000)
+    return ratio.numerator * ratio.denominator
+
+def arithmetic_norm(ratio):
+    ratio = Fraction(ratio).limit_denominator(10000)
+    return ratio.numerator + ratio.denominator
+
 def calculate_complexity(complexity_measure, ratio):
     if complexity_measure == "Tenney":
         return tenney_norm(ratio)
@@ -1117,6 +1125,10 @@ def calculate_complexity(complexity_measure, ratio):
         return wilson_norm(ratio)
     elif complexity_measure == "Gradus":
         return gradus_norm(ratio)
+    elif complexity_measure == "Benedetti":
+        return benedetti_norm(ratio)
+    elif complexity_measure == "Arithmetic":
+        return arithmetic_norm(ratio)
     else:
         return 0
 
