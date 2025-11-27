@@ -102,6 +102,31 @@ body, html {
     font-size: 13px;
 }
 
+#notation-row select {
+    width: auto;
+    margin-left: auto;
+}
+
+#timbre-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+#timbreSlider {
+    width: 100%;
+}
+
+#waveformCanvas {
+    border: 1px solid #555;
+    background-color: #2a2a2a;
+    border-radius: 4px;
+}
+
+
 #settings-menu button {
     grid-column: 1 / -1;
     cursor: pointer;

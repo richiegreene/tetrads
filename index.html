@@ -77,6 +77,11 @@
                 <input type="checkbox" id="enableSlide" style="width: auto; margin: 0 0 0 8px;" checked>
                 <input type="number" id="slideDuration" value="0.25" min="0.01" step="0.01" style="width: fit-content; display: inline-block; margin: 0;">
             </div>
+            <div class="settings-row" id="timbre-row">
+                <label for="timbreSlider">Timbre</label>
+                <input type="range" id="timbreSlider" min="0" max="3" value="2" step="0.01">
+                <canvas id="waveformCanvas" width="60" height="30"></canvas>
+            </div>
             <div class="settings-row">
                 <label>Pivot</label>
                 <div class="pivot-buttons">

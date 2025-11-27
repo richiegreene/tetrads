@@ -19,6 +19,7 @@ const initialBaseFreq = 130.8128; // The fixed base frequency for the very first
 const rotationSpeed = 0.01;
 let enableSlide = true;
 let slideDuration = 0.25;
+let currentPeriodicWave = null; // For custom waveforms
 
 // Notation state
 let enableNotation = true;
@@ -136,7 +137,11 @@ function playChord(ratioString) {
         voices = [];
         for (const freq of frequencies) {
             const osc = audioCtx.createOscillator();
-            osc.type = 'sawtooth';
+            if (currentPeriodicWave) {
+                osc.setPeriodicWave(currentPeriodicWave);
+            } else {
+                osc.type = 'sawtooth'; // Fallback
+            }
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
             const gainNode = audioCtx.createGain();
@@ -180,6 +185,91 @@ function stopChord(immediate = false) {
         });
     }, stopDelay);
 }
+
+// --- WAVEFORM DRAWING AND WAVETABLE LOGIC ---
+const numHarmonics = 64;
+const sineCoeffs = new Float32Array(numHarmonics);
+const triangleCoeffs = new Float32Array(numHarmonics);
+const sawtoothCoeffs = new Float32Array(numHarmonics);
+const squareCoeffs = new Float32Array(numHarmonics);
+
+sineCoeffs[1] = 1;
+
+for (let i = 1; i < numHarmonics; i++) {
+    const n = i;
+    // Sawtooth: 1/n
+    sawtoothCoeffs[n] = 1 / n;
+    if (n % 2 !== 0) {
+        // Square: 1/n for odd harmonics
+        squareCoeffs[n] = 1 / n;
+        // Triangle: 1/n^2 for odd harmonics, with alternating sign
+        triangleCoeffs[n] = (1 / (n * n)) * ((n - 1) % 4 === 0 ? 1 : -1);
+    }
+}
+
+const waveCoeffs = [sineCoeffs, triangleCoeffs, sawtoothCoeffs, squareCoeffs];
+const realCoeffs = new Float32Array(numHarmonics).fill(0); // All our waves are sine-based
+
+function updateWaveform(sliderValue) {
+    if (!audioCtx) initAudio();
+
+    const floor = Math.floor(sliderValue);
+    const ceil = Math.ceil(sliderValue);
+    const mix = sliderValue - floor;
+
+    const fromCoeffs = waveCoeffs[floor];
+    const toCoeffs = waveCoeffs[ceil];
+
+    const interpolatedImag = new Float32Array(numHarmonics);
+    for (let i = 1; i < numHarmonics; i++) {
+        const from = fromCoeffs[i] || 0;
+        const to = toCoeffs[i] || 0;
+        interpolatedImag[i] = from + (to - from) * mix;
+    }
+
+    currentPeriodicWave = audioCtx.createPeriodicWave(realCoeffs, interpolatedImag, { disableNormalization: false });
+    
+    drawWaveform(interpolatedImag);
+}
+
+function drawWaveform(imag) {
+    const canvas = document.getElementById('waveformCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.strokeStyle = '#007bff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    const yCenter = height / 2;
+    const amplitude = height * 0.4;
+
+    let maxVal = 0;
+    const wave = new Float32Array(width);
+    for (let i = 0; i < width; i++) {
+        const time = i / width;
+        let y = 0;
+        for (let n = 1; n < imag.length; n++) {
+            y += imag[n] * Math.sin(2 * Math.PI * n * time);
+        }
+        wave[i] = y;
+        if (Math.abs(y) > maxVal) {
+            maxVal = Math.abs(y);
+        }
+    }
+
+    // Normalize and draw
+    ctx.moveTo(0, yCenter);
+    for (let i = 0; i < width; i++) {
+        const normalizedY = (wave[i] / maxVal) * amplitude;
+        ctx.lineTo(i, yCenter - normalizedY);
+    }
+    ctx.stroke();
+}
+
 
 // Plasma Colormap function
 function plasmaColormap(value) {
@@ -399,10 +489,11 @@ function onMouseMove(event) {
     if (intersects.length > 0) {
         const firstHit = intersects[0].object;
         if (currentlyHovered !== firstHit) {
-                            if (firstHit.userData.ratio) {
-                                currentlyHovered = firstHit;
-                                playChord(firstHit.userData.ratio);
-                            }        }
+            if (firstHit.userData.ratio) {
+                currentlyHovered = firstHit;
+                playChord(firstHit.userData.ratio);
+            }
+        }
     } else {
         if (currentlyHovered) {
             stopChord();
@@ -1246,6 +1337,7 @@ def generate_ji_triads(limit_value, equave=Fraction(2,1), limit_mode="odd", prim
     pivotButtons = document.querySelectorAll('.pivot-button'); // Initialize global pivotButtons
     const enableSlideCheckbox = document.getElementById('enableSlide');
     const slideDurationInput = document.getElementById('slideDuration');
+    const timbreSlider = document.getElementById('timbreSlider');
 
     // Notation controls
     notationDisplay = document.getElementById('notation-display');
@@ -1273,6 +1365,14 @@ def generate_ji_triads(limit_value, equave=Fraction(2,1), limit_mode="odd", prim
     slideDurationInput.addEventListener('change', (event) => {
         slideDuration = parseFloat(event.target.value);
     });
+
+    // Timbre control
+    timbreSlider.addEventListener('input', (event) => {
+        updateWaveform(parseFloat(event.target.value));
+    });
+
+    // Initial waveform generation
+    updateWaveform(parseFloat(timbreSlider.value));
 
     // Set initial selection based on default currentPivotVoiceIndex (Bass, index 0)
     updatePivotButtonSelection(currentPivotVoiceIndex);
