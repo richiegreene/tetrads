@@ -866,14 +866,16 @@ function exportToSVG() {
         const x = (projectedPos.x * 0.5 + 0.5) * width;
         const y = (-projectedPos.y * 0.5 + 0.5) * height;
 
+        const svgExportBaseSize = sprite.userData.baseSize * 2.5;
+
         let currentSpriteSize;
         if (sprite.userData.type === 'label') {
             if (sprite.userData.enableSize) {
-                const baseScreenSize = sprite.userData.baseSize * 0.5;
+                const baseScreenSize = svgExportBaseSize * 0.5;
                 const scaledSize = baseScreenSize + (sprite.userData.normalizedComplexity * baseScreenSize * (sprite.userData.scalingFactor - 1));
                 currentSpriteSize = Math.max(baseScreenSize, scaledSize);
             } else {
-                currentSpriteSize = sprite.userData.baseSize * 0.5;
+                currentSpriteSize = svgExportBaseSize * 0.5;
             }
 
             const text = document.createElementNS(svgNS, 'text');
@@ -895,11 +897,11 @@ function exportToSVG() {
 
         } else if (sprite.userData.type === 'point') {
             if (sprite.userData.enableSize) {
-                const baseScreenSize = sprite.userData.baseSize * 0.01;
+                const baseScreenSize = svgExportBaseSize * 0.01;
                 const scaledSize = baseScreenSize + (sprite.userData.normalizedComplexity * baseScreenSize * (sprite.userData.scalingFactor - 1));
                 currentSpriteSize = Math.max(baseScreenSize, scaledSize);
             } else {
-                currentSpriteSize = sprite.userData.baseSize * 0.01;
+                currentSpriteSize = svgExportBaseSize * 0.01;
             }
 
             const circle = document.createElementNS(svgNS, 'circle');
