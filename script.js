@@ -365,7 +365,7 @@ const circleTexture = createCircleTexture();
 function makeTextSprite(message, parameters) {
 
     if ( parameters === undefined ) parameters = {};
-    const fontface = parameters.hasOwnProperty("fontface") ? parameters["fontface"] : "Arial";
+    const fontface = parameters.hasOwnProperty("fontface") ? parameters["fontface"] : "monospace";
     const fontsize = parameters.hasOwnProperty("fontsize") ? parameters["fontsize"] : 40;
     const borderThickness = 0; // No border
     const textColor = parameters.hasOwnProperty("textColor") ? parameters["textColor"] : { r:255, g:255, b:255, a:1.0 };
@@ -394,6 +394,7 @@ function makeTextSprite(message, parameters) {
     const sprite = new THREE.Sprite( spriteMaterial );
     sprite.scale.set(canvas.width / fontsize, canvas.height / fontsize, 1.0); // Adjust scale based on canvas size, more neutral
     sprite.userData.textColor = textColor; // Store for SVG export
+    sprite.userData.aspect = canvas.width / canvas.height;
     return sprite;  
 }
 
@@ -622,7 +623,7 @@ function animate() {
         currentSprites.forEach(sprite => {
             sprite.getWorldPosition(spriteWorldPosition);
             const distance = camera.position.distanceTo(spriteWorldPosition);
-            let currentSpriteSize = 0.5;
+            let currentSpriteSize;
 
             if (sprite.userData.type === 'label') {
                 if (sprite.userData.enableSize) {
@@ -632,6 +633,8 @@ function animate() {
                 } else {
                     currentSpriteSize = sprite.userData.baseSize * 0.5;
                 }
+                const finalSize = currentSpriteSize * distance;
+                sprite.scale.set(finalSize * sprite.userData.aspect, finalSize, 1);
             } else if (sprite.userData.type === 'point') {
                 if (sprite.userData.enableSize) {
                     const baseScreenSize = sprite.userData.baseSize * 0.01;
@@ -640,9 +643,9 @@ function animate() {
                 } else {
                     currentSpriteSize = sprite.userData.baseSize * 0.01;
                 }
+                const finalSize = currentSpriteSize * distance;
+                sprite.scale.set(finalSize, finalSize, 1);
             }
-            
-            sprite.scale.set(currentSpriteSize * distance, currentSpriteSize * distance, 1);
         });
     }
 
