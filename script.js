@@ -1068,7 +1068,9 @@ def generate_odd_limit_points(limit_value, equave_ratio, limit_mode="odd", compl
             has_octave = False
             for i in range(len(combo)):
                 for j in range(i + 1, len(combo)):
-                    if combo[j] == combo[i] * 2:
+                    if combo[i] == 0: continue
+                    ratio = combo[j] / combo[i]
+                    if ratio > 1 and math.isclose(math.log2(ratio), round(math.log2(ratio))):
                         has_octave = True
                         break
                 if has_octave:
@@ -1291,7 +1293,9 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode="odd", comple
             has_octave = False
             for i in range(len(combo)):
                 for j in range(i + 1, len(combo)):
-                    if combo[j] == combo[i] * 2:
+                    if combo[i] == 0: continue
+                    ratio = combo[j] / combo[i]
+                    if ratio > 1 and math.isclose(math.log2(ratio), round(math.log2(ratio))):
                         has_octave = True
                         break
                 if has_octave:
@@ -1304,7 +1308,7 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode="odd", comple
         if l / i > equave_ratio_float:
             continue
             
-        if math.gcd(math.gcd(math.gcd(i, j), k), l) != 1:
+        if gcd(gcd(gcd(i, j), k), l) != 1:
             continue
 
         if limit_mode == "odd":
