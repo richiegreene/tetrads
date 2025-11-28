@@ -683,9 +683,8 @@ function transformToRegularTetrahedron(c1, c2, c3, max_val) {
     return [x_transformed, y_transformed, z_transformed + overall_vertical_offset];
 }
 
-
 // --- TETRAHEDRON DATA GENERATION AND RENDERING ---
-async function updateTetrahedron(limit_type, limit_value, max_exponent, equave_ratio, complexity_method, hide_unison_voices, omit_octaves, base_size, scaling_factor, enable_size, enable_color, layout_display) {
+async function updateTetrahedron(limit_type, limit_value, max_exponent, virtual_fundamental_filter, equave_ratio, complexity_method, hide_unison_voices, omit_octaves, base_size, scaling_factor, enable_size, enable_color, layout_display) {
     if (!python_ready) {
         console.warn("Python environment not ready yet. Please wait.");
         return;
@@ -702,6 +701,7 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, equave_r
     pyodide.globals.set("py_omit_octaves", omit_octaves);
 
     const py_limit_value = typeof limit_value === 'string' && limit_value.includes('.') ? `"${limit_value}"` : limit_value;
+    const py_virtual_fundamental_filter = virtual_fundamental_filter ? JSON.stringify(virtual_fundamental_filter) : 'None';
 
     const points_py_code = `
         from tetrahedron_generator import generate_points
@@ -712,7 +712,8 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, equave_r
             max_exponent=${max_exponent},
             complexity_measure="${complexity_method}", 
             hide_unison_voices=py_hide_unison_voices, 
-            omit_octaves=py_omit_octaves
+            omit_octaves=py_omit_octaves,
+            virtual_fundamental_filter=${py_virtual_fundamental_filter}
         )
     `;
     const labels_py_code = `
@@ -724,7 +725,8 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, equave_r
             max_exponent=${max_exponent},
             complexity_measure="${complexity_method}", 
             hide_unison_voices=py_hide_unison_voices, 
-            omit_octaves=py_omit_octaves
+            omit_octaves=py_omit_octaves,
+            virtual_fundamental_filter=${py_virtual_fundamental_filter}
         )
     `;
 
@@ -967,12 +969,11 @@ async function initPyodide() {
     pyodide.FS.mkdir("python/theory");
 
     const tetrahedron_generator_py_content = `import math
-import numpy as np
 from itertools import combinations_with_replacement
 from fractions import Fraction
-from theory.calculations import get_odd_limit, get_integer_limit, check_prime_limit, parse_primes, _generate_valid_numbers, calculate_complexity, cents, gcd
+from theory.calculations import get_odd_limit, get_integer_limit, check_prime_limit, parse_primes, _generate_valid_numbers, calculate_complexity, cents, gcd, get_virtual_fundamental_denominator
 
-def generate_points(limit_value, equave_ratio, limit_mode="odd", max_exponent=3, complexity_measure="Tenney", hide_unison_voices=False, omit_octaves=False):
+def generate_points(limit_value, equave_ratio, limit_mode="odd", max_exponent=3, complexity_measure="Tenney", hide_unison_voices=False, omit_octaves=False, virtual_fundamental_filter=None):
     points = []
     equave_ratio_float = float(equave_ratio)
     
@@ -1008,6 +1009,11 @@ def generate_points(limit_value, equave_ratio, limit_mode="odd", max_exponent=3,
         if i == 0: continue
         if l / i > equave_ratio_float: continue
         if gcd(gcd(gcd(i, j), k), l) != 1: continue
+
+        if virtual_fundamental_filter:
+            vf_denom = get_virtual_fundamental_denominator(combo)
+            if vf_denom is None or vf_denom not in virtual_fundamental_filter:
+                continue
             
         valid_combo = True
         intervals = [Fraction(j, i), Fraction(k, j), Fraction(l, k)]
@@ -1044,14 +1050,26 @@ def generate_points(limit_value, equave_ratio, limit_mode="odd", max_exponent=3,
     pyodide.FS.writeFile("python/tetrahedron_generator.py", tetrahedron_generator_py_content, { encoding: "utf8" });
 
     const calculations_py_content = `import math
-import numpy as np
 from fractions import Fraction
 from functools import reduce
 from math import gcd
 from itertools import combinations_with_replacement
 
 def cents(x):
-    return 1200 * np.log2(float(x)) if x > 0 else 0
+    return 1200 * math.log2(float(x)) if x > 0 else 0
+
+def lcm(a, b):
+    return abs(a * b) // gcd(a, b) if a != 0 and b != 0 else 0
+
+def lcm_list(numbers):
+    return reduce(lcm, numbers) if numbers else 0
+
+def get_virtual_fundamental_denominator(chord):
+    if not chord or chord[0] == 0:
+        return None
+    ratios = [Fraction(note, chord[0]).limit_denominator() for note in chord]
+    denominators = [r.denominator for r in ratios]
+    return lcm_list(denominators)
 
 def get_odd_part_of_number(num):
     if num == 0: return 0
@@ -1179,7 +1197,7 @@ def _generate_valid_numbers(limit_value, limit_mode, max_exponent=3, equave_rati
                     q.append(next_num)
     return valid_numbers if valid_numbers else {1}
 
-def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode="odd", max_exponent=3, complexity_measure="Tenney", hide_unison_voices=False, omit_octaves=False):
+def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode="odd", max_exponent=3, complexity_measure="Tenney", hide_unison_voices=False, omit_octaves=False, virtual_fundamental_filter=None):
     labels_data = []
     equave_ratio_float = float(equave_ratio)
     valid_numbers = _generate_valid_numbers(limit_value, limit_mode, max_exponent, equave_ratio_float)
@@ -1204,6 +1222,11 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode="odd", max_ex
         if i == 0: continue
         if (l / i) > equave_ratio_float: continue
         if gcd(gcd(gcd(i, j), k), l) != 1: continue
+
+        if virtual_fundamental_filter:
+            vf_denom = get_virtual_fundamental_denominator(combo)
+            if vf_denom is None or vf_denom not in virtual_fundamental_filter:
+                continue
 
         valid_combo = True
         intervals = [Fraction(j, i), Fraction(k, j), Fraction(l, k)]
@@ -1242,7 +1265,30 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode="odd", max_ex
     animate();
     
     const limitType = document.getElementById('limitType').value;
-    const limitValue = document.getElementById('limitValue').value;
+    const limitValueInput = document.getElementById('limitValue').value;
+    let limitValue = limitValueInput;
+    let virtualFundamentalFilter = null;
+
+    if (limitValueInput.includes('/')) {
+        const parts = limitValueInput.split('/');
+        limitValue = parts[0].trim();
+        const filterStr = parts[1].trim();
+        
+        virtualFundamentalFilter = [];
+        if (filterStr.includes('...')) {
+            const rangeParts = filterStr.split('...');
+            const start = parseInt(rangeParts[0]);
+            const end = parseInt(rangeParts[1]);
+            if (!isNaN(start) && !isNaN(end)) {
+                for (let i = start; i <= end; i++) {
+                    virtualFundamentalFilter.push(i);
+                }
+            }
+        } else {
+            virtualFundamentalFilter = filterStr.split('.').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+        }
+    }
+
     const maxExponent = document.getElementById('maxExponent').value;
     const equaveRatio = parseFloat(document.getElementById('equaveRatio').value);
     const complexityMethod = document.getElementById('complexityMethod').value;
@@ -1307,7 +1353,7 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode="odd", max_ex
     });
 
     await updateTetrahedron(
-        limitType, limitValue, maxExponent, equaveRatio, complexityMethod, 
+        limitType, limitValue, maxExponent, virtualFundamentalFilter, equaveRatio, complexityMethod, 
         hideUnisonVoices, omitOctaves, baseSize, scalingFactor, 
         enableSize, enableColor, layoutDisplay
     );
@@ -1325,7 +1371,30 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode="odd", max_ex
 
     document.getElementById('updateButton').addEventListener('click', async () => {
         const newLimitType = document.getElementById('limitType').value;
-        const newLimitValue = document.getElementById('limitValue').value;
+        const newLimitValueInput = document.getElementById('limitValue').value;
+        let newLimitValue = newLimitValueInput;
+        let newVirtualFundamentalFilter = null;
+
+        if (newLimitValueInput.includes('/')) {
+            const parts = newLimitValueInput.split('/');
+            newLimitValue = parts[0].trim();
+            const filterStr = parts[1].trim();
+            
+            newVirtualFundamentalFilter = [];
+            if (filterStr.includes('...')) {
+                const rangeParts = filterStr.split('...');
+                const start = parseInt(rangeParts[0]);
+                const end = parseInt(rangeParts[1]);
+                if (!isNaN(start) && !isNaN(end)) {
+                    for (let i = start; i <= end; i++) {
+                        newVirtualFundamentalFilter.push(i);
+                    }
+                }
+            } else {
+                newVirtualFundamentalFilter = filterStr.split('.').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            }
+        }
+
         const newMaxExponent = document.getElementById('maxExponent').value;
         const newEquaveRatio = parseFloat(document.getElementById('equaveRatio').value);
         const newComplexityMethod = document.getElementById('complexityMethod').value;
@@ -1339,7 +1408,7 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode="odd", max_ex
         currentLayoutDisplay = newLayoutDisplay;
 
         await updateTetrahedron(
-            newLimitType, newLimitValue, newMaxExponent, newEquaveRatio, newComplexityMethod, 
+            newLimitType, newLimitValue, newMaxExponent, newVirtualFundamentalFilter, newEquaveRatio, newComplexityMethod, 
             newHideUnisonVoices, newOmitOctaves, newBaseSize, newScalingFactor, 
             newEnableSize, newEnableColor, newLayoutDisplay
         );
