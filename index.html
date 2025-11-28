@@ -35,8 +35,18 @@
             <span class="toggle-icon">▼</span>
         </div>
         <div id="settings-content">
-            <label for="limitValue">Odd-Limit</label>
-            <input type="number" id="limitValue" value="13" min="1" step="1">
+            <div class="settings-row" id="limit-settings" style="display: flex; align-items: center; gap: 8px;">
+                <select id="limitType" style="width: 50%;">
+                    <option value="Integer">Integer-Limit</option>
+                    <option value="Odd" selected>Odd-Limit</option>
+                    <option value="Prime">Prime-Limit</option>
+                </select>
+                <input type="text" id="limitValue" value="13" style="width: 50%;">
+            </div>
+            <div class="settings-row" id="prime-limit-options" style="display: none; align-items: center; gap: 8px;">
+                <label for="maxExponent" style="width: 30%;">Max Exp.</label>
+                <input type="number" id="maxExponent" value="3" min="1" step="1" style="width: 70%;">
+            </div>
             <label for="equaveRatio">Register</label>
             <input type="number" id="equaveRatio" value="2" min="1" step="0.1">
             <label for="complexityMethod">Complexity</label>
