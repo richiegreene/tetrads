@@ -393,6 +393,7 @@ function makeTextSprite(message, parameters) {
     const spriteMaterial = new THREE.SpriteMaterial( { map: texture } );
     const sprite = new THREE.Sprite( spriteMaterial );
     sprite.scale.set(canvas.width / fontsize, canvas.height / fontsize, 1.0); // Adjust scale based on canvas size, more neutral
+    sprite.userData.textColor = textColor; // Store for SVG export
     return sprite;  
 }
 
@@ -812,6 +813,122 @@ async function updateTetrahedron(limit_value, equave_ratio, complexity_method, h
             currentSprites.push(sprite);
         }
     });
+}
+
+// --- SVG EXPORT ---
+function exportToSVG() {
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, 'svg');
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    svg.setAttribute('xmlns', svgNS);
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    
+    const style = document.createElementNS(svgNS, 'style');
+    style.textContent = `
+        svg {
+            background-color: ${scene.background.getStyle()};
+        }
+        text {
+            font-family: monospace;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+    `;
+    svg.appendChild(style);
+
+    const spritesToExport = [...currentSprites];
+
+    const cameraWorldPosition = new THREE.Vector3();
+    camera.getWorldPosition(cameraWorldPosition);
+    
+    spritesToExport.sort((a, b) => {
+        const aPos = new THREE.Vector3().setFromMatrixPosition(a.matrixWorld);
+        const bPos = new THREE.Vector3().setFromMatrixPosition(b.matrixWorld);
+        return aPos.distanceTo(cameraWorldPosition) - bPos.distanceTo(cameraWorldPosition);
+    }).reverse();
+
+    const frustum = new THREE.Frustum();
+    const projScreenMatrix = new THREE.Matrix4();
+    projScreenMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    frustum.setFromProjectionMatrix(projScreenMatrix);
+
+    spritesToExport.forEach(sprite => {
+        const pos = new THREE.Vector3().setFromMatrixPosition(sprite.matrixWorld);
+        
+        if (!frustum.containsPoint(pos)) {
+            return;
+        }
+
+        const projectedPos = pos.clone().project(camera);
+        const x = (projectedPos.x * 0.5 + 0.5) * width;
+        const y = (-projectedPos.y * 0.5 + 0.5) * height;
+
+        let currentSpriteSize;
+        if (sprite.userData.type === 'label') {
+            if (sprite.userData.enableSize) {
+                const baseScreenSize = sprite.userData.baseSize * 0.5;
+                const scaledSize = baseScreenSize + (sprite.userData.normalizedComplexity * baseScreenSize * (sprite.userData.scalingFactor - 1));
+                currentSpriteSize = Math.max(baseScreenSize, scaledSize);
+            } else {
+                currentSpriteSize = sprite.userData.baseSize * 0.5;
+            }
+
+            const text = document.createElementNS(svgNS, 'text');
+            text.setAttribute('x', x);
+            text.setAttribute('y', y);
+            
+            const fontSize = currentSpriteSize * 30; // Heuristic value
+            text.setAttribute('font-size', `${fontSize}px`);
+
+            const color = sprite.userData.textColor;
+            if (color) {
+                text.setAttribute('fill', `rgb(${Math.round(color.r)}, ${Math.round(color.g)}, ${Math.round(color.b)})`);
+            } else {
+                text.setAttribute('fill', 'white');
+            }
+            
+            text.textContent = sprite.userData.ratio;
+            svg.appendChild(text);
+
+        } else if (sprite.userData.type === 'point') {
+            if (sprite.userData.enableSize) {
+                const baseScreenSize = sprite.userData.baseSize * 0.01;
+                const scaledSize = baseScreenSize + (sprite.userData.normalizedComplexity * baseScreenSize * (sprite.userData.scalingFactor - 1));
+                currentSpriteSize = Math.max(baseScreenSize, scaledSize);
+            } else {
+                currentSpriteSize = sprite.userData.baseSize * 0.01;
+            }
+
+            const circle = document.createElementNS(svgNS, 'circle');
+            circle.setAttribute('cx', x);
+            circle.setAttribute('cy', y);
+            
+            const radius = currentSpriteSize * 100; // Heuristic value
+            circle.setAttribute('r', radius);
+            
+            const color = sprite.material.color;
+            circle.setAttribute('fill', color.getStyle());
+            circle.setAttribute('fill-opacity', sprite.material.opacity);
+            svg.appendChild(circle);
+        }
+    });
+
+    return new XMLSerializer().serializeToString(svg);
+}
+
+function downloadSVG(svgString, filename) {
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 // --- MAIN PYODIDE INITIALIZATION ---
@@ -1494,6 +1611,14 @@ def generate_ji_triads(limit_value, equave=Fraction(2,1), limit_mode="odd", prim
         if (event.key === 'Enter' && tagName !== 'INPUT' && tagName !== 'TEXTAREA') {
             event.preventDefault(); // Prevent default action (e.g., submitting a form)
             document.getElementById('updateButton').click(); // Programmatically click the update button
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'E') {
+            event.preventDefault();
+            const svgData = exportToSVG();
+            downloadSVG(svgData, 'tetrads-export.svg');
         }
     });
 }
