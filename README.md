@@ -11,7 +11,10 @@ Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of
 * Save/Export SVG: ⇧⌘E
 
 ### Settings
-* Select [Odd-limit](https://en.xen.wiki/w/Odd_limit) of JI tetrads depicted
+* Select/Define Limit of JI terads.
+  * [Integer-Limit](https://en.xen.wiki/w/Odd_limit#Integer_limit)
+  * [Odd-limit](https://en.xen.wiki/w/Odd_limit)
+  * [Prime-Limit](https://en.xen.wiki/w/Harmonic_limit#Prime_limits_as_subgroups) - accepts subgroups, e.g. "2.3.7" 
 * Select the register considered
   * default "2" for 2/1 octave
 * Set the Complexity Model which scale/color JI ratios $\dfrac{n}{d}$. 
