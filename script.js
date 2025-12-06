@@ -10,6 +10,7 @@ let currentLayoutDisplay = 'points'; // Global variable to store current display
 let isShiftHeld = false; // To track if Shift key is currently held down
 let isClickPlayModeActive = false; // To track if play mode is active via button click
 let currentlyHovered = null; // To track the object the mouse is over
+let isLightMode = false;
 let playButton; // Declare playButton globally
 let pivotButtons; // Declare pivotButtons globally
 let currentPivotVoiceIndex = 0; // 0: Bass, 1: Tenor, 2: Alto, 3: Soprano (default Bass)
@@ -295,6 +296,70 @@ function drawWaveform(imag) {
         ctx.lineTo(i, yCenter - normalizedY);
     }
     ctx.stroke();
+}
+
+function greyscaleColormap(value) {
+    // Clamp value between 0 and 1
+    value = Math.min(1, Math.max(0, value));
+
+    // High complexity (blue in plasma, value=0) -> #AAAAAA
+    // Low complexity (yellow in plasma, value=1) -> #000000
+    const startColor = { r: 170/255, g: 170/255, b: 170/255 }; // #AAAAAA
+    const endColor = { r: 0, g: 0, b: 0 }; // #000000
+
+    const r = startColor.r + value * (endColor.r - startColor.r);
+    const g = startColor.g + value * (endColor.g - startColor.g);
+    const b = startColor.b + value * (endColor.b - startColor.b);
+
+    return { r, g, b };
+}
+
+async function toggleLightMode() {
+    isLightMode = !isLightMode;
+    scene.background = new THREE.Color(isLightMode ? 0xffffff : 0x000000);
+
+    // We need to re-run updateTetrahedron to apply new colors
+    const limitType = document.getElementById('limitType').value;
+    const limitValueInput = document.getElementById('limitValue').value;
+    let limitValue = limitValueInput;
+    let virtualFundamentalFilter = null;
+
+    if (limitValueInput.includes('/')) {
+        const parts = limitValueInput.split('/');
+        limitValue = parts[0].trim();
+        const filterStr = parts[1].trim();
+        
+        virtualFundamentalFilter = [];
+        if (filterStr.includes('...')) {
+            const rangeParts = filterStr.split('...');
+            const start = parseInt(rangeParts[0]);
+            const end = parseInt(rangeParts[1]);
+            if (!isNaN(start) && !isNaN(end)) {
+                for (let i = start; i <= end; i++) {
+                    virtualFundamentalFilter.push(i);
+                }
+            }
+        } else {
+            virtualFundamentalFilter = filterStr.split('.').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+        }
+    }
+    
+    const maxExponent = document.getElementById('maxExponent').value;
+    const equaveRatio = parseFloat(document.getElementById('equaveRatio').value);
+    const complexityMethod = document.getElementById('complexityMethod').value;
+    const hideUnisonVoices = document.getElementById('hideUnisonVoices').checked;
+    const omitOctaves = document.getElementById('omitOctaves').checked;
+    const baseSize = parseFloat(document.getElementById('baseSize').value);
+    const scalingFactor = parseFloat(document.getElementById('scalingFactor').value);
+    const enableSize = document.getElementById('enableSize').checked;
+    const enableColor = document.getElementById('enableColor').checked;
+    const layoutDisplay = document.getElementById('layoutDisplay').value;
+    
+    await updateTetrahedron(
+        limitType, limitValue, maxExponent, virtualFundamentalFilter, equaveRatio, complexityMethod, 
+        hideUnisonVoices, omitOctaves, baseSize, scalingFactor, 
+        enableSize, enableColor, layoutDisplay
+    );
 }
 
 
@@ -776,19 +841,29 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, virtual_
         let spriteTextColor = { r:255, g:255, b:255, a:1.0 };
         let spritePointColor = new THREE.Color(1, 1, 1);
         let spritePointOpacity = 0.7;
+        if (isLightMode) {
+            spritePointOpacity = 0.9;
+        }
 
         if (enable_color) {
             const colorScalingFactor = scaling_factor / 2;
             let scaledComplexity = invertedComplexity * colorScalingFactor;
             scaledComplexity = Math.min(1, Math.max(0, scaledComplexity));
             
-            const plasmaColor = plasmaColormap(scaledComplexity);
-            displayColor.setRGB(plasmaColor.r, plasmaColor.g, plasmaColor.b);
-            spriteTextColor = { r: plasmaColor.r * 255, g: plasmaColor.g * 255, b: plasmaColor.b * 255, a:1.0 };
-            spritePointColor.setRGB(plasmaColor.r, plasmaColor.g, plasmaColor.b);
+            const mappedColor = isLightMode ? greyscaleColormap(scaledComplexity) : plasmaColormap(scaledComplexity);
+            displayColor.setRGB(mappedColor.r, mappedColor.g, mappedColor.b);
+            spriteTextColor = { r: mappedColor.r * 255, g: mappedColor.g * 255, b: mappedColor.b * 255, a:1.0 };
+            spritePointColor.setRGB(mappedColor.r, mappedColor.g, mappedColor.b);
         } else {
-            displayColor.setRGB(1, 1, 1);
-            spritePointColor.setRGB(1, 1, 1);
+            if (isLightMode) {
+                displayColor.setRGB(0, 0, 0);
+                spriteTextColor = { r: 0, g: 0, b: 0, a: 1.0 };
+                spritePointColor.setRGB(0, 0, 0);
+            } else {
+                displayColor.setRGB(1, 1, 1);
+                spriteTextColor = { r: 255, g: 255, b: 255, a: 1.0 };
+                spritePointColor.setRGB(1, 1, 1);
+            }
         }
         colors.push(displayColor.r, displayColor.g, displayColor.b);
 
@@ -1427,6 +1502,10 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode="odd", max_ex
             event.preventDefault();
             const svgData = exportToSVG();
             downloadSVG(svgData, 'tetrads-export.svg');
+        }
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'L') {
+            event.preventDefault();
+            toggleLightMode();
         }
     });
 }
