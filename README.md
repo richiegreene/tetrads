@@ -9,6 +9,8 @@ Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of
 * Rotate Tetrahedron: click/drag or arrow keys
 * Zoom: two-finger scroll/mouse-wheel
 * Save/Export SVG: ⇧⌘E
+* Light/Bright Mode: ⇧⌘L
+  * Greyscale off when colormap is disabled 
 
 ### Settings
 * Select [Odd-limit](https://en.xen.wiki/w/Odd_limit) of JI tetrads depicted
