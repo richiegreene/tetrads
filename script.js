@@ -814,7 +814,7 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, virtual_
     const labels_map = new Map();
     raw_labels_data.forEach(label_item => {
         const coords_key = `${label_item[0][0].toFixed(2)},${label_item[0][1].toFixed(2)},${label_item[0][2].toFixed(2)}`;
-        labels_map.set(coords_key, label_item[1]);
+        labels_map.set(coords_key, {label: label_item[1], complexity: label_item[2]});
     });
 
 
@@ -868,7 +868,9 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, virtual_
         colors.push(displayColor.r, displayColor.g, displayColor.b);
 
         const coords_key = `${p[0].toFixed(2)},${p[1].toFixed(2)},${p[2].toFixed(2)}`;
-        const label_text = labels_map.get(coords_key);
+        const label_data = labels_map.get(coords_key);
+        const label_text = label_data ? label_data.label : undefined;
+        const complexity = label_data ? label_data.complexity : undefined;
 
         if (layout_display === 'labels') {
             if (label_text) {
@@ -880,6 +882,7 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, virtual_
                 sprite.userData.enableSize = enable_size;
                 sprite.userData.type = 'label';
                 sprite.userData.ratio = label_text;
+                sprite.userData.complexity = complexity;
                 scene.add(sprite);
                 currentSprites.push(sprite);
             }
@@ -893,6 +896,7 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, virtual_
             sprite.userData.type = 'point';
             if (label_text) {
                 sprite.userData.ratio = label_text;
+                sprite.userData.complexity = complexity;
             }
             scene.add(sprite);
             currentSprites.push(sprite);
@@ -1018,11 +1022,76 @@ function downloadSVG(svgString, filename) {
     URL.revokeObjectURL(url);
 }
 
+function downloadCSV(csvString, filename) {
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function gcd(a, b) {
+    return b === 0 ? a : gcd(b, a % b);
+}
+
+function simplifyFraction(n, d) {
+    const commonDivisor = gcd(n, d);
+    return `${n / commonDivisor}/${d / commonDivisor}`;
+}
+
+function exportToCSV() {
+    if (currentSprites.length === 0) {
+        console.warn("No data to export.");
+        return;
+    }
+
+    const complexityMethodSelect = document.getElementById('complexityMethod');
+    const complexityMethod = complexityMethodSelect.options[complexityMethodSelect.selectedIndex].text;
+
+    let data = [];
+    const processedRatios = new Set();
+
+    currentSprites.forEach(sprite => {
+        if (sprite.userData.ratio && sprite.userData.complexity !== undefined && !processedRatios.has(sprite.userData.ratio)) {
+            const chordRatio = sprite.userData.ratio;
+            const parts = chordRatio.split(':').map(Number);
+            const fundamental = parts[0];
+
+            const notes = parts.map(p => simplifyFraction(p, fundamental)).join(' ');
+            const cents = parts.map(p => Math.round(1200 * Math.log2(p / fundamental))).join(' ');
+
+            data.push({
+                chord: chordRatio,
+                notes: notes,
+                cents: cents,
+                complexity: sprite.userData.complexity
+            });
+            processedRatios.add(chordRatio);
+        }
+    });
+
+    // Sort by complexity, lowest first
+    data.sort((a, b) => a.complexity - b.complexity);
+
+    // Generate CSV content
+    const header = `Chord,Notes,Cents,${complexityMethod}`;
+    const rows = data.map(d => `${d.chord},"${d.notes}","${d.cents}",${d.complexity}`);
+    const csvContent = [header, ...rows].join('\n');
+
+    downloadCSV(csvContent, 'tetrads-export.csv');
+}
+
 // --- MAIN PYODIDE INITIALIZATION ---
 async function initPyodide() {
+
     loadingOverlay.style.display = 'flex';
     pyodide = await loadPyodide({
         indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/",
+
     });
     console.log("Pyodide loaded.");
 
@@ -1506,6 +1575,10 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode="odd", max_ex
         if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'L') {
             event.preventDefault();
             toggleLightMode();
+        }
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'S') {
+            event.preventDefault();
+            exportToCSV();
         }
     });
 }
