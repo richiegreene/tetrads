@@ -89,25 +89,7 @@ body, html {
     align-items: center;
 }
 
-/* Styles for the checkbox rows */
-.checkbox-row {
-    grid-column: 1 / -1; /* Span across both columns of the parent grid */
-}
 
-.checkbox-row label {
-    display: flex; /* Use flex to align text and checkbox */
-    align-items: center;
-    gap: 5px; /* Space between label text and checkbox */
-    font-size: 13px;
-    white-space: nowrap;
-    margin-top: 10px;
-}
-
-.checkbox-row input[type="checkbox"] {
-    width: auto;
-    margin: 0;
-    vertical-align: middle;
-}
 
 #settings-menu label {
     white-space: nowrap;
@@ -126,10 +108,7 @@ body, html {
     font-family: monospace;
 }
 
-#notation-row select {
-    width: auto;
-    margin-left: auto;
-}
+
 
 #timbre-row {
     grid-column: 1 / -1;
@@ -171,32 +150,7 @@ body, html {
     border-color: #0056b3;
 }
 
-#settings-content .checkbox-row {
-    display: flex;            /* Place checkbox groups in a row */
-    align-items: center;
-    gap: 18px;                /* Space between each checkbox group */
-    flex-wrap: wrap;          /* Wrap on small widths */
-    grid-column: 1 / -1;
-    margin: 0;
-}
 
-#settings-content .checkbox-row label {
-    display: inline-flex;     /* Keep checkbox + text together */
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-    margin: 0;
-    font-size: 13px;
-    cursor: pointer;
-}
-
-#settings-content .checkbox-row input[type="checkbox"] {
-    width: auto !important;   /* Override global width:100% */
-    height: auto;
-    margin: 0;
-    display: inline-block;
-    box-sizing: content-box;
-}
 
 /* New styles for pivot buttons */
 .settings-row {
@@ -245,15 +199,28 @@ body, html {
     border-color: #0056b3;
 }
 
-#slide-row {
-    margin-top: 0px;
-    margin-bottom: 0px;
-}
 
-#slide-row input[type="checkbox"] {
-    margin-left: 5px;
-}
 
 .symbol {
     font-family: Arial, sans-serif;
+}
+
+.controls-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.controls-container input[type="checkbox"] {
+    width: auto !important;
+    margin: 0;
+}
+
+.controls-container select, .controls-container input[type="number"] {
+    width: auto;
+    flex-grow: 1;
+}
+
+.inline-label {
+    margin-left: 8px;
 }

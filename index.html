@@ -63,34 +63,34 @@
                 <option value="points">Points</option>
                 <option value="labels">Labels</option>
             </select>
-            <div class="checkbox-row" id="notation-row" style="display: flex; align-items: center;">
-                <label for="enableNotation" style="margin: 0;">Notation</label>
-                <input type="checkbox" id="enableNotation" style="width: fit-content; margin: 0 0 0 32px;" checked>
-                <select id="notationType" style="display: inline-block; width: auto; margin: 0;">
-                    <option value="ratio">Ratioㅤㅤㅤㅤㅤㅤㅤ</option>
-                    <option value="cents">Centsㅤㅤㅤㅤㅤㅤㅤ</option>
+            <label for="enableNotation">Notation</label>
+            <div class="controls-container">
+                <input type="checkbox" id="enableNotation" checked>
+                <select id="notationType">
+                    <option value="ratio">Ratio</option>
+                    <option value="cents">Cents</option>
                 </select>
-            </div>            
-            <div class="checkbox-row" style="display: flex; align-items: center;">
-                <label for="enableSize" style="width: 80px;">Enable Size</label> 
-                <input type="checkbox" id="enableSize" checked style="margin-right: 16px;">
-                <label for="enableColor" style="width: 80px;">Enable Color</label> 
+            </div>
+            <label for="enableSize">Enable Size</label>
+            <div class="controls-container">
+                <input type="checkbox" id="enableSize" checked>
+                <label for="enableColor" class="inline-label">Enable Color</label> 
                 <input type="checkbox" id="enableColor" checked>
             </div>
             <label for="baseSize">Base Size</label>
             <input type="number" id="baseSize" value="1" min="0.1" step="0.1">
             <label for="scalingFactor">Scaling Factor</label>
             <input type="number" id="scalingFactor" value="2" min="0.1" step="0.1">
-            <div class="checkbox-row" style="display: flex; align-items: center;">
-                <label for="hideUnisonVoices" style="width: 80px;">Omit Unisons</label>
-                <input type="checkbox" id="hideUnisonVoices" style="margin-right: 16px;">
-                <label for="omitOctaves" style="width: 80px;">Omit Octaves</label>
+            <label for="hideUnisonVoices">Omit Unisons</label>
+            <div class="controls-container">
+                <input type="checkbox" id="hideUnisonVoices">
+                <label for="omitOctaves" class="inline-label">Omit Octaves</label>
                 <input type="checkbox" id="omitOctaves">
             </div>
-            <div class="checkbox-row" id="slide-row" style="display: flex; align-items: center; gap: 16px;">
-                <label for="enableSlide" style="margin: 0;">Enable Slide</label>
-                <input type="checkbox" id="enableSlide" style="width: auto; margin: 0 0 0 8px;" checked>
-                <input type="number" id="slideDuration" value="0.25" min="0.01" step="0.01" style="width: fit-content; display: inline-block; margin: 0;">
+            <label for="enableSlide">Enable Slide</label>
+            <div class="controls-container">
+                <input type="checkbox" id="enableSlide" checked>
+                <input type="number" id="slideDuration" value="0.25" min="0.01" step="0.01">
             </div>
             <div class="settings-row" id="timbre-row">
                 <label for="timbreSlider">Timbre</label>
