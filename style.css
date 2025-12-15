@@ -211,10 +211,7 @@ body, html {
     gap: 8px;
 }
 
-.controls-container input[type="checkbox"] {
-    width: auto !important;
-    margin: 0;
-}
+
 
 .controls-container select, .controls-container input[type="number"] {
     width: auto;
@@ -223,4 +220,24 @@ body, html {
 
 .inline-label {
     margin-left: 8px;
+}
+
+/* Custom checkbox styles */
+#settings-menu input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 14px;
+    height: 14px;
+    border: 1px solid #fff;
+    border-radius: 2px;
+    background-color: transparent;
+    cursor: pointer;
+    position: relative;
+    vertical-align: middle;
+}
+
+#settings-menu input[type="checkbox"]:checked {
+    background-color: #007bff;
+    border-color: #007bff;
 }
