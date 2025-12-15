@@ -37,8 +37,8 @@ body, html {
     border-radius: 8px;
     z-index: 10;
     color: white;
-    font-family: Arial, sans-serif;
-    transform: scale(0.75);
+    font-family: monospace;
+    transform: scale(0.85);
     transform-origin: top left;
 }
 
@@ -123,6 +123,7 @@ body, html {
     background-color: #4a4a4a;
     color: #fff;
     font-size: 13px;
+    font-family: monospace;
 }
 
 #notation-row select {
@@ -136,7 +137,7 @@ body, html {
     grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 10px;
-    margin-top: 10px;
+    margin-top: 0;
 }
 
 #timbreSlider {
@@ -203,7 +204,7 @@ body, html {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-top: 10px;
+    margin-top: 0;
 }
 
 .settings-row label {
@@ -251,4 +252,8 @@ body, html {
 
 #slide-row input[type="checkbox"] {
     margin-left: 5px;
+}
+
+.symbol {
+    font-family: Arial, sans-serif;
 }
