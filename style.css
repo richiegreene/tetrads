@@ -38,6 +38,8 @@ body, html {
     z-index: 10;
     color: white;
     font-family: Arial, sans-serif;
+    transform: scale(0.75);
+    transform-origin: top left;
 }
 
 #settings-header {
@@ -174,7 +176,7 @@ body, html {
     gap: 18px;                /* Space between each checkbox group */
     flex-wrap: wrap;          /* Wrap on small widths */
     grid-column: 1 / -1;
-    margin: 6px 0;
+    margin: 0;
 }
 
 #settings-content .checkbox-row label {
