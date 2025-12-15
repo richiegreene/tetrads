@@ -10,7 +10,7 @@ let currentLayoutDisplay = 'points'; // Global variable to store current display
 let isShiftHeld = false; // To track if Shift key is currently held down
 let isClickPlayModeActive = false; // To track if play mode is active via button click
 let currentlyHovered = null; // To track the object the mouse is over
-let isLightMode = false;
+let currentLayoutMode = 0; // 0: Plasma, 1: Viridis, 2: Greyscale Black, 3: Greyscale White
 let playButton; // Declare playButton globally
 let pivotButtons; // Declare pivotButtons globally
 let currentPivotVoiceIndex = 0; // 0: Bass, 1: Tenor, 2: Alto, 3: Soprano (default Bass)
@@ -314,9 +314,39 @@ function greyscaleColormap(value) {
     return { r, g, b };
 }
 
-async function toggleLightMode() {
-    isLightMode = !isLightMode;
-    scene.background = new THREE.Color(isLightMode ? 0xffffff : 0x000000);
+function greyscaleBlackColormap(value) {
+    value = Math.min(1, Math.max(0, value));
+    const startColor = { r: 51/255, g: 51/255, b: 51/255 }; // #333333
+    const endColor = { r: 1, g: 1, b: 1 }; // #FFFFFF
+    const r = startColor.r + value * (endColor.r - startColor.r);
+    const g = startColor.g + value * (endColor.g - startColor.g);
+    const b = startColor.b + value * (endColor.b - startColor.b);
+    return { r, g, b };
+}
+
+const viridis_data = [
+    [68,1,84],[68,2,85],[68,3,86],[68,4,87],[69,5,88],[69,6,89],[69,7,90],[69,8,91],[70,9,92],[70,10,93],[70,11,94],[70,12,95],[71,13,96],[71,14,97],[71,15,98],[71,16,99],[72,17,100],[72,18,101],[72,19,102],[72,20,103],[73,21,104],[73,22,105],[73,23,106],[73,24,107],[74,25,108],[74,26,109],[74,27,110],[74,28,111],[75,29,112],[75,30,113],[75,31,114],[75,32,115],[75,33,116],[76,34,117],[76,35,118],[76,36,119],[76,37,120],[76,38,121],[77,39,122],[77,40,123],[77,41,124],[77,42,125],[77,43,126],[77,44,127],[77,45,128],[78,46,129],[78,47,130],[78,48,131],[78,49,132],[78,50,133],[78,51,134],[78,52,135],[78,53,136],[78,54,137],[78,55,138],[78,56,139],[78,57,140],[78,58,141],[78,59,142],[77,60,143],[77,61,144],[77,62,145],[76,63,146],[76,64,146],[75,65,147],[75,66,148],[74,67,148],[74,68,149],[73,69,150],[73,70,150],[72,71,151],[71,72,152],[71,73,152],[70,74,153],[69,75,153],[69,76,154],[68,77,154],[67,78,155],[66,79,155],[66,80,156],[65,81,156],[64,82,156],[63,83,157],[62,84,157],[61,85,157],[60,86,157],[59,87,158],[58,88,158],[57,89,158],[56,90,158],[55,91,158],[54,92,158],[53,93,158],[52,94,158],[51,95,158],[50,96,158],[49,97,158],[48,98,158],[47,99,158],[46,100,158],[45,101,158],[44,102,157],[43,103,157],[42,104,157],[41,105,156],[40,106,156],[39,107,155],[38,108,154],[37,109,154],[36,110,153],[35,111,152],[34,112,151],[33,113,151],[32,114,150],[31,115,149],[31,116,148],[30,117,147],[29,118,146],[29,119,145],[28,120,144],[28,121,143],[27,122,142],[27,123,141],[26,124,140],[26,125,139],[26,126,138],[25,127,137],[25,128,136],[25,129,135],[25,130,134],[25,131,133],[25,132,132],[25,133,131],[25,134,130],[25,135,129],[26,136,128],[26,137,127],[27,138,126],[27,139,125],[28,140,124],[29,141,123],[30,142,122],[31,143,121],[32,144,120],[33,145,119],[34,146,118],[35,147,117],[36,148,116],[37,149,115],[38,150,114],[39,151,113],[40,152,112],[41,153,111],[42,154,110],[43,155,109],[44,156,108],[45,157,107],[46,158,106],[48,159,105],[49,160,104],[50,161,103],[52,162,102],[53,163,101],[55,164,100],[56,165,99],[58,166,98],[59,167,97],[61,168,96],[63,169,95],[64,170,94],[66,171,93],[68,172,92],[70,173,91],[72,174,90],[73,175,89],[75,176,88],[77,177,87],[79,178,86],[81,179,85],[83,180,84],[85,181,83],[87,182,82],[89,183,81],[91,184,80],[93,185,79],[95,186,78],[97,187,77],[99,188,76],[101,189,75],[103,190,74],[105,191,73],[107,192,72],[110,193,71],[112,194,70],[114,195,69],[116,196,68],[118,197,67],[120,198,66],[122,199,65],[124,200,64],[127,201,63],[129,202,62],[131,203,61],[133,204,60],[135,205,59],[137,206,58],[140,207,57],[142,208,56],[144,209,55],[146,210,54],[148,211,53],[151,212,52],[153,213,51],[155,214,50],[157,215,49],[160,216,48],[162,217,47],[164,218,46],[167,219,45],[169,220,44],[171,221,43],[174,222,42],[176,223,41],[178,224,40],[181,225,39],[183,226,38],[185,227,37],[188,228,36],[190,229,35],[192,230,34],[195,231,33],[197,232,32],[200,233,31],[202,234,30],[204,235,29],[207,236,28],[209,237,27],[212,238,26],[214,239,25],[217,240,24],[219,241,23],[222,242,23],[224,243,22],[227,244,21],[229,245,20],[232,246,19],[234,247,18],[237,248,17],[239,249,16],[242,250,15],[244,251,14],[247,252,13],[250,253,12],[252,254,11],[255,255,10]
+].map(c => ({ r: c[0] / 255, g: c[1] / 255, b: c[2] / 255 }));
+
+function viridisColormap(value) {
+    value = Math.min(1, Math.max(0, value));
+    const index = Math.floor(value * (viridis_data.length - 1));
+    return viridis_data[index];
+}
+
+async function cycleLayoutMode() {
+    currentLayoutMode = (currentLayoutMode + 1) % 4;
+
+    switch (currentLayoutMode) {
+        case 0: // Plasma
+        case 1: // Viridis
+        case 2: // Greyscale Black
+            scene.background = new THREE.Color(0x000000);
+            break;
+        case 3: // Greyscale White
+            scene.background = new THREE.Color(0xffffff);
+            break;
+    }
 
     // We need to re-run updateTetrahedron to apply new colors
     const limitType = document.getElementById('limitType').value;
@@ -841,7 +871,7 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, virtual_
         let spriteTextColor = { r:255, g:255, b:255, a:1.0 };
         let spritePointColor = new THREE.Color(1, 1, 1);
         let spritePointOpacity = 0.7;
-        if (isLightMode) {
+        if (currentLayoutMode === 3) { // Greyscale White
             spritePointOpacity = 0.9;
         }
 
@@ -850,12 +880,26 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, virtual_
             let scaledComplexity = invertedComplexity * colorScalingFactor;
             scaledComplexity = Math.min(1, Math.max(0, scaledComplexity));
             
-            const mappedColor = isLightMode ? greyscaleColormap(scaledComplexity) : plasmaColormap(scaledComplexity);
+            let mappedColor;
+            switch (currentLayoutMode) {
+                case 0: // Plasma
+                    mappedColor = plasmaColormap(scaledComplexity);
+                    break;
+                case 1: // Viridis
+                    mappedColor = viridisColormap(scaledComplexity);
+                    break;
+                case 2: // Greyscale Black
+                    mappedColor = greyscaleBlackColormap(scaledComplexity);
+                    break;
+                case 3: // Greyscale White
+                    mappedColor = greyscaleColormap(scaledComplexity);
+                    break;
+            }
             displayColor.setRGB(mappedColor.r, mappedColor.g, mappedColor.b);
             spriteTextColor = { r: mappedColor.r * 255, g: mappedColor.g * 255, b: mappedColor.b * 255, a:1.0 };
             spritePointColor.setRGB(mappedColor.r, mappedColor.g, mappedColor.b);
         } else {
-            if (isLightMode) {
+            if (currentLayoutMode === 3) { // Greyscale White
                 displayColor.setRGB(0, 0, 0);
                 spriteTextColor = { r: 0, g: 0, b: 0, a: 1.0 };
                 spritePointColor.setRGB(0, 0, 0);
@@ -1117,7 +1161,7 @@ from itertools import combinations_with_replacement
 from fractions import Fraction
 from theory.calculations import get_odd_limit, get_integer_limit, check_prime_limit, parse_primes, _generate_valid_numbers, calculate_complexity, cents, gcd, get_virtual_fundamental_denominator
 
-def generate_points(limit_value, equave_ratio, limit_mode="odd", max_exponent=3, complexity_measure="Tenney", hide_unison_voices=False, omit_octaves=False, virtual_fundamental_filter=None):
+def generate_points(limit_value, equave_ratio, limit_mode=\"odd\", max_exponent=3, complexity_measure=\"Tenney\", hide_unison_voices=False, omit_octaves=False, virtual_fundamental_filter=None):
     points = []
     equave_ratio_float = float(equave_ratio)
     
@@ -1128,7 +1172,7 @@ def generate_points(limit_value, equave_ratio, limit_mode="odd", max_exponent=3,
     sorted_valid_numbers = sorted(list(valid_numbers))
     
     primes = []
-    if limit_mode == "prime":
+    if limit_mode == \"prime\":
         primes = parse_primes(limit_value)
 
     for combo in combinations_with_replacement(sorted_valid_numbers, 4):
@@ -1161,19 +1205,19 @@ def generate_points(limit_value, equave_ratio, limit_mode="odd", max_exponent=3,
             
         valid_combo = True
         intervals = [Fraction(j, i), Fraction(k, j), Fraction(l, k)]
-        if limit_mode == "odd":
+        if limit_mode == \"odd\":
             limit_val_int = int(limit_value)
             for interval in intervals:
                 if get_odd_limit(interval) > limit_val_int:
                     valid_combo = False
                     break
-        elif limit_mode == "integer":
+        elif limit_mode == \"integer\":
             limit_val_int = int(limit_value)
             for interval in intervals:
                 if get_integer_limit(interval) > limit_val_int:
                     valid_combo = False
                     break
-        elif limit_mode == "prime":
+        elif limit_mode == \"prime\":
             for interval in intervals:
                 if not check_prime_limit(interval, primes, int(max_exponent)):
                     valid_combo = False
@@ -1341,7 +1385,7 @@ def _generate_valid_numbers(limit_value, limit_mode, max_exponent=3, equave_rati
                     q.append(next_num)
     return valid_numbers if valid_numbers else {1}
 
-def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode="odd", max_exponent=3, complexity_measure="Tenney", hide_unison_voices=False, omit_octaves=False, virtual_fundamental_filter=None):
+def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_exponent=3, complexity_measure='Tenney', hide_unison_voices=False, omit_octaves=False, virtual_fundamental_filter=None):
     labels_data = []
     equave_ratio_float = float(equave_ratio)
     valid_numbers = _generate_valid_numbers(limit_value, limit_mode, max_exponent, equave_ratio_float)
@@ -1574,7 +1618,7 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode="odd", max_ex
         }
         if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'L') {
             event.preventDefault();
-            toggleLightMode();
+            cycleLayoutMode();
         }
         if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'S') {
             event.preventDefault();
