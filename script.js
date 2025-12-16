@@ -16,6 +16,7 @@ let pivotButtons; // Declare pivotButtons globally
 let currentPivotVoiceIndex = 0; // 0: Bass, 1: Tenor, 2: Alto, 3: Soprano (default Bass)
 let lastPlayedFrequencies = [];
 let lastPlayedRatios = [];
+let latestUpdateToken = null; // Used to cancel stale updateTetrahedron runs
 const initialBaseFreq = 130.8128; // The fixed base frequency for the very first chord
 const rotationSpeed = 0.01;
 let enableSlide = true;
@@ -785,10 +786,16 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, virtual_
         return;
     }
     
-    while(scene.children.length > 0){ 
-        scene.remove(scene.children[0]); 
-    }
-    currentSprites = [];
+    // Cancellation token to prevent out-of-order updates from mutating the scene
+    const updateToken = Symbol('update');
+    latestUpdateToken = updateToken;
+
+    // Keep a reference to existing scene children so the previous display remains
+    const previousChildren = scene.children.slice();
+
+    // Build new content in a temporary group; don't remove the old scene children until new content is ready
+    const newGroup = new THREE.Group();
+    const tempSprites = [];
 
     const max_cents_value = 1200 * Math.log2(equave_ratio);
 
@@ -854,7 +861,9 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, virtual_
     const internal_label_base_size = base_size * label_conversion_factor;
     const internal_point_base_size = base_size * point_conversion_factor;
 
-    raw_points_data.forEach(p => {
+    for (const p of raw_points_data) {
+        // Abort if a newer update started
+        if (latestUpdateToken !== updateToken) return;
         const c1 = p[0];
         const c2 = p[1];
         const c3 = p[2];
@@ -927,8 +936,8 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, virtual_
                 sprite.userData.type = 'label';
                 sprite.userData.ratio = label_text;
                 sprite.userData.complexity = complexity;
-                scene.add(sprite);
-                currentSprites.push(sprite);
+                    newGroup.add(sprite);
+                    tempSprites.push(sprite);
             }
         } else if (layout_display === 'points') {
             const sprite = makePointSprite(spritePointColor, spritePointOpacity);
@@ -942,10 +951,22 @@ async function updateTetrahedron(limit_type, limit_value, max_exponent, virtual_
                 sprite.userData.ratio = label_text;
                 sprite.userData.complexity = complexity;
             }
-            scene.add(sprite);
-            currentSprites.push(sprite);
+                // Check again before adding in case update was cancelled mid-loop
+                if (latestUpdateToken !== updateToken) return;
+                newGroup.add(sprite);
+                tempSprites.push(sprite);
         }
-    });
+        }
+
+        // If a newer update started while we were generating, abort without modifying scene
+        if (latestUpdateToken !== updateToken) return;
+
+        // Add the newly built group to the scene, then remove previous children (swap)
+        scene.add(newGroup);
+        previousChildren.forEach(child => scene.remove(child));
+
+        // Publish new sprites as the current active sprites
+        currentSprites = tempSprites;
 }
 
 // --- SVG EXPORT ---
@@ -1529,6 +1550,23 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
     timbreSlider.addEventListener('input', (event) => {
         updateWaveform(parseFloat(event.target.value));
     });
+
+    // Live-update sliders: Base Size and Measure (scalingFactor)
+    const baseSizeSlider = document.getElementById('baseSize');
+    const scalingFactorSlider = document.getElementById('scalingFactor');
+
+    if (baseSizeSlider) {
+        baseSizeSlider.addEventListener('input', () => {
+            // Use the existing update flow tied to the Update button for consistency
+            document.getElementById('updateButton').click();
+        });
+    }
+
+    if (scalingFactorSlider) {
+        scalingFactorSlider.addEventListener('input', () => {
+            document.getElementById('updateButton').click();
+        });
+    }
 
     updateWaveform(parseFloat(timbreSlider.value));
     updatePivotButtonSelection(currentPivotVoiceIndex);
