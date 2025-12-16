@@ -11,8 +11,8 @@ Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of
 ### Controls
 * Rotate Tetrahedron: click/drag or arrow keys
 * Zoom: two-finger scroll/mouse-wheel
-* Light/Bright Mode: ⇧⌘L
-  * Greyscale off when colormap is disabled
+* Light/Looks: ⇧⌘L
+  * Cycle through colormaps: Plasma, Viridis, Binary Black/White
 
 ### Settings
 * Select/Define Limit of JI terads.
