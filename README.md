@@ -11,7 +11,7 @@ Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of
 ### Controls
 * Rotate Tetrahedron: click/drag or arrow keys
 * Zoom: two-finger scroll/mouse-wheel
-* Light/Looks: ⇧⌘L
+* Layout/Looks: ⇧⌘L
   * Cycle through colormaps: Plasma, Viridis, Binary Black/White
 
 ### Settings
