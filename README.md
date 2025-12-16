@@ -4,16 +4,21 @@
 Interactive tetrahedron of JI tetrads with the ability to scale via harmonic complexity models.  
 Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of Sintel's [triangle](https://sintel.website/posts/triangle.html). While drawing inspiration from tetradic [harmonic entropy](https://en.xen.wiki/w/Harmonic_entropy) (4HE) this does not render 3D gaussian (multivariate normal) distributions, which are pivotal when considering HE.
 
+## Demo
+![display demo](https://github.com/user-attachments/assets/4247d114-28db-4907-9da5-dc5b3bece989)
+
 ## Display 
 ### Controls
 * Rotate Tetrahedron: click/drag or arrow keys
 * Zoom: two-finger scroll/mouse-wheel
-* Save/Export SVG: ⇧⌘E
-* Light/Bright Mode: ⇧⌘L
-  * Greyscale off when colormap is disabled 
+* Layout/Looks: ⇧⌘L
+  * Cycle through colormaps: Plasma, Viridis, Binary Black/White
 
 ### Settings
-* Select [Odd-limit](https://en.xen.wiki/w/Odd_limit) of JI tetrads depicted
+* Select/Define Limit of JI terads.
+  * [Integer-Limit](https://en.xen.wiki/w/Odd_limit#Integer_limit)
+  * [Odd-limit](https://en.xen.wiki/w/Odd_limit)
+  * [Prime-Limit](https://en.xen.wiki/w/Harmonic_limit#Prime_limits_as_subgroups) - accepts subgroups, e.g. "2.3.7" 
 * Select the register considered
   * default "2" for 2/1 octave
 * Set the Complexity Model which scale/color JI ratios $\dfrac{n}{d}$. 
@@ -40,6 +45,9 @@ Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of
 * Enable Slide: set duration (sec) of portamento for adjacent SATB voices
 * Set pivot voice (common-tone) with S A T B buttons (or keys)
 * Timbre: Adjust the wavetable slider to shift through sine, triangle, saw, and square
-  
-## Demo
-https://github.com/user-attachments/assets/bab0258a-64b1-49d3-8ee9-9ca662745278
+
+## Export
+### Controls
+* Save/Export SVG: ⇧⌘E
+* Save/Export CSV: ⇧⌘S
+  * Enumerated Chords ($a:b:c:d$), Notes ($\dfrac{n}{d}$), Cents, and Complexity.
