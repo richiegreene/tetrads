@@ -1,5 +1,5 @@
 
-import { primes } from './constants.js';
+import { primes } from '../constants.js';
 
 // It's generally better to avoid modifying prototypes of built-in objects.
 // These functions are rewritten to be pure functions.
