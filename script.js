@@ -846,10 +846,10 @@ function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
                     
                     fullDeviationOutput += `<span class="notation-dev-notename-inline">${noteLetter}</span>` + 
                                            `<span class="midiAccidental-heji-font">${accidental}</span>` + 
-                                           `<span class="deviation-cents-monospace">${centsDeviation}c</span>`;
+                                           `<span class="deviation-cents-monospace">${centsDeviation}</span>`; // Removed 'c'
                     
                     if (i < ratioParts.length - 1) {
-                        fullDeviationOutput += '<br>'; // New line for each note in deviation mode
+                        fullDeviationOutput += '&nbsp;&nbsp;'; // Use non-breaking spaces for horizontal layout
                     }
                 }
             }
