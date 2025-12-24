@@ -650,14 +650,15 @@ function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
             console.error(`Invalid ratio format for HEJI: ${ratioString}`);
             output = 'n/a';
         } else {
+            let fullHejiOutput = '';
             const referenceValue = ratioParts[0]; // The fundamental for these ratios
 
-            if (currentPivotVoiceIndex >= 0 && currentPivotVoiceIndex < ratioParts.length) {
-                const numerator = ratioParts[currentPivotVoiceIndex];
-                const denominator = referenceValue; // Relative to the fundamental of the chord
+            for (let i = 0; i < ratioParts.length; i++) {
+                const numerator = ratioParts[i];
+                const denominator = referenceValue;
 
-                if (denominator === 0) { // Avoid division by zero
-                    output = 'n/a (denom is zero)';
+                if (denominator === 0) {
+                    fullHejiOutput += 'n/a (denom is zero) ';
                 } else {
                     const reduced = U.reduce(numerator, denominator);
                     const numMonzo = U.getArray(reduced[0]);
@@ -665,11 +666,13 @@ function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
                     const intervalMonzo = U.diffArray(numMonzo, denMonzo);
                     
                     const hejiOutput = _getPC(intervalMonzo);
-                    output = `<span class="notation-dev-notename">${hejiOutput.diatonicNote}</span>` + hejiOutput.notationHtml;
+                    fullHejiOutput += `<span class="notation-dev-notename-inline">${hejiOutput.diatonicNote}</span>` + hejiOutput.notationHtml;
+                    if (i < ratioParts.length - 1) {
+                        fullHejiOutput += '&nbsp;'; // Add a non-breaking space between notes
+                    }
                 }
-            } else {
-                output = 'n/a (invalid pivot index)';
             }
+            output = fullHejiOutput;
         }
         notationDisplay.className = 'notation-display notation-heji'; // Add class for styling
     }
