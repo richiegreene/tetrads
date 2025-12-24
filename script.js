@@ -634,10 +634,14 @@ function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
     if (!enableNotation || !notationDisplay) return;
 
     let output = '';
+    const baseRatioValue = effectiveBaseFreq / initialBaseFreq;
+    const baseFractionString = toFraction(baseRatioValue);
+    const baseRatioParts = baseFractionString.split('/').map(Number);
+    const baseNum = baseRatioParts[0];
+    const baseDen = baseRatioParts[1];
+
     if (notationType === 'ratio') {
-        const baseRatio = effectiveBaseFreq / initialBaseFreq;
-        const fractionString = toFraction(baseRatio);
-        output = `<span class="notation-ratio-base">${fractionString}</span><br><span class="notation-ratio-chord">${ratioString}</span>`;
+        output = `<span class="notation-ratio-base">${baseFractionString}</span><br><span class="notation-ratio-chord">${ratioString}</span>`;
         notationDisplay.className = 'notation-display notation-ratio'; // Add class for styling
     } else if (notationType === 'cents') {
         const cents = frequencies.map(freq => 1200 * Math.log2(freq / initialBaseFreq));
@@ -650,29 +654,31 @@ function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
             console.error(`Invalid ratio format for HEJI: ${ratioString}`);
             output = 'n/a';
         } else {
-            let fullHejiOutput = '';
-            const referenceValue = ratioParts[0]; // The fundamental for these ratios
+            let hejiOutputForChord = '';
+            const fundamentalOfChord = ratioParts[0]; // Assuming the first part is the fundamental of the chord
 
             for (let i = 0; i < ratioParts.length; i++) {
-                const numerator = ratioParts[i];
-                const denominator = referenceValue;
+                // Apply the base ratio to each part of the chord
+                const effectiveNumerator = ratioParts[i] * baseNum;
+                const effectiveDenominator = fundamentalOfChord * baseDen;
 
-                if (denominator === 0) {
-                    fullHejiOutput += 'n/a (denom is zero) ';
+                if (effectiveDenominator === 0) {
+                    hejiOutputForChord += 'n/a (denom is zero) ';
                 } else {
-                    const reduced = U.reduce(numerator, denominator);
+                    const reduced = U.reduce(effectiveNumerator, effectiveDenominator);
                     const numMonzo = U.getArray(reduced[0]);
                     const denMonzo = U.getArray(reduced[1]);
                     const intervalMonzo = U.diffArray(numMonzo, denMonzo);
                     
                     const hejiOutput = _getPC(intervalMonzo);
-                    fullHejiOutput += `<span class="notation-dev-notename-inline">${hejiOutput.diatonicNote}</span>` + hejiOutput.notationHtml;
+                    hejiOutputForChord += `<span class="notation-dev-notename-inline">${hejiOutput.diatonicNote}</span>` + hejiOutput.notationHtml;
                     if (i < ratioParts.length - 1) {
-                        fullHejiOutput += '&nbsp;'; // Add a non-breaking space between notes
+                        hejiOutputForChord += '&nbsp;'; // Add a non-breaking space between notes
                     }
                 }
             }
-            output = fullHejiOutput;
+            // Prepend the base frequency to the HEJI output
+            output = `<span class="notation-ratio-base">${baseFractionString}</span><br>` + hejiOutputForChord;
         }
         notationDisplay.className = 'notation-display notation-heji'; // Add class for styling
     }
