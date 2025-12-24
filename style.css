@@ -345,3 +345,27 @@ body, html {
     background-color: #007bff;
     border-color: #007bff;
 }
+
+#notation-display.notation-deviation {
+    /* Specific styles for Deviation notation */
+    font-size: 1.5em; /* Adjust size to make the output legible */
+    padding: 15px 20px; /* Adjust padding */
+    line-height: 1.2; /* Ensure lines are well-spaced */
+}
+
+.midiAccidental-heji-font {
+    font-family: "HEJI2", sans-serif;
+    font-size: 1.5em; /* Match the size of the note letter */
+    vertical-align: middle;
+    display: inline-block;
+    line-height: 1;
+}
+
+.deviation-cents-monospace {
+    font-family: monospace;
+    font-size: 1.5em; /* Match the size of the note letter */
+    vertical-align: middle;
+    display: inline-block;
+    line-height: 1;
+    margin-left: 0.2em; /* Small space between accidental and cents */
+}

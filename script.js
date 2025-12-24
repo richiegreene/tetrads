@@ -36,6 +36,10 @@ let notationDisplay;
 // Initialize hejiState.precision
 hejiState.precision = 0; // Default precision, adjust if needed
 
+// Initialize hejiState properties for cent calculations
+hejiState.kammerTon = 440.0000;
+hejiState.freq1to1 = 261.6256;
+
 const keyState = {
     ArrowUp: false,
     ArrowDown: false,
@@ -110,11 +114,7 @@ function _getPC(monzo) {
 		ref12 = 11;
 	}
 
-    // These need to be mocked or initialized if hejiState.jiCents and hejiState.cents_toRef are used.
-    // For now, setting to 0 or default to prevent errors, as they are not driven by Tetrads UI.
-    hejiState.ref12acc = 0;
-    hejiState.jiCents = 0; 
-    hejiState.cents_toRef = 0;
+    // hejiState.jiCents and hejiState.cents_toRef are calculated by the new functions.
     hejiState.diat_to_refTempered = (C.diatonicTempered[pc] - C.diatonicTempered[refpc] + (100 * hejiState.ref12acc) + 1200.0) % 1200.0;
     hejiState.cents_from_diatonic_tempered = ((((hejiState.cents_toRef % 1200.0) + 1200.0) % 1200.0) - hejiState.diat_to_refTempered + 1200.0) % 1200.0;
 
@@ -627,8 +627,73 @@ function _getPC(monzo) {
     // Instead, just return the constructed HTML strings and diatonic note
     const notationString = '<span class="heji-extensions">' + hejiExtensionsPath + '</span>' + '<span class="heji2">' + displayedHeji2String + '</span>';
     
-    return { notationHtml: notationString, diatonicNote: outputDiatonic };
+    return { notationHtml: notationString, diatonicNote: outputDiatonic, refMidiNoteOutput: refMidiNoteOutput }; // also return refMidiNoteOutput
 }
+
+// Ported and adapted prepareCentsCalculationData function from Notation Dev
+function prepareCentsCalculationData(inputMonzo) {
+    hejiState.centsSum = inputMonzo; 
+    var centsOtonalArray = hejiState.centsSum.map(value => {
+        return value < 0 ? 0 : value;
+    });
+    var centsUtonalArray = hejiState.centsSum.map(value => {
+        return value < 0 ? Math.abs(value) : 0;
+    });
+    hejiState.centsNumValue = U.getValue(centsOtonalArray);
+    hejiState.centsDenValue = U.getValue(centsUtonalArray);
+}
+
+// Ported and adapted calculateJiCents function from Notation Dev
+function calculateJiCents(){
+    // hejiState.displayNumValue and hejiState.displayDenValue must be set externally
+    // These values are derived from the same original ratio, so displayNum/DenValue can be used here.
+    hejiState.jiCents = 1200 * Math.log2(hejiState.centsNumValue / hejiState.centsDenValue /
+        (hejiState.kammerTon / (hejiState.freq1to1 / Math.pow(2, (C.frequencyOctave[getRefOctave()] / 12)) /
+        Math.pow(2, (C.frequencyNote[getRefNote()] / 12)) /
+        Math.pow(2, (C.frequencyAccidental[getRefAccidental()] / 12)))));
+}
+
+// Ported and adapted getCentDeviation function from Notation Dev
+function getCentDeviation(){
+    var et2 = (hejiState.centsSum[0] * 12);
+    var et3 = (hejiState.centsSum[1] * 19);
+    var et5 = (hejiState.centsSum[2] * 28);
+    var et7 = (hejiState.centsSum[3] * 34);
+    var et11 = (hejiState.centsSum[4] * 41);
+    var et13 = (hejiState.centsSum[5] * 45);
+    var et17 = (hejiState.centsSum[6] * 49);
+    var et19 = (hejiState.centsSum[7] * 51);
+    var et23 = (hejiState.centsSum[8] * 54);
+    var et29 = (hejiState.centsSum[9] * 58);
+    var et31 = (hejiState.centsSum[10] * 60);
+    var et37 = (hejiState.centsSum[11] * 62);
+    var et41 = (hejiState.centsSum[12] * 64);
+    var et43 = (hejiState.centsSum[13] * 65);
+    var et47 = (hejiState.centsSum[14] * 67);
+    var etSemiTones = (et2 + et3 + et5 + et7 + et11 + et13 + et17 + et19 + et23 + et29 + et31 + et37 + et41 + et43 + et47);
+    var etCents = etSemiTones * 100.0;
+    hejiState.centDeviation = U.mod((hejiState.jiCents - etCents),100);
+    if (hejiState.centDeviation > 50){
+        hejiState.centDeviation = -(100.0 - hejiState.centDeviation);
+    }
+
+    let centsText;
+    if (Math.round(hejiState.centDeviation * Math.pow(10, hejiState.precision)) / Math.pow(10, hejiState.precision) === 0) {
+        centsText = "";
+    } else if (hejiState.centDeviation > 0) {
+        centsText = "+" + hejiState.centDeviation.toFixed(hejiState.precision);
+    } else {
+        centsText = hejiState.centDeviation.toFixed(hejiState.precision);
+    }
+    
+    // hejiState.cents_toRef calculation needed for Notation Dev's _getBend.
+    // In Tetrads, we need this for the overall output formatting.
+    hejiState.cents_toRef = 1200 * Math.log2(hejiState.centsNumValue / hejiState.centsDenValue);
+    // hejiState.cents_toRef is not normalized here, but can be if needed.
+
+    return centsText; // Return the formatted cents deviation string
+}
+
 
 /**
  * Converts a floating-point number to its most accurate reduced fractional representation
@@ -716,7 +781,15 @@ function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
                     // Apply baseRatioMonzo
                     intervalMonzo = U.sumArray(intervalMonzo, baseRatioMonzo);
                     
+                    // Temporarily set hejiState.displayNumValue and hejiState.displayDenValue for calculateJiCents
+                    hejiState.displayNumValue = reduced[0];
+                    hejiState.displayDenValue = reduced[1];
+
+                    prepareCentsCalculationData(intervalMonzo);
+                    calculateJiCents();
                     const hejiOutput = _getPC(intervalMonzo);
+                    // The Notation Dev's HEJI output does not display cents deviation by default, so we won't add it here for consistency.
+
                     fullHejiOutput += `<span class="notation-dev-notename-inline">${hejiOutput.diatonicNote}</span>` + hejiOutput.notationHtml;
                     if (i < ratioParts.length - 1) {
                         fullHejiOutput += '&nbsp;'; // Add a non-breaking space between notes
@@ -726,6 +799,63 @@ function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
             output = fullHejiOutput;
         }
         notationDisplay.className = 'notation-display notation-heji'; // Add class for styling
+    } else if (notationType === 'deviation') {
+        const ratioParts = ratioString.split(':').map(Number);
+        if (ratioParts.length !== 4 || ratioParts.some(isNaN)) {
+            console.error(`Invalid ratio format for Deviation: ${ratioString}`);
+            output = 'n/a';
+        } else {
+            let fullDeviationOutput = '';
+            const referenceValue = ratioParts[0]; // The fundamental for these ratios
+
+            // Calculate baseRatioMonzo (same logic as heji)
+            const baseRatio = effectiveBaseFreq / initialBaseFreq;
+            const baseRatioFraction = floatToReducedFraction(baseRatio);
+            const baseRatioNumMonzo = U.getArray(baseRatioFraction.numerator);
+            const baseRatioDenMonzo = U.getArray(baseRatioFraction.denominator);
+            const baseRatioMonzo = U.diffArray(baseRatioNumMonzo, baseRatioDenMonzo);
+
+            for (let i = 0; i < ratioParts.length; i++) {
+                const numerator = ratioParts[i];
+                const denominator = referenceValue;
+
+                if (denominator === 0) {
+                    fullDeviationOutput += 'n/a (denom is zero) ';
+                } else {
+                    const reduced = U.reduce(numerator, denominator);
+                    const numMonzo = U.getArray(reduced[0]);
+                    const denMonzo = U.getArray(reduced[1]);
+                    let intervalMonzo = U.diffArray(numMonzo, denMonzo);
+                    
+                    // Apply baseRatioMonzo
+                    intervalMonzo = U.sumArray(intervalMonzo, baseRatioMonzo);
+                    
+                    // Temporarily set hejiState.displayNumValue and hejiState.displayDenValue for calculateJiCents
+                    hejiState.displayNumValue = reduced[0];
+                    hejiState.displayDenValue = reduced[1];
+
+                    prepareCentsCalculationData(intervalMonzo);
+                    calculateJiCents();
+                    const hejiOutput = _getPC(intervalMonzo);
+                    const centsDeviation = getCentDeviation();
+
+                    // Format deviation output
+                    const midiNote = parseMidiNoteOutput(hejiOutput.refMidiNoteOutput);
+                    const noteLetter = midiNote.letter;
+                    const accidental = midiNote.accidental === 'j' ? '' : midiNote.accidental; // 'j' means natural, show as empty string
+                    
+                    fullDeviationOutput += `<span class="notation-dev-notename-inline">${noteLetter}</span>` + 
+                                           `<span class="midiAccidental-heji-font">${accidental}</span>` + 
+                                           `<span class="deviation-cents-monospace">${centsDeviation}c</span>`;
+                    
+                    if (i < ratioParts.length - 1) {
+                        fullDeviationOutput += '<br>'; // New line for each note in deviation mode
+                    }
+                }
+            }
+            output = fullDeviationOutput;
+        }
+        notationDisplay.className = 'notation-display notation-deviation'; // Add class for styling
     }
 
     notationDisplay.innerHTML = output;
