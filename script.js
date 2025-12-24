@@ -49,27 +49,7 @@ function getRefOctave() { return 9; } // Default to C4 (index 9) for octave
 function getRefNote() { return 1; } // Default to C (index 1) for note
 function getRefAccidental() { return 1; } // Default to natural (index 1) for accidental
 
-// Minimal mock for parsing MIDI note output if needed for `_getPC`
-function parseMidiNoteOutput(midiNoteString) {
-    let letter = '';
-    let accidentalCode = '';
-    const primaryPart = midiNoteString.split(' | ')[0];
-    const accidentalMatch = primaryPart.match(/^\*(\w{2})/);
-    if (accidentalMatch) {
-        accidentalCode = accidentalMatch[1];
-        letter = primaryPart.substring(3);
-    } else {
-        letter = primaryPart;
-    }
-    let heji2Accidental = '';
-    switch (accidentalCode) {
-        case 'nt': heji2Accidental = 'j'; break;
-        case 'st': heji2Accidental = 'z'; break;
-        case 'ft': heji2Accidental = 'a'; break;
-        default: heji2Accidental = ''; break;
-    }
-    return { letter: letter, accidental: heji2Accidental };
-}
+
 
 // --- NOTATION FUNCTIONS ---
 function parseMidiNoteOutput(midiNoteString) {
