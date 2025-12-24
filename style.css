@@ -64,8 +64,17 @@ body, html {
 #notation-display .notation-dev-notename {
     font-family: monospace;
     font-size: 2em; /* Larger for the main note name */
-    display: block; /* Make it block to stack with HEJI symbols */
+    /* Removed display: block; to allow inline flow */
     line-height: 1; /* Adjust line height for stacking */
+}
+
+#notation-display .notation-dev-notename-inline {
+    font-family: monospace;
+    font-size: 2em; /* Larger for the main note name */
+    display: inline-block; /* Allow inline flow */
+    vertical-align: middle;
+    line-height: 1; /* Adjust line height for stacking */
+    margin-right: 0.2em; /* Small spacing between notes */
 }
 
 #notation-display .heji-extensions {
