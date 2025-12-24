@@ -30,7 +30,7 @@ let compensationGainNode;
 
 // Notation state
 let enableNotation = true;
-let notationType = 'ratio';
+let notationType = 'heji';
 let notationDisplay;
 
 // Initialize hejiState.precision
