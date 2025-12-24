@@ -677,7 +677,7 @@ function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
     let output = '';
     if (notationType === 'ratio') {
         const baseRatio = effectiveBaseFreq / initialBaseFreq;
-        const fractionString = toFraction(baseRatio);
+        const fractionString = floatToReducedFraction(baseRatio).numerator + '/' + floatToReducedFraction(baseRatio).denominator;
         output = `<span class="notation-ratio-base">${fractionString}</span><br><span class="notation-ratio-chord">${ratioString}</span>`;
         notationDisplay.className = 'notation-display notation-ratio'; // Add class for styling
     } else if (notationType === 'cents') {
