@@ -630,6 +630,47 @@ function _getPC(monzo) {
     return { notationHtml: notationString, diatonicNote: outputDiatonic };
 }
 
+/**
+ * Converts a floating-point number to its most accurate reduced fractional representation
+ * within a given maximum denominator.
+ * @param {number} value The floating-point number to convert.
+ * @param {number} maxDenominator The maximum denominator to consider for the fraction.
+ * @returns {{numerator: number, denominator: number}} An object containing the numerator and denominator.
+ */
+function floatToReducedFraction(value, maxDenominator = 10000) {
+    if (value === 0) return { numerator: 0, denominator: 1 };
+    
+    // Handle negative values
+    const isNegative = value < 0;
+    value = Math.abs(value);
+
+    let bestNumerator = 1;
+    let bestDenominator = 1;
+    let minDiff = Math.abs(value - (bestNumerator / bestDenominator));
+
+    for (let d = 1; d <= maxDenominator; d++) {
+        const n = Math.round(value * d);
+        const currentDiff = Math.abs(value - (n / d));
+
+        // If this fraction is more accurate
+        if (currentDiff < minDiff) {
+            minDiff = currentDiff;
+            bestNumerator = n;
+            bestDenominator = d;
+        }
+        // If we found an exact match
+        if (currentDiff === 0) break;
+    }
+    
+    // Reduce the fraction using the utility function
+    const reduced = U.reduce(bestNumerator, bestDenominator);
+    
+    return { 
+        numerator: isNegative ? -reduced[0] : reduced[0], 
+        denominator: reduced[1] 
+    };
+}
+
 function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
     if (!enableNotation || !notationDisplay) return;
 
@@ -652,6 +693,13 @@ function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
         } else {
             let fullHejiOutput = '';
             const referenceValue = ratioParts[0]; // The fundamental for these ratios
+            
+            // Calculate baseRatioMonzo
+            const baseRatio = effectiveBaseFreq / initialBaseFreq;
+            const baseRatioFraction = floatToReducedFraction(baseRatio);
+            const baseRatioNumMonzo = U.getArray(baseRatioFraction.numerator);
+            const baseRatioDenMonzo = U.getArray(baseRatioFraction.denominator);
+            const baseRatioMonzo = U.diffArray(baseRatioNumMonzo, baseRatioDenMonzo);
 
             for (let i = 0; i < ratioParts.length; i++) {
                 const numerator = ratioParts[i];
@@ -663,7 +711,10 @@ function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
                     const reduced = U.reduce(numerator, denominator);
                     const numMonzo = U.getArray(reduced[0]);
                     const denMonzo = U.getArray(reduced[1]);
-                    const intervalMonzo = U.diffArray(numMonzo, denMonzo);
+                    let intervalMonzo = U.diffArray(numMonzo, denMonzo);
+                    
+                    // Apply baseRatioMonzo
+                    intervalMonzo = U.sumArray(intervalMonzo, baseRatioMonzo);
                     
                     const hejiOutput = _getPC(intervalMonzo);
                     fullHejiOutput += `<span class="notation-dev-notename-inline">${hejiOutput.diatonicNote}</span>` + hejiOutput.notationHtml;
