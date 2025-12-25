@@ -16,7 +16,7 @@ import { initMidiOutput } from './midi/midi-output.js';
 
 // --- MAIN PYODIDE INITIALIZATION ---
 async function initPyodide() {
-    initMidiOutput(); // Initialize MIDI output
+    
     const loadingOverlay = document.getElementById('loading-overlay');
     loadingOverlay.style.display = 'flex';
     setPyodide(await loadPyodide({

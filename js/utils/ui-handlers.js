@@ -11,6 +11,7 @@ import { updateWaveform } from '../components/audio-engine.js';
 import { updateTetrahedron, cycleLayoutMode } from '../calculations/tetrahedron-updater.js';
 import { stopChord } from '../components/audio-engine.js';
 import { exportToSVG, downloadSVG, exportToCSV, downloadCSV } from './data-export.js';
+import { initMidiOutput } from '../midi/midi-output.js'; // Import initMidiOutput
 
 export function setupUIEventListeners() {
     const limitTypeSelect = document.getElementById('limitType');
@@ -34,10 +35,24 @@ export function setupUIEventListeners() {
     // Initial setup for prime limit options
     primeLimitOptions.style.display = limitTypeSelect.value === 'Prime' ? 'flex' : 'none';
 
-    playbackModeSelect.addEventListener('change', (event) => {
-        setPlaybackMode(event.target.value);
-        // Optionally, add logic here to stop current browser audio if switching to MPE MIDI only
-        // or re-trigger updateTetrahedron if playback mode affects visualization logic
+    playbackModeSelect.addEventListener('change', async (event) => {
+        const selectedMode = event.target.value;
+        setPlaybackMode(selectedMode);
+        
+        const midiDeviceSelectorDiv = document.getElementById('midi-device-selector');
+
+        if (selectedMode === 'mpe-midi' || selectedMode === 'both') {
+            await initMidiOutput(); // Initialize MIDI when MPE MIDI or Both is selected
+            if (midiDeviceSelectorDiv) {
+                midiDeviceSelectorDiv.style.display = 'flex'; // Show MIDI device selector
+            }
+        } else {
+            if (midiDeviceSelectorDiv) {
+                midiDeviceSelectorDiv.style.display = 'none'; // Hide MIDI device selector
+            }
+            // Optionally, add logic here to stop current browser audio if switching to MPE MIDI only
+            // or re-trigger updateTetrahedron if playback mode affects visualization logic
+        }
     });
 
 

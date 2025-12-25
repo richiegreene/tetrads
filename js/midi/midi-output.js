@@ -98,6 +98,10 @@ function updateMidiOutputDevices() {
 // --- Web MIDI API Functions ---
 export async function initMidiOutput() {
     console.log("Initializing MIDI output...");
+    if (midiAccess) { // If midiAccess is already set, return early
+        console.log("MIDI already initialized.");
+        return;
+    }
     if (!navigator.requestMIDIAccess) {
         console.warn("Web MIDI API is not supported in this browser.");
         return;
