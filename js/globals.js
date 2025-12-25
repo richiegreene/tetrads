@@ -23,6 +23,9 @@ export let slideDuration = 0.25;
 export let currentPeriodicWave = null; // For custom waveforms
 export let compensationGainNode;
 
+// Playback state
+export let playbackMode = 'browser'; // Default to browser audio
+
 // Notation state
 export let enableNotation = true;
 export let notationType = 'heji';
@@ -58,6 +61,7 @@ export function setEnableSlide(val) { enableSlide = val; }
 export function setSlideDuration(val) { slideDuration = val; }
 export function setCurrentPeriodicWave(val) { currentPeriodicWave = val; }
 export function setCompensationGainNode(val) { compensationGainNode = val; }
+export function setPlaybackMode(val) { playbackMode = val; } // New setter
 export function setEnableNotation(val) { enableNotation = val; }
 export function setNotationType(val) { notationType = val; }
 export function setNotationDisplay(val) { notationDisplay = val; }

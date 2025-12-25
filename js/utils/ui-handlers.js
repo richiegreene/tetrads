@@ -1,9 +1,9 @@
 
 import {
-    enableNotation, notationType, enableSlide, slideDuration,
+    enableNotation, notationType, enableSlide, slideDuration, playbackMode,
     notationDisplay, playButton, pivotButtons, currentPivotVoiceIndex,
     isClickPlayModeActive, isShiftHeld,
-    setEnableNotation, setNotationType, setEnableSlide, setSlideDuration,
+    setEnableNotation, setNotationType, setEnableSlide, setSlideDuration, setPlaybackMode,
     setCurrentPivotVoiceIndex, setIsClickPlayModeActive, setCurrentlyHovered,
     controls
 } from '../globals.js';
@@ -29,9 +29,17 @@ export function setupUIEventListeners() {
     const settingsContent = document.getElementById('settings-content');
     const toggleIcon = settingsHeader.querySelector('.toggle-icon');
     const infoLink = document.getElementById('info-link');
+    const playbackModeSelect = document.getElementById('playbackMode'); // Get new dropdown
 
     // Initial setup for prime limit options
     primeLimitOptions.style.display = limitTypeSelect.value === 'Prime' ? 'flex' : 'none';
+
+    playbackModeSelect.addEventListener('change', (event) => {
+        setPlaybackMode(event.target.value);
+        // Optionally, add logic here to stop current browser audio if switching to MPE MIDI only
+        // or re-trigger updateTetrahedron if playback mode affects visualization logic
+    });
+
 
     limitTypeSelect.addEventListener('change', (event) => {
         primeLimitOptions.style.display = event.target.value === 'Prime' ? 'flex' : 'none';

@@ -1,0 +1,48 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true,
+    "mocha": true,
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "sourceType": "module",
+  },
+  "rules": {
+    "arrow-parens": [
+      "error",
+      "as-needed",
+    ],
+    "comma-dangle": [
+      "error",
+      "always-multiline",
+    ],
+    "indent": [
+      "error",
+      2,
+      { "SwitchCase": 1 },
+    ],
+    "linebreak-style": [
+      "error",
+      "unix",
+    ],
+    "no-fallthrough": 0,
+    "quotes": [
+      "error",
+      "single",
+    ],
+    "valid-jsdoc": [
+      "error",
+      { "requireParamDescription": false },
+    ],
+    "semi": [
+      "error",
+      "always",
+    ],
+    "no-unused-vars": [
+      "error",
+      { "args": "none" },
+    ],
+  }
+}

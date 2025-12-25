@@ -12,8 +12,11 @@ import { initAudio, stopChord, playChord, updateWaveform } from './components/au
 import { updateTetrahedron, cycleLayoutMode } from './calculations/tetrahedron-updater.js';
 import { setupUIEventListeners } from './utils/ui-handlers.js';
 
+import { initMidiOutput } from './midi/midi-output.js';
+
 // --- MAIN PYODIDE INITIALIZATION ---
 async function initPyodide() {
+    initMidiOutput(); // Initialize MIDI output
     const loadingOverlay = document.getElementById('loading-overlay');
     loadingOverlay.style.display = 'flex';
     setPyodide(await loadPyodide({
@@ -391,136 +394,5 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
     );
 }
 
-// --- Event Handlers for Three.js Interactions (now managed by globals) ---
-function onKeyDown(event) {
-    if (event.key === 'Shift' && !setIsShiftHeld) { // Assuming setIsShiftHeld is a setter for isShiftHeld
-        initAudio();
-        setIsShiftHeld(true);
-        if (setControls) setControls.enablePan = false; // Assuming setControls is a setter
-        if (playButton) playButton.classList.add('play-button-active');
-        stopChord(); // Stop any current chord when Shift is pressed
-    } else if (['S', 'A', 'T', 'B'].includes(event.key.toUpperCase())) {
-        let selectedIndex;
-        switch (event.key.toUpperCase()) {
-            case 'S': selectedIndex = 3; break;
-            case 'A': selectedIndex = 2; break;
-            case 'T': selectedIndex = 1; break;
-            case 'B': selectedIndex = 0; break;
-            default: return; // Should not happen
-        }
-        updatePivotButtonSelection(selectedIndex);
-        event.preventDefault(); // Prevent any default browser action for these keys
-    }
-
-    if (keyState.hasOwnProperty(event.key)) {
-        setKeyState(event.key, true);
-        event.preventDefault();
-    }
-}
-
-function onKeyUp(event) {
-    if (event.key === 'Shift') {
-        setIsShiftHeld(false);
-        // Assuming isClickPlayModeActive is imported from globals
-        if (!isClickPlayModeActive) { 
-            if (setControls) setControls.enablePan = true;
-            if (playButton) playButton.classList.remove('play-button-active');
-        } else {
-            // If click play mode is active, the button stays active
-        }
-        stopChord(); // Stop any current chord when Shift is released
-        setCurrentlyHovered(null); // Clear hovered object
-    }
-
-    if (keyState.hasOwnProperty(event.key)) {
-        setKeyState(event.key, false);
-        event.preventDefault();
-    }
-}
-
-function onMouseMove(event) {
-    if (!setIsShiftHeld) { // Assuming setIsShiftHeld is a getter for isShiftHeld
-        if (setCurrentlyHovered) { // Assuming setCurrentlyHovered is a getter
-            stopChord();
-            setCurrentlyHovered(null);
-        }
-        return;
-    }
-
-    initAudio();
-
-    const mouse = new THREE.Vector2();
-    const canvasBounds = document.querySelector('#container canvas').getBoundingClientRect(); // Get canvas directly
-    mouse.x = ((event.clientX - canvasBounds.left) / canvasBounds.width) * 2 - 1;
-    mouse.y = -((event.clientY - canvasBounds.top) / canvasBounds.height) * 2 + 1;
-
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, camera); // Use global camera
-    const intersects = raycaster.intersectObjects(currentSprites); // Use global currentSprites
-
-    if (intersects.length > 0) {
-        const firstHit = intersects[0].object;
-        if (setCurrentlyHovered !== firstHit) { // Assuming setCurrentlyHovered is a getter
-            if (firstHit.userData.ratio) {
-                setCurrentlyHovered(firstHit);
-                playChord(firstHit.userData.ratio);
-            }
-        }
-    } else {
-        if (setCurrentlyHovered) { // Assuming setCurrentlyHovered is a getter
-            stopChord();
-            setCurrentlyHovered(null);
-        }
-    }
-}
-
-function onClick(event) {
-    // Assuming isClickPlayModeActive is imported from globals
-    if (!isClickPlayModeActive) {
-        // If click play mode is not active, do nothing
-        return;
-    }
-
-    // If Shift is held, we prefer hover interaction, so click does nothing
-    // Assuming isShiftHeld is imported from globals
-    if (setIsShiftHeld) { // Assuming setIsShiftHeld is a getter
-        return;
-    }
-
-    initAudio();
-
-    const mouse = new THREE.Vector2();
-    const canvasBounds = document.querySelector('#container canvas').getBoundingClientRect(); // Get canvas directly
-    mouse.x = ((event.clientX - canvasBounds.left) / canvasBounds.width) * 2 - 1;
-    mouse.y = -((event.clientY - canvasBounds.top) / canvasBounds.height) * 2 + 1;
-
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, camera); // Use global camera
-    const intersects = raycaster.intersectObjects(currentSprites); // Use global currentSprites
-
-    if (intersects.length > 0) {
-        const firstHit = intersects[0].object;
-        if (firstHit.userData.ratio) {
-            playChord(firstHit.userData.ratio);
-        }
-    } else {
-        stopChord(); // If clicked outside any object, stop current sound
-    }
-}
-
-// Attach Three.js interaction event listeners after initThreeJS
-function setupThreeJSInteractions() {
-    window.addEventListener('keydown', onKeyDown, false);
-    window.addEventListener('keyup', onKeyUp, false);
-    // Use renderer.domElement directly, as it's set after initThreeJS
-    document.querySelector('#container canvas').addEventListener('mousemove', onMouseMove, false);
-    document.querySelector('#container canvas').addEventListener('click', onClick, false); // New click listener
-}
-
 // Initial call to start the application
-initPyodide().then(() => {
-    // These need to be called after Three.js is initialized
-    setupThreeJSInteractions();
-});
-
-// Settings menu collapse/expand is now handled in ui-handlers.js
+initPyodide();

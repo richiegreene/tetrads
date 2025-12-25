@@ -2,11 +2,12 @@
 import { 
     initialBaseFreq, currentPivotVoiceIndex, enableSlide, slideDuration,
     currentPeriodicWave, compensationGainNode,
-    lastPlayedFrequencies, lastPlayedRatios, // Import as variables
+    lastPlayedFrequencies, lastPlayedRatios, playbackMode, // Import playbackMode
     setCompensationGainNode, setCurrentPeriodicWave, setLastPlayedFrequencies, setLastPlayedRatios
 } from '../globals.js';
 import { updateNotationDisplay } from '../notation/notation-display.js';
 import { notationDisplay, enableNotation } from '../globals.js';
+import { sendMpeNoteOn, sendMpeNoteOff, sendMpePitchBendUpdate, releaseAllMpeNotes, isMpeNoteActive } from '../midi/midi-output.js'; // Import MIDI functions
 
 let audioCtx;
 let voices = []; // Array of { osc: OscillatorNode, gain: GainNode }
@@ -26,15 +27,7 @@ export function initAudio() {
 }
 
 export function playChord(ratioString) {
-    if (!audioCtx || !mainGainNode) {
-        console.error("Audio context not initialized. Cannot play chord.");
-        return;
-    }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume().then(() => playChord(ratioString));
-        return;
-    }
-
+    // --- Determine Frequencies ---
     const ratio = ratioString.split(':').map(Number);
     if (ratio.length !== 4 || ratio.some(isNaN)) {
         console.error(`Invalid ratio format: ${ratioString}`);
@@ -45,7 +38,6 @@ export function playChord(ratioString) {
     if (lastPlayedFrequencies.length === 0) {
         effectiveBaseFreq = initialBaseFreq;
     } else {
-        // Need to import lastPlayedFrequencies if it's not a setter
         const pivotFreqFromPrevChord = lastPlayedFrequencies[currentPivotVoiceIndex];
         const ratioComponentAtPivot = ratio[currentPivotVoiceIndex];
         const firstRatioComponent = ratio[0];
@@ -60,38 +52,90 @@ export function playChord(ratioString) {
 
     const frequencies = ratio.map(r => effectiveBaseFreq * (r / ratio[0]));
 
-    if (enableSlide && voices.length > 0) {
-        const slideEndTime = audioCtx.currentTime + slideDuration;
-        frequencies.forEach((freq, index) => {
-            if (voices[index]) {
-                const voice = voices[index];
-                voice.osc.frequency.cancelScheduledValues(audioCtx.currentTime);
-                // Set the starting point of the ramp to the current frequency
-                voice.osc.frequency.setValueAtTime(voice.osc.frequency.value, audioCtx.currentTime);
-                voice.osc.frequency.linearRampToValueAtTime(freq, slideEndTime);
+    // --- Handle Browser Audio Playback ---
+    if (playbackMode === 'browser' || playbackMode === 'both') {
+        if (!audioCtx || !mainGainNode) {
+            console.error("Audio context not initialized. Cannot play browser audio.");
+            // Don't return here, as we might still want to send MIDI
+        } else if (audioCtx.state === 'suspended') {
+            audioCtx.resume().then(() => playChord(ratioString));
+            // return; // Removed this return, as it would prevent MIDI from being sent if audio is suspended
+        }
+
+        if (enableSlide && voices.length > 0) {
+            const slideEndTime = audioCtx.currentTime + slideDuration;
+            frequencies.forEach((freq, index) => {
+                if (voices[index]) {
+                    const voice = voices[index];
+                    voice.osc.frequency.cancelScheduledValues(audioCtx.currentTime);
+                    voice.osc.frequency.setValueAtTime(voice.osc.frequency.value, audioCtx.currentTime);
+                    voice.osc.frequency.linearRampToValueAtTime(freq, slideEndTime);
+                }
+            });
+        } else {
+            stopChord(true); // Immediate stop previous browser audio
+            voices = [];
+            for (const freq of frequencies) {
+                const osc = audioCtx.createOscillator();
+                if (currentPeriodicWave) {
+                    osc.setPeriodicWave(currentPeriodicWave);
+                } else {
+                    osc.type = 'sawtooth'; // Fallback
+                }
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.5);
+
+                osc.connect(gainNode);
+                gainNode.connect(compensationGainNode);
+                osc.start();
+                voices.push({ osc, gain: gainNode });
+            }
+        }
+    } else {
+        // If not in browser mode, stop any existing browser audio
+        if (voices.length > 0) {
+            stopChord(true); 
+        }
+    }
+
+    // --- Handle MPE MIDI Playback ---
+    if (playbackMode === 'mpe-midi' || playbackMode === 'both') {
+        const chordNoteIds = frequencies.map((_, index) => `${ratioString}-${index}`); // All note IDs for the current chord
+        const previousChordNoteIds = new Set(lastPlayedRatios.map((_, index) => `${lastPlayedRatios.join(':')}-${index}`));
+
+        // First, handle notes from the PREVIOUS chord that are NOT in the CURRENT chord
+        previousChordNoteIds.forEach(prevNoteId => {
+            if (!chordNoteIds.includes(prevNoteId) && isMpeNoteActive(prevNoteId)) {
+                sendMpeNoteOff(prevNoteId);
             }
         });
-    } else {
-        stopChord(true); // Immediate stop
-        voices = [];
-        for (const freq of frequencies) {
-            const osc = audioCtx.createOscillator();
-            if (currentPeriodicWave) {
-                osc.setPeriodicWave(currentPeriodicWave);
-            } else {
-                osc.type = 'sawtooth'; // Fallback
+
+        // Now, process notes for the CURRENT chord
+        frequencies.forEach((freq, index) => {
+            const noteId = `${ratioString}-${index}`; // Unique ID for each note in the chord
+
+            if (enableSlide && isMpeNoteActive(noteId)) {
+                // If sliding and this exact note is already active, update its pitch bend
+                sendMpePitchBendUpdate(noteId, freq);
+            } else if (!isMpeNoteActive(noteId)) {
+                // If this note is NEW or NOT active, send Note On
+                sendMpeNoteOn(noteId, freq);
             }
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        });
 
-            const gainNode = audioCtx.createGain();
-            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.5);
-
-            osc.connect(gainNode);
-            gainNode.connect(compensationGainNode);
-            osc.start();
-            voices.push({ osc, gain: gainNode });
+        // If enableSlide is false, it means we don't want to sustain previous notes across different chords
+        // so any remaining notes from 'lastPlayedRatios' that were not explicitly turned off above
+        // (because they are not in the current chord, or were not processed)
+        // should also be turned off. This acts as a reset.
+        if (!enableSlide) {
+            releaseAllMpeNotes(); 
         }
+
+    } else {
+        releaseAllMpeNotes(); // Ensure MIDI notes are off if switching away from MIDI mode
     }
 
     setLastPlayedFrequencies(frequencies);
@@ -101,28 +145,36 @@ export function playChord(ratioString) {
 }
 
 export function stopChord(immediate = false) {
-    const fadeOutTime = immediate ? 0.01 : 0.5;
-    const stopDelay = immediate ? 50 : 500;
+    // --- Stop Browser Audio ---
+    if (playbackMode === 'browser' || playbackMode === 'both') {
+        const fadeOutTime = immediate ? 0.01 : 0.5;
+        const stopDelay = immediate ? 50 : 500;
 
-    voices.forEach(voice => {
-        voice.gain.gain.cancelScheduledValues(audioCtx.currentTime);
-        voice.gain.gain.setValueAtTime(voice.gain.gain.value, audioCtx.currentTime);
-        voice.gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + fadeOutTime);
-    });
+        voices.forEach(voice => {
+            voice.gain.gain.cancelScheduledValues(audioCtx.currentTime);
+            voice.gain.gain.setValueAtTime(voice.gain.gain.value, audioCtx.currentTime);
+            voice.gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + fadeOutTime);
+        });
 
-    if (notationDisplay && !enableNotation) { // Only hide if notation is disabled
-        notationDisplay.style.display = 'none';
+        const oldVoices = voices;
+        voices = [];
+        setTimeout(() => {
+            oldVoices.forEach(voice => {
+                voice.osc.stop();
+                voice.osc.disconnect();
+                voice.gain.disconnect();
+            });
+        }, stopDelay);
     }
 
-    const oldVoices = voices;
-    voices = [];
-    setTimeout(() => {
-        oldVoices.forEach(voice => {
-            voice.osc.stop();
-            voice.osc.disconnect();
-            voice.gain.disconnect();
-        });
-    }, stopDelay);
+    // --- Stop MPE MIDI ---
+    if (playbackMode === 'mpe-midi' || playbackMode === 'both') {
+        releaseAllMpeNotes();
+    }
+
+    if (notationDisplay && !enableNotation) {
+        notationDisplay.style.display = 'none';
+    }
 }
 
 // --- WAVEFORM DRAWING AND WAVETABLE LOGIC ---

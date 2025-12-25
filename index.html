@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tetrads</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <style>
         #notation-display {
@@ -88,6 +89,18 @@
                 <input type="checkbox" id="hideUnisonVoices">
                 <label for="omitOctaves" class="inline-label">Omit Octaves</label>
                 <input type="checkbox" id="omitOctaves">
+            </div>
+            <label for="playbackMode">Playback</label>
+            <select id="playbackMode">
+                <option value="browser" selected>Browser</option>
+                <option value="mpe-midi">MPE MIDI</option>
+                <option value="both">Both</option>
+            </select>
+            <div class="settings-row" id="midi-device-selector" style="display: none;">
+                <label for="midiOutputSelect">MIDI Out</label>
+                <select id="midiOutputSelect">
+                    <option>No devices found</option>
+                </select>
             </div>
             <label for="enableSlide">Enable Slide</label>
             <div class="controls-container">
