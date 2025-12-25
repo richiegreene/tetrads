@@ -298,6 +298,10 @@ body, html {
     background-color: #6a6a6a;
 }
 
+#midiOutputSelect {
+    width: 100%;
+}
+
 #settings-menu .pivot-button.selected {
     background-color: #007bff; /* Blue for selected */
     border-color: #007bff;
