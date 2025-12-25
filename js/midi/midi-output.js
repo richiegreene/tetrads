@@ -1,4 +1,6 @@
 
+import { enableSlide, slideDuration, playbackMode } from '../globals.js';
+
 let midiAccess = null;
 let midiOutput = null; // Currently selected MIDI output device
 let midiOutputSelect = null; // HTML select element for MIDI output devices
@@ -11,9 +13,12 @@ const MIDI_CHANNEL_START = 2;
 const MIDI_CHANNEL_END = 16;
 const MAX_MPE_CHANNELS = MIDI_CHANNEL_END - MIDI_CHANNEL_START + 1;
 
-// Stores the mapping from a unique note identifier (e.g., frequency or chord ratio)
-// to its assigned MIDI channel and actual MIDI note number.
-const activeMpeNotes = new Map(); // Map<noteId, { channel: number, midiNote: number, lastPitchBend: number }>
+// Stores the mapping from a note's index within a chord
+// to its assigned MIDI channel, current base MIDI note, and last sent pitch bend value.
+const activeMpeNotes = new Map(); // Map<index, { channel: number, midiNote: number, lastPitchBend: number }>
+
+// Stores active pitch bend glides to allow cancellation
+const activeGlides = new Map(); // Map<noteId, glideIntervalId>
 
 // --- MIDI Utilities ---
 function frequencyToMidi(frequency) {
@@ -39,6 +44,46 @@ function centDeviationToPitchBend(centsDeviation) {
     // Clamp values to ensure they are within MIDI range
     pbValue = Math.max(0, Math.min(16383, pbValue));
     return pbValue;
+}
+
+function startPitchBendGlide(index, channel, startPitchBend, targetPitchBend, duration) {
+    // Clear any existing glide for this note
+    if (activeGlides.has(index)) {
+        clearInterval(activeGlides.get(index));
+        activeGlides.delete(index);
+    }
+
+    if (startPitchBend === targetPitchBend) {
+        // No glide needed if already at target
+        return;
+    }
+
+    const steps = 30; // Number of steps for the glide
+    const intervalTime = duration * 1000 / steps; // Time in ms per step, ensure it's not zero for instant duration
+
+    if (intervalTime <= 0) { // If duration is 0 or very small, just jump to target
+        midiOutput.send([0xE0 | channel, targetPitchBend & 0x7F, (targetPitchBend >> 7) & 0x7F]);
+        return;
+    }
+
+    let currentStep = 0;
+    const glideIntervalId = setInterval(() => {
+        currentStep++;
+        const progress = currentStep / steps;
+
+        if (progress >= 1) {
+            // Ensure targetPitchBend is sent at the very end
+            midiOutput.send([0xE0 | channel, targetPitchBend & 0x7F, (targetPitchBend >> 7) & 0x7F]);
+            clearInterval(glideIntervalId);
+            activeGlides.delete(index);
+            return;
+        }
+
+        const interpolatedPitchBend = Math.round(startPitchBend + (targetPitchBend - startPitchBend) * progress);
+        midiOutput.send([0xE0 | channel, interpolatedPitchBend & 0x7F, (interpolatedPitchBend >> 7) & 0x7F]);
+    }, intervalTime);
+
+    activeGlides.set(index, glideIntervalId);
 }
 
 // --- MPE Channel Management ---
@@ -143,14 +188,14 @@ export async function initMidiOutput() {
     console.log("MIDI output initialization complete. Current midiOutput:", midiOutput);
 }
 
-export function sendMpeNoteOn(noteId, frequency, velocity = 100) {
-    console.log(`Attempting to send MPE Note On for noteId: ${noteId}, freq: ${frequency}. Current midiOutput:`, midiOutput);
+export function sendMpeNoteOn(index, frequency, velocity = 100) {
+    console.log(`Attempting to send MPE Note On for index: ${index}, freq: ${frequency}. Current midiOutput:`, midiOutput);
     if (!midiOutput) {
         console.warn("No MIDI output selected or available. Cannot send Note On.");
         return;
     }
 
-    let { channel, midiNote, lastPitchBend } = activeMpeNotes.get(noteId) || {};
+    let { channel, midiNote, lastPitchBend } = activeMpeNotes.get(index) || {};
 
     if (!channel) {
         channel = getAvailableMpeChannel();
@@ -158,7 +203,7 @@ export function sendMpeNoteOn(noteId, frequency, velocity = 100) {
             console.warn("No free MPE channels to send note.");
             return;
         }
-        console.log(`Assigned MPE channel ${channel} to noteId: ${noteId}`);
+        console.log(`Assigned MPE channel ${channel} to index: ${index}`);
     }
 
     midiNote = Math.round(frequencyToMidi(frequency));
@@ -173,56 +218,79 @@ export function sendMpeNoteOn(noteId, frequency, velocity = 100) {
     midiOutput.send([0xB0 | channel, 0x26, 0x00]); // Data Entry LSB (usually 0)
     console.log(`Sent RPN for PB Range on channel ${channel}: ${MPE_PITCH_BEND_RANGE} semitones.`);
 
+    const isMpePlayback = playbackMode === 'mpe-midi' || playbackMode === 'both';
 
-    midiOutput.send([0xE0 | channel, lastPitchBend & 0x7F, (lastPitchBend >> 7) & 0x7F]); // Pitch Bend
+    if (enableSlide && isMpePlayback && slideDuration > 0) {
+        // Send a center pitch bend immediately, then glide
+        midiOutput.send([0xE0 | channel, 8192 & 0x7F, (8192 >> 7) & 0x7F]); // Center pitch bend
+        startPitchBendGlide(index, channel, 8192, lastPitchBend, slideDuration);
+        console.log(`MPE Note On (sliding): index=${index}, freq=${frequency}, MIDI Note=${midiNote}, initial PB=8192, target PB=${lastPitchBend}, channel=${channel}, velocity=${velocity}, slideDuration=${slideDuration}`);
+    } else {
+        // Send instantaneous pitch bend
+        midiOutput.send([0xE0 | channel, lastPitchBend & 0x7F, (lastPitchBend >> 7) & 0x7F]); // Pitch Bend
+        console.log(`MPE Note On (instant): index=${index}, freq=${frequency}, MIDI Note=${midiNote}, PB=${lastPitchBend}, channel=${channel}, velocity=${velocity}`);
+    }
+    
     midiOutput.send([0x90 | channel, midiNote, velocity]); // Note On
 
-    activeMpeNotes.set(noteId, { channel, midiNote, lastPitchBend });
-    console.log(`MPE Note On: noteId=${noteId}, freq=${frequency}, MIDI Note=${midiNote}, PB=${lastPitchBend}, channel=${channel}, velocity=${velocity}`);
+    activeMpeNotes.set(index, { channel, midiNote, lastPitchBend });
 }
 
-export function sendMpeNoteOff(noteId, velocity = 64) {
-    console.log(`Attempting to send MPE Note Off for noteId: ${noteId}. Current midiOutput:`, midiOutput);
+export function sendMpeNoteOff(index, velocity = 64) {
+    console.log(`Attempting to send MPE Note Off for index: ${index}. Current midiOutput:`, midiOutput);
     if (!midiOutput) {
         console.warn("No MIDI output selected or available. Cannot send Note Off.");
         return;
     }
 
-    const noteInfo = activeMpeNotes.get(noteId);
+    const noteInfo = activeMpeNotes.get(index);
     if (noteInfo) {
         const { channel, midiNote } = noteInfo;
         midiOutput.send([0x80 | channel, midiNote, velocity]); // Note Off
         releaseMpeChannel(channel);
-        activeMpeNotes.delete(noteId);
-        console.log(`MPE Note Off: noteId=${noteId}, MIDI Note=${midiNote}, channel=${channel}, velocity=${velocity}`);
+        activeMpeNotes.delete(index);
+        // Clear any ongoing glide for this note
+        if (activeGlides.has(index)) {
+            clearInterval(activeGlides.get(index));
+            activeGlides.delete(index);
+        }
+        console.log(`MPE Note Off: index=${index}, MIDI Note=${midiNote}, channel=${channel}, velocity=${velocity}`);
     } else {
-        console.warn(`Note info not found for noteId: ${noteId}. Cannot send Note Off.`);
+        console.warn(`Note info not found for index: ${index}. Cannot send Note Off.`);
     }
 }
 
-export function sendMpePitchBendUpdate(noteId, frequency) {
-    console.log(`Attempting to send MPE Pitch Bend Update for noteId: ${noteId}, freq: ${frequency}. Current midiOutput:`, midiOutput);
+export function sendMpePitchBendUpdate(index, frequency) {
+    console.log(`Attempting to send MPE Pitch Bend Update for index: ${index}, freq: ${frequency}. Current midiOutput:`, midiOutput);
     if (!midiOutput) {
         console.warn("No MIDI output selected or available. Cannot send Pitch Bend Update.");
         return;
     }
 
-    const noteInfo = activeMpeNotes.get(noteId);
+    const noteInfo = activeMpeNotes.get(index);
     if (noteInfo) {
         const { channel, midiNote } = noteInfo;
         const centsDeviation = (frequencyToMidi(frequency) - midiNote) * 100;
         const newPitchBend = centDeviationToPitchBend(centsDeviation);
 
+        const isMpePlayback = playbackMode === 'mpe-midi' || playbackMode === 'both';
+
         if (newPitchBend !== noteInfo.lastPitchBend) {
-            midiOutput.send([0xE0 | channel, newPitchBend & 0x7F, (newPitchBend >> 7) & 0x7F]); // Pitch Bend
+            if (enableSlide && isMpePlayback && slideDuration > 0) {
+                // Start a glide from the current pitch bend to the new target
+                startPitchBendGlide(index, channel, noteInfo.lastPitchBend, newPitchBend, slideDuration);
+                console.log(`MPE Pitch Bend Update (sliding): index=${index}, freq=${frequency}, MIDI Note=${midiNote}, PB from=${noteInfo.lastPitchBend} to=${newPitchBend}, channel=${channel}, slideDuration=${slideDuration}`);
+            } else {
+                midiOutput.send([0xE0 | channel, newPitchBend & 0x7F, (newPitchBend >> 7) & 0x7F]); // Pitch Bend
+                console.log(`MPE Pitch Bend Update (instant): index=${index}, freq=${frequency}, MIDI Note=${midiNote}, PB=${newPitchBend}, channel=${channel}`);
+            }
             noteInfo.lastPitchBend = newPitchBend;
-            activeMpeNotes.set(noteId, noteInfo); // Update stored value
-            console.log(`MPE Pitch Bend Update: noteId=${noteId}, freq=${frequency}, MIDI Note=${midiNote}, PB=${newPitchBend}, channel=${channel}`);
+            activeMpeNotes.set(index, noteInfo); // Update stored value
         } else {
-            console.log(`Pitch bend value unchanged for noteId: ${noteId}, PB: ${newPitchBend}. No update sent.`);
+            console.log(`Pitch bend value unchanged for index: ${index}, PB: ${newPitchBend}. No update sent.`);
         }
     } else {
-        console.warn(`Note info not found for noteId: ${noteId}. Cannot send Pitch Bend Update.`);
+        console.warn(`Note info not found for index: ${index}. Cannot send Pitch Bend Update.`);
     }
 }
 
@@ -244,6 +312,6 @@ export function releaseAllMpeNotes() {
     console.log("All MPE notes released.");
 }
 
-export function isMpeNoteActive(noteId) {
-    return activeMpeNotes.has(noteId);
+export function isMpeNoteActive(index) {
+    return activeMpeNotes.has(index);
 }

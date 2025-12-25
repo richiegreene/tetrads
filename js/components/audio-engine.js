@@ -103,26 +103,34 @@ export function playChord(ratioString) {
 
     // --- Handle MPE MIDI Playback ---
     if (playbackMode === 'mpe-midi' || playbackMode === 'both') {
-        const chordNoteIds = frequencies.map((_, index) => `${ratioString}-${index}`); // All note IDs for the current chord
-        const previousChordNoteIds = new Set(lastPlayedRatios.map((_, index) => `${lastPlayedRatios.join(':')}-${index}`));
+        const currentChordIndices = new Set(frequencies.map((_, index) => index));
+        
+        // Get all currently active MPE note indices (from previous chord)
+        const previousActiveIndices = new Set();
+        // Assuming a fixed max of 4 voices/notes in a chord, iterate through possible indices
+        // This is a pragmatic approach as `activeMpeNotes` map is not directly iterable from here
+        // without knowing its internal keys, and isMpeNoteActive is the only public API.
+        for (let i = 0; i < 4; i++) { 
+            if (isMpeNoteActive(i)) {
+                previousActiveIndices.add(i);
+            }
+        }
 
-        // First, handle notes from the PREVIOUS chord that are NOT in the CURRENT chord
-        previousChordNoteIds.forEach(prevNoteId => {
-            if (!chordNoteIds.includes(prevNoteId) && isMpeNoteActive(prevNoteId)) {
-                sendMpeNoteOff(prevNoteId);
+        // Turn off notes that were active but are no longer in the current chord
+        previousActiveIndices.forEach(prevIndex => {
+            if (!currentChordIndices.has(prevIndex)) {
+                sendMpeNoteOff(prevIndex);
             }
         });
 
-        // Now, process notes for the CURRENT chord
+        // Process notes for the CURRENT chord
         frequencies.forEach((freq, index) => {
-            const noteId = `${ratioString}-${index}`; // Unique ID for each note in the chord
-
-            if (enableSlide && isMpeNoteActive(noteId)) {
-                // If sliding and this exact note is already active, update its pitch bend
-                sendMpePitchBendUpdate(noteId, freq);
-            } else if (!isMpeNoteActive(noteId)) {
-                // If this note is NEW or NOT active, send Note On
-                sendMpeNoteOn(noteId, freq);
+            if (previousActiveIndices.has(index)) {
+                // If this index was active, update its pitch bend
+                sendMpePitchBendUpdate(index, freq);
+            } else {
+                // If this index is new or was not active, send Note On
+                sendMpeNoteOn(index, freq);
             }
         });
 
@@ -130,6 +138,8 @@ export function playChord(ratioString) {
         // so any remaining notes from 'lastPlayedRatios' that were not explicitly turned off above
         // (because they are not in the current chord, or were not processed)
         // should also be turned off. This acts as a reset.
+        // This part needs to ensure all remaining active notes are released if slide is off
+        // It's already handled by releaseAllMpeNotes below, but this is a specific case.
         if (!enableSlide) {
             releaseAllMpeNotes(); 
         }
