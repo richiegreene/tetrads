@@ -302,6 +302,10 @@ body, html {
     width: 100%;
 }
 
+#midi-device-selector {
+    grid-template-columns: auto 3fr; /* Give more space to the select element */
+}
+
 #settings-menu .pivot-button.selected {
     background-color: #007bff; /* Blue for selected */
     border-color: #007bff;
