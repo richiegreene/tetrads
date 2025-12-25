@@ -70,7 +70,7 @@ body, html {
 
 #notation-display .notation-dev-notename-inline {
     font-family: monospace;
-    font-size: 2em; /* Larger for the main note name */
+    font-size: 1em; /* Adjusted for uniform sizing */
     display: inline-block; /* Allow inline flow */
     vertical-align: middle;
     line-height: 1; /* Adjust line height for stacking */
@@ -348,14 +348,14 @@ body, html {
 
 #notation-display.notation-deviation {
     /* Specific styles for Deviation notation */
-    font-size: 1.5em; /* Adjust size to make the output legible */
+    font-size: 1.0em; /* Adjusted for uniform sizing */
     padding: 15px 20px; /* Adjust padding */
     line-height: 1.2; /* Ensure lines are well-spaced */
 }
 
 .midiAccidental-heji-font {
     font-family: "HEJI2", sans-serif;
-    font-size: 1.5em; /* Match the size of the note letter */
+    font-size: 1em; /* Adjusted for uniform sizing */
     vertical-align: middle;
     display: inline-block;
     line-height: 1;
@@ -363,7 +363,7 @@ body, html {
 
 .deviation-cents-monospace {
     font-family: monospace;
-    font-size: 1.5em; /* Match the size of the note letter */
+    font-size: 1em; /* Adjusted for uniform sizing */
     vertical-align: middle;
     display: inline-block;
     line-height: 1;
