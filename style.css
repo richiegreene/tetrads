@@ -165,10 +165,14 @@ body, html {
 #settings-menu label {
     white-space: nowrap;
     font-size: 13px;
+    min-width: 70px; /* Added min-width for alignment */
 }
 
-#settings-menu input, #settings-menu select, #settings-menu button {
+#midiOutputSelect {
     width: 100%;
+}
+#settings-menu input, #settings-menu select, #settings-menu button {
+    width: auto; /* Changed from 100% to auto */
     box-sizing: border-box;
     padding: 5px;
     border-radius: 4px;
@@ -259,9 +263,10 @@ body, html {
 /* New styles for pivot buttons */
 .settings-row {
     grid-column: 1 / -1; /* Span across both columns */
-    display: flex;
+    display: grid; /* Change from flex to grid */
+    grid-template-columns: auto 1fr; /* Align with settings-content grid */
+    gap: 35px; /* Maintain consistent gap */
     align-items: center;
-    gap: 10px;
     margin-top: 0;
 }
 
