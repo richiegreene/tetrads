@@ -190,7 +190,7 @@ body, html {
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 10px;
+    gap: 35px;
     margin-top: 0;
 }
 
