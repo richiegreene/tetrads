@@ -303,7 +303,7 @@ body, html {
 }
 
 #midi-device-selector {
-    grid-template-columns: auto 10fr; /* Give more space to the select element */
+    grid-template-columns: auto 3fr; /* Give more space to the select element */
 }
 
 #settings-menu .pivot-button.selected {
