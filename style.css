@@ -382,3 +382,7 @@ body, html {
     line-height: 1;
     margin-left: 0.2em; /* Small space between accidental and cents */
 }
+
+#hand-tracking-section {
+    display: none;
+}

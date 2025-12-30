@@ -337,7 +337,7 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
 
     initThreeJS();
     animate();
-    
+
     // Initialize hand tracking with error handling
     try {
         console.log('Initializing hand tracking...');
@@ -346,8 +346,23 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
     } catch (error) {
         console.error('Failed to initialize hand tracking:', error);
     }
-    
-    // Initial UI setup and tetrahedron update
+
+    // Key command to toggle hand tracking section visibility
+    document.addEventListener('keydown', (event) => {
+        if (event.shiftKey && event.metaKey && (event.key === 'K' || event.key === 'k')) {
+            event.preventDefault(); // Prevent default browser behavior for this key combination
+            const handTrackingSection = document.getElementById('hand-tracking-section');
+            if (handTrackingSection) {
+                if (handTrackingSection.style.display === 'none') {
+                    handTrackingSection.style.display = 'grid'; // Or 'block', depending on preferred layout
+                    console.log('Hand tracking section displayed via Shift+Command+K.');
+                } else {
+                    handTrackingSection.style.display = 'none';
+                    console.log('Hand tracking section hidden via Shift+Command+K.');
+                }
+            }
+        }
+    });
     const limitType = document.getElementById('limitType').value;
     const limitValueInput = document.getElementById('limitValue').value;
     let limitValue = limitValueInput;

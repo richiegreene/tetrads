@@ -96,17 +96,19 @@
                 <label for="omitOctaves" class="inline-label">Omit Octaves</label>
                 <input type="checkbox" id="omitOctaves">
             </div>
-            <label for="enableHandTracking">Hand Tracking</label>
-            <div class="controls-container">
-                <input type="checkbox" id="enableHandTracking">
-                <select id="handTrackingMode">
-                    <option value="displayVirtualHands" selected>Display Virtual Hands</option>
-                    <option value="hideHands">Hide Hands</option>
-                </select>
-            </div>
-            <div class="settings-row" id="hand-smoothing-row">
-                <label for="handSmoothingSlider">Hand Smoothing</label>
-                <input type="range" id="handSmoothingSlider" min="0" max="100" value="25" step="1">
+            <div id="hand-tracking-section">
+                <label for="enableHandTracking">Hand Tracking</label>
+                <div class="controls-container">
+                    <input type="checkbox" id="enableHandTracking">
+                    <select id="handTrackingMode">
+                        <option value="displayVirtualHands" selected>Display Virtual Hands</option>
+                        <option value="hideHands">Hide Hands</option>
+                    </select>
+                </div>
+                <div class="settings-row" id="hand-smoothing-row">
+                    <label for="handSmoothingSlider">Hand Smoothing</label>
+                    <input type="range" id="handSmoothingSlider" min="0" max="100" value="25" step="1">
+                </div>
             </div>
             <label for="playbackMode">Playback</label>
             <select id="playbackMode">
