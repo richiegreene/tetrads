@@ -76,7 +76,7 @@ export async function startHandTracking() {
             resizeHandCanvas();
             window.addEventListener('resize', resizeHandCanvas);
         }
-
+        
         video.onloadedmetadata = () => {
             detectHandsContinuously();
         };
@@ -153,7 +153,10 @@ function drawHandsOnCanvas(hands) {
         return;
     }
 
+    console.log('drawHandsOnCanvas: width=', handCanvas.width, 'height=', handCanvas.height, 'ctx=', handCanvasCtx); // Debug log
     handCanvasCtx.clearRect(0, 0, handCanvas.width, handCanvas.height);
+    
+    // TEMPORARILY REMOVED: Static drawing for debugging
 
     if (!hands || hands.length === 0) {
         return;
@@ -164,11 +167,11 @@ function drawHandsOnCanvas(hands) {
         const handedness = hand.handedness[0].label;
 
         const isLeftHand = handedness === 'Left';
-        const drawColor = isLeftHand ? 'cyan' : 'lightgreen'; // Cyan for Left, Green for Right
+        const drawColor = 'gray'; // Uniform gray for both hands
 
         handCanvasCtx.strokeStyle = drawColor;
         handCanvasCtx.fillStyle = drawColor;
-        handCanvasCtx.lineWidth = 2;
+        handCanvasCtx.lineWidth = 4; // Increased line thickness
 
         // Draw connections
         HAND_CONNECTIONS.forEach(([startIdx, endIdx]) => {
@@ -176,15 +179,16 @@ function drawHandsOnCanvas(hands) {
             const end = landmarks[endIdx];
 
             handCanvasCtx.beginPath();
-            handCanvasCtx.moveTo(start.x * handCanvas.width, start.y * handCanvas.height);
-            handCanvasCtx.lineTo(end.x * handCanvas.width, end.y * handCanvas.height);
+            handCanvasCtx.moveTo(start.x, start.y); // Use raw pixel coordinates
+            handCanvasCtx.lineTo(end.x, end.y); // Use raw pixel coordinates
             handCanvasCtx.stroke();
         });
 
         // Draw landmarks
         landmarks.forEach(landmark => {
+            console.log('Landmark for drawing:', landmark.x, landmark.y); // Simplified log
             handCanvasCtx.beginPath();
-            handCanvasCtx.arc(landmark.x * handCanvas.width, landmark.y * handCanvas.height, 5, 0, 2 * Math.PI); // Radius 5px
+            handCanvasCtx.arc(landmark.x, landmark.y, 8, 0, 2 * Math.PI); // Use raw pixel coordinates, increased radius
             handCanvasCtx.fill();
         });
     });
