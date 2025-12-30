@@ -699,16 +699,16 @@ export function floatToReducedFraction(value, maxDenominator = 10000) {
  * Generates the HTML string for HEJI notation.
  * @param {string} ratioString The ratio string (e.g., "1:1:1:1").
  * @param {number} effectiveBaseFreq The effective base frequency.
- * @returns {string} The HTML string for HEJI notation.
+ * @returns {string[]} An array of HTML strings, each for a single voice's HEJI notation.
  */
-function getHejiNotationHtml(ratioString, effectiveBaseFreq) {
+function getHejiNotationHtmlPerVoice(ratioString, effectiveBaseFreq) {
     const ratioParts = ratioString.split(':').map(Number);
     if (ratioParts.length !== 4 || ratioParts.some(isNaN)) {
         console.error(`Invalid ratio format for HEJI: ${ratioString}`);
-        return 'n/a';
+        return Array(4).fill('n/a');
     }
 
-    let fullHejiOutput = '';
+    let voicesOutput = [];
     const referenceValue = ratioParts[0];
 
     const baseRatio = effectiveBaseFreq / initialBaseFreq;
@@ -720,9 +720,10 @@ function getHejiNotationHtml(ratioString, effectiveBaseFreq) {
     for (let i = 0; i < ratioParts.length; i++) {
         const numerator = ratioParts[i];
         const denominator = referenceValue;
+        let voiceHtml = '';
 
         if (denominator === 0) {
-            fullHejiOutput += 'n/a (denom is zero) ';
+            voiceHtml = 'n/a (denom is zero)';
         } else {
             const reduced = U.reduce(numerator, denominator);
             const numMonzo = U.getArray(reduced[0]);
@@ -738,13 +739,11 @@ function getHejiNotationHtml(ratioString, effectiveBaseFreq) {
             calculateJiCents();
             const hejiOutput = _getPC(intervalMonzo);
 
-            fullHejiOutput += `<span class="notation-dev-notename-inline">${hejiOutput.diatonicNote}</span>` + hejiOutput.notationHtml;
-            if (i < ratioParts.length - 1) {
-                fullHejiOutput += '&nbsp;';
-            }
+            voiceHtml = `<span class="notation-dev-notename-inline heji-voice-text">${hejiOutput.diatonicNote}</span>` + hejiOutput.notationHtml;
         }
+        voicesOutput.push(voiceHtml);
     }
-    return fullHejiOutput;
+    return voicesOutput;
 }
 
 /**
@@ -752,16 +751,16 @@ function getHejiNotationHtml(ratioString, effectiveBaseFreq) {
  * @param {string} ratioString The ratio string (e.g., "1:1:1:1").
  * @param {number[]} frequencies The calculated frequencies for the chord.
  * @param {number} effectiveBaseFreq The effective base frequency.
- * @returns {string} The HTML string for Deviation notation.
+ * @returns {string[]} An array of HTML strings, each for a single voice's Deviation notation.
  */
-function getDeviationNotationHtml(ratioString, frequencies, effectiveBaseFreq) {
+function getDeviationNotationHtmlPerVoice(ratioString, frequencies, effectiveBaseFreq) {
     const ratioParts = ratioString.split(':').map(Number);
     if (ratioParts.length !== 4 || ratioParts.some(isNaN)) {
         console.error(`Invalid ratio format for Deviation: ${ratioString}`);
-        return 'n/a';
+        return Array(4).fill('n/a');
     }
 
-    let fullDeviationOutput = '';
+    let voicesOutput = [];
     const referenceValue = ratioParts[0];
 
     const baseRatio = effectiveBaseFreq / initialBaseFreq;
@@ -773,9 +772,10 @@ function getDeviationNotationHtml(ratioString, frequencies, effectiveBaseFreq) {
     for (let i = 0; i < ratioParts.length; i++) {
         const numerator = ratioParts[i];
         const denominator = referenceValue;
+        let voiceHtml = '';
 
         if (denominator === 0) {
-            fullDeviationOutput += 'n/a (denom is zero) ';
+            voiceHtml = 'n/a (denom is zero)';
         } else {
             const reduced = U.reduce(numerator, denominator);
             const numMonzo = U.getArray(reduced[0]);
@@ -796,16 +796,13 @@ function getDeviationNotationHtml(ratioString, frequencies, effectiveBaseFreq) {
             const noteLetter = midiNote.letter;
             const accidental = midiNote.accidental === 'j' ? '' : midiNote.accidental;
             
-            fullDeviationOutput += `<span class="notation-dev-notename-inline">${noteLetter}</span>` + 
-                                   `<span class="midiAccidental-heji-font">${accidental}</span>` + 
-                                   `<span class="deviation-cents-monospace">${centsDeviation}</span>`;
-            
-            if (i < ratioParts.length - 1) {
-                fullDeviationOutput += '&nbsp;&nbsp;';
-            }
+            voiceHtml = `<span class="notation-dev-notename-inline deviation-voice-text">${noteLetter}</span>` + 
+                        `<span class="midiAccidental-heji-font deviation-voice-text">${accidental}</span>` + 
+                        `<span class="deviation-cents-monospace deviation-voice-text">${centsDeviation}</span>`;
         }
+        voicesOutput.push(voiceHtml);
     }
-    return fullDeviationOutput;
+    return voicesOutput;
 }
 
 
@@ -823,22 +820,42 @@ export function updateNotationDisplay(ratioString, frequencies, effectiveBaseFre
         output = cents.reverse().map(c => Math.round(c)).join('<br>');
         notationDisplay.className = 'notation-display notation-cents';
     } else if (notationType === 'heji') {
-        output = getHejiNotationHtml(ratioString, effectiveBaseFreq);
+        const hejiVoices = getHejiNotationHtmlPerVoice(ratioString, effectiveBaseFreq);
+        output = hejiVoices.join('&nbsp;'); // Join with spaces for current inline display
         notationDisplay.className = 'notation-display notation-heji';
     } else if (notationType === 'deviation') {
-        output = getDeviationNotationHtml(ratioString, frequencies, effectiveBaseFreq);
+        const deviationVoices = getDeviationNotationHtmlPerVoice(ratioString, frequencies, effectiveBaseFreq);
+        output = deviationVoices.join('&nbsp;&nbsp;'); // Join with spaces for current inline display
         notationDisplay.className = 'notation-display notation-deviation';
     } else if (notationType === 'all') {
+        const ratioParts = ratioString.split(':');
+        const hejiVoices = getHejiNotationHtmlPerVoice(ratioString, effectiveBaseFreq);
+        const deviationVoices = getDeviationNotationHtmlPerVoice(ratioString, frequencies, effectiveBaseFreq);
+
+        let gridHtml = '<div class="notation-all-grid">';
+
         // Row 1: Enumerated Ratio (a:b:c:d)
-        let row1 = `<span class="notation-ratio-chord">${ratioString}</span>`;
+        gridHtml += '<div class="notation-all-row ratio-row">';
+        ratioParts.forEach((part, index) => {
+            gridHtml += `<div class="notation-all-cell ratio-cell">${part}</div>`;
+            if (index < ratioParts.length - 1) {
+                gridHtml += `<div class="notation-all-cell colon-cell">:</div>`;
+            }
+        });
+        gridHtml += '</div>';
 
         // Row 2: HEJI Ext
-        let row2 = getHejiNotationHtml(ratioString, effectiveBaseFreq);
+        gridHtml += '<div class="notation-all-row heji-row">';
+        gridHtml += hejiVoices.map(voiceHtml => `<div class="notation-all-cell heji-cell">${voiceHtml}</div>`).join('');
+        gridHtml += '</div>';
 
         // Row 3: Deviation
-        let row3 = getDeviationNotationHtml(ratioString, frequencies, effectiveBaseFreq);
+        gridHtml += '<div class="notation-all-row deviation-row">';
+        gridHtml += deviationVoices.map(voiceHtml => `<div class="notation-all-cell deviation-cell">${voiceHtml}</div>`).join('');
+        gridHtml += '</div>';
 
-        output = row1 + '<br>' + row2 + '<br>' + row3;
+        gridHtml += '</div>'; // Close notation-all-grid
+        output = gridHtml;
         notationDisplay.className = 'notation-display notation-all';
     }
 

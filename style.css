@@ -383,6 +383,65 @@ body, html {
     margin-left: 0.2em; /* Small space between accidental and cents */
 }
 
+/* New styles for 'All' notation type */
+#notation-display.notation-all {
+    padding: 10px 15px;
+    font-size: 1.0em; /* Overall smaller font size for combined display */
+}
+
+.notation-all-grid {
+    display: grid;
+    grid-template-rows: repeat(3, auto); /* Three rows for Ratio, HEJI, Deviation */
+    gap: 5px; /* Gap between rows */
+}
+
+.notation-all-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Default for HEJI and Deviation rows */
+    gap: 5px; /* Gap between columns/voices */
+    text-align: center;
+}
+
+.notation-all-row.ratio-row {
+    grid-template-columns: 1fr max-content 1fr max-content 1fr max-content 1fr; /* 4 for numbers, 3 for colons */
+    gap: 0px; /* Remove gap for ratio row to make colons closer */
+}
+
+.notation-all-cell {
+    white-space: nowrap; /* Prevent wrapping within a cell */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add ellipsis if content overflows */
+    display: flex; /* Use flex to center content vertically and horizontally */
+    justify-content: center;
+    align-items: center;
+}
+
+.colon-cell {
+    font-size: 1.2em; /* Same size as ratio numbers */
+    font-family: monospace;
+    color: #bbb; /* Slightly dim the colons */
+    padding: 0 2px; /* Small padding around colons */
+}
+
+.ratio-cell {
+    font-size: 1.2em; /* Larger for Ratio */
+    font-family: monospace;
+    /* Removed font-weight: bold; */
+}
+
+.heji-cell .notation-dev-notename-inline {
+    font-size: 1.5em; /* Increased for priority */
+}
+.heji-cell .heji-extensions, .heji-cell .heji2 {
+    font-size: 1.8em; /* Increased for priority */
+}
+
+.deviation-cell .notation-dev-notename-inline,
+.deviation-cell .midiAccidental-heji-font,
+.deviation-cell .deviation-cents-monospace {
+    font-size: 0.8em; /* Smaller for Deviation */
+}
+
 #hand-tracking-section {
     display: none;
 }
