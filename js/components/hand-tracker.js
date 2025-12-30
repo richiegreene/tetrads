@@ -41,6 +41,7 @@ let lastHandsCenter = null;
 // State variables for single-hand rotation
 let lastSingleHandWristPosition = null;
 let lastSingleHandRotationAxis = null;
+let lastWristWorldPosition = null; // For wave detection velocity
 
 // Scale factor for hand landmarks from MediaPipe to our scene
 const worldScale = 2;
@@ -49,13 +50,24 @@ const worldScale = 2;
 let leftHoldCandidateStart = null;
 let leftHoldActive = false;
 let leftHoldSpeed = 0; // radians per second
-const leftHoldStartThreshold = 0.02; // minimal wrist rotation to consider
-const holdActivationMs = 300; // ms to hold before activating continuous spin
+const leftHoldStartThreshold = 0.001; // minimal wrist rotation to consider
+const holdActivationMs = 150; // ms to hold before activating continuous spin
 
 let continuousZoomCandidateStart = null;
 let continuousZoomActive = false;
 let continuousZoomSpeed = 0; // units per second
-const zoomHoldStartThreshold = 0.02; // delta distance threshold
+const zoomHoldStartThreshold = 0.001; // delta distance threshold
+
+// Wave gesture parameters for "spin" rotation
+const waveThreshold = 0.02; // Minimum velocity to trigger a wave (m/s)
+const waveSensitivity = 0.005; // How much rotation per unit of wave velocity
+const waveLog = false; // Set to true to see wave debug logs
+
+// Rotation control parameters (position mapping)
+const rotationControlZoneWidth = 0.5; // Normalized width of the control zone (e.g., 0.5 means from -0.25 to 0.25 on X axis)
+const rotationControlZoneHeight = 0.5; // Normalized height of the control zone
+const rotationControlDeadZone = 0.1; // Normalized dead zone in the center
+const maxRotationSpeed = 0.5; // Max rotation speed in radians per second
 
 // Smoothing parameters
 let smoothedHandKeypoints = { left: null, right: null };
@@ -214,7 +226,7 @@ async function detectHandsContinuously() {
         // Process hand landmarks for Three.js controls
         if (globals.controls && hands.length > 0) {
             console.warn('[GESTURE] Processing gestures');
-            processHandGestures(hands);
+            processHandGestures(hands, deltaMs / 1000); // Pass dtSeconds
         }
 
         // Always check for pinch to play
@@ -374,7 +386,6 @@ function handleTwoHandGestures(leftHand, rightHand) {
 
     if (lastTwoHandDistance !== null) {
         const deltaDistance = currentTwoHandDistance - lastTwoHandDistance;
-        console.log('Two-hand zoom: deltaDistance=', deltaDistance, 'lastDistance=', lastTwoHandDistance, 'currentDistance=', currentTwoHandDistance);
 
         // Evaluate continuous zoom hold candidate
         if (Math.abs(deltaDistance) > zoomHoldStartThreshold) {
@@ -412,8 +423,6 @@ function handleTwoHandGestures(leftHand, rightHand) {
         const deltaX = currentHandsCenter.x - lastHandsCenter.x;
         const deltaY = currentHandsCenter.y - lastHandsCenter.y;
         
-        console.log('Two-hand rotation: deltaX=', deltaX, 'deltaY=', deltaY, 'leftWrist=', leftWrist, 'rightWrist=', rightWrist);
-
         const thetaDelta = -deltaX * rotationSensitivity * 100;  // Increased from 20 to 100
         const phiDelta = -deltaY * rotationSensitivity * 100;    // Increased from 20 to 100 
 
@@ -433,8 +442,8 @@ function handleTwoHandGestures(leftHand, rightHand) {
     lastHandsCenter = currentHandsCenter;
 }
 
-// Single-hand rotation using hand twist (wrist orientation change)
-function handleSingleHandRotation(hand) {
+// Single-hand rotation using hand twist (wrist orientation change) and wave gesture
+function handleSingleHandRotation(hand, dtSeconds) {
     // determine handedness
     let handednessLabel = null;
     if (typeof hand.handedness === 'string') {
@@ -450,30 +459,89 @@ function handleSingleHandRotation(hand) {
     if (!wrist || !rotationAxis) {
         lastSingleHandWristPosition = null;
         lastSingleHandRotationAxis = null;
+        lastWristWorldPosition = null; // Reset for wave
         return;
     }
     
-    // Detect rotation by comparing hand orientation changes
-    if (lastSingleHandRotationAxis !== null && lastSingleHandWristPosition !== null) {
-        // Calculate angle change between last and current rotation axis
-        const dotProduct = Math.max(-1, Math.min(1, lastSingleHandRotationAxis.dot(rotationAxis)));
-        const angleDelta = Math.acos(dotProduct);
-        
-        // Determine rotation direction via cross product
-        const rotationDirection = new THREE.Vector3().crossVectors(lastSingleHandRotationAxis, rotationAxis);
-        
-        // Also track wrist movement for additional rotation
-        const wristDelta = new THREE.Vector3().subVectors(wrist, lastSingleHandWristPosition);
-        
-        // Combined rotation: axis twist + wrist movement
-        const axisRotationMagnitude = angleDelta * 150; // Amplify twist detection
-        const wristRotationX = -wristDelta.y * rotationSensitivity * 100;
-        const wristRotationY = wristDelta.x * rotationSensitivity * 100;
-        
-        console.log('[ROTATE] Single hand: angleDelta=', angleDelta.toFixed(4), 'wristDelta=', wristDelta.length().toFixed(4));
-        
-        // If this is the left hand, evaluate hold-to-spin candidate
-        if (lowerHandedness === 'left') {
+    // --- Wave Gesture (Impulse Rotation) ---
+    if (lastWristWorldPosition !== null && dtSeconds > 0) {
+        const wristVelocityX = (wrist.x - lastWristWorldPosition.x) / dtSeconds;
+        if (waveLog) console.log('[WAVE_DEBUG] wristVelocityX=', wristVelocityX.toFixed(4), 'waveThreshold=', waveThreshold);
+
+        if (Math.abs(wristVelocityX) > waveThreshold) {
+            const rotationAmount = wristVelocityX * waveSensitivity;
+            // Apply immediate rotation around Y axis (for horizontal waves)
+            const offset = new THREE.Vector3().subVectors(globals.camera.position, globals.controls.target);
+            const spherical = new THREE.Spherical().setFromVector3(offset);
+            spherical.theta -= rotationAmount; // Invert to match natural direction
+            offset.setFromSpherical(spherical);
+            const targetPos = new THREE.Vector3().copy(globals.controls.target).add(offset);
+            globals.camera.position.lerp(targetPos, 0.5); // Apply somewhat quickly
+            globals.controls.update();
+            if (waveLog) console.warn('[WAVE] Applied impulse rotation:', rotationAmount.toFixed(4));
+        }
+    }
+    lastWristWorldPosition = wrist.clone(); // Store current wrist position for next frame's velocity calculation
+
+    // --- Position-based Rotation Control for Right Hand (like arrow keys) ---
+    if (lowerHandedness === 'right') {
+        // Normalize wrist X and Y to a range relative to the center of the view.
+        // These values need to be carefully chosen. MediaPipe's coordinates are in meters.
+        // A range of -0.5 to 0.5 meters (worldScale 2) might correspond to a good control zone.
+        const normalizedX = (wrist.x / worldScale); // Normalize based on worldScale (larger value -> more sensitive)
+        const normalizedY = (wrist.y / worldScale);
+
+        let rotationSpeedX = 0;
+        let rotationSpeedY = 0;
+
+        // Horizontal rotation (theta)
+        if (Math.abs(normalizedX) > rotationControlDeadZone) {
+            const effectiveX = normalizedX - Math.sign(normalizedX) * rotationControlDeadZone;
+            rotationSpeedX = -effectiveX / (rotationControlZoneWidth / 2 - rotationControlDeadZone) * maxRotationSpeed;
+        }
+
+        // Vertical rotation (phi)
+        if (Math.abs(normalizedY) > rotationControlDeadZone) {
+            const effectiveY = normalizedY - Math.sign(normalizedY) * rotationControlDeadZone;
+            rotationSpeedY = -effectiveY / (rotationControlZoneHeight / 2 - rotationControlDeadZone) * maxRotationSpeed;
+        }
+
+        if (Math.abs(rotationSpeedX) > 0 || Math.abs(rotationSpeedY) > 0) {
+            const offset = new THREE.Vector3().subVectors(globals.camera.position, globals.controls.target);
+            const spherical = new THREE.Spherical().setFromVector3(offset);
+
+            spherical.theta += rotationSpeedX * dtSeconds;
+            spherical.phi += rotationSpeedY * dtSeconds;
+
+            spherical.phi = Math.max(0.001, Math.min(Math.PI - 0.001, spherical.phi)); // Clamp phi to prevent flip
+
+            offset.setFromSpherical(spherical);
+            const targetPos = new THREE.Vector3().copy(globals.controls.target).add(offset);
+            globals.camera.position.lerp(targetPos, transformSmoothing);
+            globals.controls.update();
+            console.log('[POS_ROTATE] Hand X:', normalizedX.toFixed(3), 'Y:', normalizedY.toFixed(3), 'SpeedX:', rotationSpeedX.toFixed(3), 'SpeedY:', rotationSpeedY.toFixed(3));
+        }
+    }
+    // --- Original Continuous Rotation (Twist) for Left Hand ---
+    // This part remains unchanged, it's for the left hand's specific gesture.
+    else if (lowerHandedness === 'left') { // Only process if not already controlled by right-hand position
+        if (lastSingleHandRotationAxis !== null && lastSingleHandWristPosition !== null) {
+            // Calculate angle change between last and current rotation axis
+            const dotProduct = Math.max(-1, Math.min(1, lastSingleHandRotationAxis.dot(rotationAxis)));
+            const angleDelta = Math.acos(dotProduct);
+            
+            // Determine rotation direction via cross product
+            const rotationDirection = new THREE.Vector3().crossVectors(lastSingleHandRotationAxis, rotationAxis);
+            
+            // Also track wrist movement for additional rotation
+            const wristDelta = new THREE.Vector3().subVectors(wrist, lastSingleHandWristPosition);
+            
+            // Combined rotation: axis twist + wrist movement
+            const axisRotationMagnitude = angleDelta * 150; // Amplify twist detection
+            const wristRotationX = -wristDelta.y * rotationSensitivity * 100;
+            const wristRotationY = wristDelta.x * rotationSensitivity * 100;
+            
+            // If this is the left hand, evaluate hold-to-spin candidate
             const spinCandidate = wristRotationY + (axisRotationMagnitude * 0.01);
             if (Math.abs(spinCandidate) > leftHoldStartThreshold) {
                 if (!leftHoldCandidateStart) leftHoldCandidateStart = Date.now();
@@ -490,21 +558,21 @@ function handleSingleHandRotation(hand) {
                     console.warn('[HOLD] Left hold deactivated');
                 }
             }
-        }
 
-        if (Math.abs(wristRotationX) > 0.001 || Math.abs(wristRotationY) > 0.001) {
-            const offset = new THREE.Vector3().subVectors(globals.camera.position, globals.controls.target);
-            const spherical = new THREE.Spherical().setFromVector3(offset);
+            if (Math.abs(wristRotationX) > 0.001 || Math.abs(wristRotationY) > 0.001) {
+                const offset = new THREE.Vector3().subVectors(globals.camera.position, globals.controls.target);
+                const spherical = new THREE.Spherical().setFromVector3(offset);
 
-            spherical.theta += wristRotationY;
-            spherical.phi += wristRotationX;
+                spherical.theta += wristRotationY;
+                spherical.phi += wristRotationX;
 
-            spherical.phi = Math.max(0.001, Math.min(Math.PI - 0.001, spherical.phi));
+                spherical.phi = Math.max(0.001, Math.min(Math.PI - 0.001, spherical.phi));
 
-            offset.setFromSpherical(spherical);
-            const targetPos = new THREE.Vector3().copy(globals.controls.target).add(offset);
-            globals.camera.position.lerp(targetPos, transformSmoothing);
-            globals.controls.update();
+                offset.setFromSpherical(spherical);
+                const targetPos = new THREE.Vector3().copy(globals.controls.target).add(offset);
+                globals.camera.position.lerp(targetPos, transformSmoothing);
+                globals.controls.update();
+            }
         }
     }
     
@@ -512,7 +580,7 @@ function handleSingleHandRotation(hand) {
     lastSingleHandRotationAxis = rotationAxis;
 }
 
-function processHandGestures(hands) {
+function processHandGestures(hands, dtSeconds) {
     if (!globals.controls || globals.isShiftHeld) {
         return; 
     }
@@ -561,12 +629,12 @@ function processHandGestures(hands) {
         lastSingleHandRotationAxis = null;
     } else if (leftHand) {
         console.warn('[GESTURE] Single left hand - rotation via twist');
-        handleSingleHandRotation(leftHand);
+        handleSingleHandRotation(leftHand, dtSeconds);
         lastTwoHandDistance = null;
         lastHandsCenter = null;
     } else if (rightHand) {
         console.warn('[GESTURE] Single right hand - rotation via twist');
-        handleSingleHandRotation(rightHand);
+        handleSingleHandRotation(rightHand, dtSeconds);
         lastTwoHandDistance = null;
         lastHandsCenter = null;
     } else {
