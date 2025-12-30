@@ -61,12 +61,12 @@ const zoomHoldStartThreshold = 0.001; // delta distance threshold
 // Wave gesture parameters for "spin" rotation
 const waveThreshold = 0.02; // Minimum velocity to trigger a wave (m/s)
 const waveSensitivity = 0.005; // How much rotation per unit of wave velocity
-const waveLog = false; // Set to true to see wave debug logs
+const waveLog = true; // Set to true to see wave debug logs
 
 // Rotation control parameters (position mapping)
 const rotationControlZoneWidth = 0.5; // Normalized width of the control zone (e.g., 0.5 means from -0.25 to 0.25 on X axis)
 const rotationControlZoneHeight = 0.5; // Normalized height of the control zone
-const rotationControlDeadZone = 0.1; // Normalized dead zone in the center
+const rotationControlDeadZone = 0.01; // Normalized dead zone in the center
 const maxRotationSpeed = 0.5; // Max rotation speed in radians per second
 
 // Smoothing parameters
@@ -466,7 +466,9 @@ function handleSingleHandRotation(hand, dtSeconds) {
     // --- Wave Gesture (Impulse Rotation) ---
     if (lastWristWorldPosition !== null && dtSeconds > 0) {
         const wristVelocityX = (wrist.x - lastWristWorldPosition.x) / dtSeconds;
-        if (waveLog) console.log('[WAVE_DEBUG] wristVelocityX=', wristVelocityX.toFixed(4), 'waveThreshold=', waveThreshold);
+        if (waveLog) {
+            console.log('[WAVE_DEBUG] WristX:', wrist.x.toFixed(4), 'LastWristX:', lastWristWorldPosition.x.toFixed(4), 'dt:', dtSeconds.toFixed(4), 'VelX:', wristVelocityX.toFixed(4), 'WaveThresh:', waveThreshold);
+        }
 
         if (Math.abs(wristVelocityX) > waveThreshold) {
             const rotationAmount = wristVelocityX * waveSensitivity;
@@ -490,6 +492,10 @@ function handleSingleHandRotation(hand, dtSeconds) {
         // A range of -0.5 to 0.5 meters (worldScale 2) might correspond to a good control zone.
         const normalizedX = (wrist.x / worldScale); // Normalize based on worldScale (larger value -> more sensitive)
         const normalizedY = (wrist.y / worldScale);
+
+        if (true) { // Always log these to debug the deadzone
+            console.log('[POS_ROTATE_DEBUG] WristX:', wrist.x.toFixed(4), 'WristY:', wrist.y.toFixed(4), 'NormX:', normalizedX.toFixed(4), 'NormY:', normalizedY.toFixed(4), 'DeadZone:', rotationControlDeadZone, 'ZoneW:', rotationControlZoneWidth, 'ZoneH:', rotationControlZoneHeight);
+        }
 
         let rotationSpeedX = 0;
         let rotationSpeedY = 0;
@@ -523,8 +529,7 @@ function handleSingleHandRotation(hand, dtSeconds) {
         }
     }
     // --- Original Continuous Rotation (Twist) for Left Hand ---
-    // This part remains unchanged, it's for the left hand's specific gesture.
-    else if (lowerHandedness === 'left') { // Only process if not already controlled by right-hand position
+    else if (lowerHandedness === 'left') { 
         if (lastSingleHandRotationAxis !== null && lastSingleHandWristPosition !== null) {
             // Calculate angle change between last and current rotation axis
             const dotProduct = Math.max(-1, Math.min(1, lastSingleHandRotationAxis.dot(rotationAxis)));

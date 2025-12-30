@@ -1,0 +1,1792 @@
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0569 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0508 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0486 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ DEBUG: Playing note at ratio= 13:14:16:16
+ Attempting to release all MPE notes. Current midiOutput: null
+ No MIDI output selected or available. Cannot release all MPE notes.
+releaseAllMpeNotes @ midi-output.js:300
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0451 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 16
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0413 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 16
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0477 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 16
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0433 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 16
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0434 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0402 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0252 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0338 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0289 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0324 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0256 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0356 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0347 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0275 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0315 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0289 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0267 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0293 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0299 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0310 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0508 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0563 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0609 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0725 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [HANDS] Detected: 1 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0685 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0526 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0546 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:623
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:636
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0565 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:623
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:636
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:623
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:636
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0658 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0636 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0742 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0676 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0661 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0661 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0570 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:623
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:636
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+ [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:623
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:636
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0476 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 14
+ DEBUG: Playing note at ratio= 13:14:16:16
+ Attempting to release all MPE notes. Current midiOutput: null
+ No MIDI output selected or available. Cannot release all MPE notes.
+releaseAllMpeNotes @ midi-output.js:300
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0302 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 14
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0347 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 14
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0323 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 14
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ DEBUG: Releasing pinch (no right hand detected)
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 2 hands
+processHandGestures @ hand-tracker.js:593
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] Hand 1 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:599
+ [GESTURE] Hand 1 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:616
+ [GESTURE] Assigned hand 1 to rightHand
+(anonymous) @ hand-tracker.js:620
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:628
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:641
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0494 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ DEBUG: Playing note at ratio= 13:14:16:16
+ Attempting to release all MPE notes. Current midiOutput: null
+ No MIDI output selected or available. Cannot release all MPE notes.
+releaseAllMpeNotes @ midi-output.js:300
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0367 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0246 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0485 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 16
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0433 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0337 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0319 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0306 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0319 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0352 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 3 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ [PINCH] Hand 2 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 2 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 2
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 3
+ [PINCH] Distance: 0.0365 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [HANDS] Detected: 3 hands | controls: true isShiftHeld: true
+detectHandsContinuously @ hand-tracker.js:218
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 3 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ [PINCH] Hand 2 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 2 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 2
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 3
+ [PINCH] Distance: 0.0331 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0308 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0269 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0232 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0201 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0236 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0217 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0225 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0318 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 16
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0340 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 16
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0372 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 16
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0301 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 16
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0228 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0239 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0253 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 15
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:673 [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:694 [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+hand-tracker.js:699 DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+hand-tracker.js:727 [PINCH] Distance: 0.0242 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+hand-tracker.js:743 DEBUG: pinchScreenPos= Object currentSprites.length= 804
+hand-tracker.js:750 DEBUG: Raycast intersects= 16
+hand-tracker.js:228 [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:667 [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+hand-tracker.js:673 [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:673 [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:694 [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+hand-tracker.js:699 DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+hand-tracker.js:727 [PINCH] Distance: 0.0375 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+hand-tracker.js:743 DEBUG: pinchScreenPos= Object currentSprites.length= 804
+hand-tracker.js:750 DEBUG: Raycast intersects= 15
+hand-tracker.js:228 [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:667 [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+hand-tracker.js:673 [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:673 [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:694 [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+hand-tracker.js:699 DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+hand-tracker.js:727 [PINCH] Distance: 0.0340 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+hand-tracker.js:743 DEBUG: pinchScreenPos= Object currentSprites.length= 804
+hand-tracker.js:750 DEBUG: Raycast intersects= 16
+hand-tracker.js:228 [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:667 [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+hand-tracker.js:673 [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:673 [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:694 [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+hand-tracker.js:699 DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+hand-tracker.js:727 [PINCH] Distance: 0.0316 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+hand-tracker.js:743 DEBUG: pinchScreenPos= Object currentSprites.length= 804
+hand-tracker.js:750 DEBUG: Raycast intersects= 16
+hand-tracker.js:228 [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:667 [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+hand-tracker.js:673 [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:673 [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:694 [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+hand-tracker.js:699 DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+hand-tracker.js:727 [PINCH] Distance: 0.0324 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+hand-tracker.js:743 DEBUG: pinchScreenPos= Object currentSprites.length= 804
+hand-tracker.js:750 DEBUG: Raycast intersects= 19
+hand-tracker.js:228 [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:667 [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+hand-tracker.js:673 [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:673 [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:694 [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+hand-tracker.js:699 DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+hand-tracker.js:727 [PINCH] Distance: 0.0307 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+hand-tracker.js:743 DEBUG: pinchScreenPos= Object currentSprites.length= 804
+hand-tracker.js:750 DEBUG: Raycast intersects= 18
+hand-tracker.js:228 [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:667 [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:667
+hand-tracker.js:673 [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:673 [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:694 [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:694
+hand-tracker.js:699 DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+hand-tracker.js:727 [PINCH] Distance: 0.0381 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:727
+hand-tracker.js:743 DEBUG: pinchScreenPos= Object currentSprites.length= 804
+hand-tracker.js:750 DEBUG: Raycast intersects= 19
+hand-tracker.js:228 [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:667 [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:667
+hand-tracker.js:673 [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:673
+hand-tracker.js:690 [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:690
+hand-tracker.js:699 DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+hand-tracker.js:704 DEBUG: Releasing pinch (no right hand detected)
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:176 Webcam stream stopped.
+hand-tracker.js:187 Hand tracking stopped.

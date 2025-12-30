@@ -1,0 +1,1893 @@
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0590 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:621
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:642
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0600 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:621
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:642
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0631 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:621
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:642
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0675 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:621
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:642
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0701 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:621
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:642
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0689 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:621
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:642
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0707 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:621
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:642
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0670 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+ [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:621
+ [GESTURE] leftHand: false rightHand: true
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single right hand - rotation via twist
+processHandGestures @ hand-tracker.js:642
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0231 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 4
+ DEBUG: Playing note at ratio= 7:8:9:11
+ Attempting to release all MPE notes. Current midiOutput: null
+ No MIDI output selected or available. Cannot release all MPE notes.
+releaseAllMpeNotes @ midi-output.js:300
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 1
+ [PINCH] Distance: 0.0226 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 7
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:695
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0133 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 6
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ [PINCH] Hand 1 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 1 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 1
+(anonymous) @ hand-tracker.js:695
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0287 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 6
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Hand 1 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 1 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 2
+ DEBUG: Releasing pinch (no right hand detected)
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 2 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] Hand 1 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 1 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 1 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Hand 1 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 1 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 2
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 2 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] Hand 1 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 1 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 1 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Hand 1 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 1 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 2
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 2 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] Hand 1 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 1 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 1 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Hand 1 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 1 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 2
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 2 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:621
+ [GESTURE] Hand 1 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 1 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 1 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: true
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Executing two-hand gestures (zoom & rotation)
+processHandGestures @ hand-tracker.js:632
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ [PINCH] Hand 1 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 1 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0300 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 0
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ [PINCH] Hand 1 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 1 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0473 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 1
+ DEBUG: Playing note at ratio= 13:14:16:16
+ Attempting to release all MPE notes. Current midiOutput: null
+ No MIDI output selected or available. Cannot release all MPE notes.
+releaseAllMpeNotes @ midi-output.js:300
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ [PINCH] Hand 1 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 1 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0396 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 1
+ [HANDS] Detected: 2 hands | controls: true isShiftHeld: true
+detectHandsContinuously @ hand-tracker.js:218
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+ [PINCH] Hand 1 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 1 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+ [PINCH] Distance: 0.0477 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+ DEBUG: pinchScreenPos= Object currentSprites.length= 804
+ DEBUG: Raycast intersects= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Hand 1 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 1 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 2
+ DEBUG: Releasing pinch (no right hand detected)
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 2 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] Hand 1 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 1 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 1 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Hand 1 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 1 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 2
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 2 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] Hand 1 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 1 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 1 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ [PINCH] Hand 1 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 1 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 2
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [HANDS] Detected: 1 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+ [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+ [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+ [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+ [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+ [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+ DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+ [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+ [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+ [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+ [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+ [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+ [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+hand-tracker.js:637 [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:668 [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+hand-tracker.js:674 [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+hand-tracker.js:691 [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+hand-tracker.js:700 DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+hand-tracker.js:228 [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+hand-tracker.js:594 [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+hand-tracker.js:600 [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+hand-tracker.js:617 [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+hand-tracker.js:624 [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+hand-tracker.js:629 [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+hand-tracker.js:637 [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:668 [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+hand-tracker.js:674 [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+hand-tracker.js:691 [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+hand-tracker.js:700 DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+hand-tracker.js:228 [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+hand-tracker.js:594 [GESTURE] Processing hand gestures with 2 hands
+processHandGestures @ hand-tracker.js:594
+hand-tracker.js:600 [GESTURE] Hand 0 - handedness: Right keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+hand-tracker.js:617 [GESTURE] Hand 0 - label: Right lowercase: right
+(anonymous) @ hand-tracker.js:617
+hand-tracker.js:621 [GESTURE] Assigned hand 0 to rightHand
+(anonymous) @ hand-tracker.js:621
+hand-tracker.js:600 [GESTURE] Hand 1 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+hand-tracker.js:617 [GESTURE] Hand 1 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+hand-tracker.js:624 [GESTURE] Assigned hand 1 to leftHand
+(anonymous) @ hand-tracker.js:624
+hand-tracker.js:629 [GESTURE] leftHand: true rightHand: true
+processHandGestures @ hand-tracker.js:629
+hand-tracker.js:632 [GESTURE] Executing two-hand gestures (zoom & rotation)
+processHandGestures @ hand-tracker.js:632
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:668 [PINCH] Starting pinch detection with 2 hands
+processPinchToPlay @ hand-tracker.js:668
+hand-tracker.js:674 [PINCH] Hand 0 - handedness: Right
+(anonymous) @ hand-tracker.js:674
+hand-tracker.js:691 [PINCH] Hand 0 - label: Right
+(anonymous) @ hand-tracker.js:691
+hand-tracker.js:695 [PINCH] Found user right hand at index 0
+(anonymous) @ hand-tracker.js:695
+hand-tracker.js:674 [PINCH] Hand 1 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+hand-tracker.js:691 [PINCH] Hand 1 - label: Left
+(anonymous) @ hand-tracker.js:691
+hand-tracker.js:700 DEBUG processPinchToPlay: rightHand found= true hands.length= 2
+hand-tracker.js:728 [PINCH] Distance: 0.0142 Threshold: 0.05
+processPinchToPlay @ hand-tracker.js:728
+hand-tracker.js:744 DEBUG: pinchScreenPos= Object currentSprites.length= 804
+hand-tracker.js:751 DEBUG: Raycast intersects= 1
+hand-tracker.js:757 DEBUG: Playing note at ratio= 7:8:9:11
+midi-output.js:298 Attempting to release all MPE notes. Current midiOutput: null
+midi-output.js:300 No MIDI output selected or available. Cannot release all MPE notes.
+releaseAllMpeNotes @ midi-output.js:300
+hand-tracker.js:228 [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:668 [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+hand-tracker.js:674 [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+hand-tracker.js:691 [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+hand-tracker.js:700 DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+hand-tracker.js:705 DEBUG: Releasing pinch (no right hand detected)
+hand-tracker.js:228 [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+hand-tracker.js:594 [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+hand-tracker.js:600 [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+hand-tracker.js:617 [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+hand-tracker.js:624 [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+hand-tracker.js:629 [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+hand-tracker.js:637 [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:668 [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+hand-tracker.js:674 [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+hand-tracker.js:691 [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+hand-tracker.js:700 DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+hand-tracker.js:228 [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+hand-tracker.js:594 [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+hand-tracker.js:600 [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+hand-tracker.js:617 [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+hand-tracker.js:624 [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+hand-tracker.js:629 [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+hand-tracker.js:637 [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:668 [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+hand-tracker.js:674 [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+hand-tracker.js:691 [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+hand-tracker.js:700 DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+hand-tracker.js:218 [HANDS] Detected: 1 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:228 [GESTURE] Processing gestures
+detectHandsContinuously @ hand-tracker.js:228
+hand-tracker.js:594 [GESTURE] Processing hand gestures with 1 hands
+processHandGestures @ hand-tracker.js:594
+hand-tracker.js:600 [GESTURE] Hand 0 - handedness: Left keypoints3D: 21
+(anonymous) @ hand-tracker.js:600
+hand-tracker.js:617 [GESTURE] Hand 0 - label: Left lowercase: left
+(anonymous) @ hand-tracker.js:617
+hand-tracker.js:624 [GESTURE] Assigned hand 0 to leftHand
+(anonymous) @ hand-tracker.js:624
+hand-tracker.js:629 [GESTURE] leftHand: true rightHand: false
+processHandGestures @ hand-tracker.js:629
+hand-tracker.js:637 [GESTURE] Single left hand - rotation via twist
+processHandGestures @ hand-tracker.js:637
+hand-tracker.js:234 [PINCH] Checking pinch
+detectHandsContinuously @ hand-tracker.js:234
+hand-tracker.js:668 [PINCH] Starting pinch detection with 1 hands
+processPinchToPlay @ hand-tracker.js:668
+hand-tracker.js:674 [PINCH] Hand 0 - handedness: Left
+(anonymous) @ hand-tracker.js:674
+hand-tracker.js:691 [PINCH] Hand 0 - label: Left
+(anonymous) @ hand-tracker.js:691
+hand-tracker.js:700 DEBUG processPinchToPlay: rightHand found= false hands.length= 1
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:218 [HANDS] Detected: 0 hands | controls: true isShiftHeld: false
+detectHandsContinuously @ hand-tracker.js:218
+hand-tracker.js:176 Webcam stream stopped.
+hand-tracker.js:187 Hand tracking stopped.
