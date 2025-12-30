@@ -337,7 +337,15 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
 
     initThreeJS();
     animate();
-    await initHandTracker(); // Initialize hand tracking model after Three.js
+    
+    // Initialize hand tracking with error handling
+    try {
+        console.log('Initializing hand tracking...');
+        await initHandTracker();
+        console.log('Hand tracking initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize hand tracking:', error);
+    }
     
     // Initial UI setup and tetrahedron update
     const limitType = document.getElementById('limitType').value;

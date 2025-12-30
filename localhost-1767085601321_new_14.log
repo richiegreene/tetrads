@@ -1,0 +1,29 @@
+main.js:26 Pyodide loaded.
+pyodide.asm.js:9 Loading numpy, scipy, openblas
+pyodide.asm.js:9 Loaded numpy, openblas, scipy
+main.js:40 Numpy and Scipy loaded.
+pyodide.asm.js:9 Loading micropip, packaging
+pyodide.asm.js:9 Loaded micropip, packaging
+main.js:333 Micropip loaded.
+main.js:343 Initializing hand tracking...
+hand-tracker.js:46 Loading hand pose detection model...
+hand-tracker.js:47 handPoseDetection available: true
+hand-tracker.js:55 Hand pose detection model loaded successfully.
+main.js:345 Hand tracking initialized successfully
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+hand-tracker.js:64 === START HAND TRACKING ===
+hand-tracker.js:77 Requesting camera access...
+hand-tracker.js:82 Webcam stream started.
+hand-tracker.js:85 Disabling OrbitControls
+hand-tracker.js:97 Hand tracking canvas initialized
+hand-tracker.js:103 Video metadata loaded, starting hand detection loop
+hand-tracker.js:151 DEBUG detectHandsContinuously: returning early - isActive: true hasDetector: true hasVideo: false
+hand-tracker.js:126 Webcam stream stopped.
+hand-tracker.js:137 Hand tracking stopped.

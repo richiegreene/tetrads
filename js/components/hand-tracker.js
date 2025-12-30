@@ -1,4 +1,5 @@
-import { setEnableHandTracking, camera, scene, controls, isShiftHeld, setIsShiftHeld, setCurrentlyHovered, handTrackingMode } from '../globals.js';
+import * as globals from '../globals.js';
+import { setEnableHandTracking, setIsShiftHeld, setCurrentlyHovered } from '../globals.js';
 import { playChord, stopChord, initAudio } from './audio-engine.js';
 import * as THREE from 'https://unpkg.com/three@0.126.0/build/three.module.js';
 
@@ -41,20 +42,30 @@ const worldScale = 2;
 
 export async function initHandTracker() {
     if (!handPoseDetector) {
-        console.log('Loading hand pose detection model...');
-        const model = handPoseDetection.SupportedModels.MediaPipeHands;
-        const detectorConfig = {
-            runtime: 'mediapipe',
-            solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240',
-            modelType: 'full' // 'lite', 'full', 'heavy'
-        };
-        handPoseDetector = await handPoseDetection.createDetector(model, detectorConfig);
-        console.log('Hand pose detection model loaded.');
+        try {
+            console.log('Loading hand pose detection model...');
+            console.log('handPoseDetection available:', !!window.handPoseDetection);
+            const model = window.handPoseDetection.SupportedModels.MediaPipeHands;
+            const detectorConfig = {
+                runtime: 'mediapipe',
+                solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240',
+                modelType: 'full' // 'lite', 'full', 'heavy'
+            };
+            handPoseDetector = await window.handPoseDetection.createDetector(model, detectorConfig);
+            console.log('Hand pose detection model loaded successfully.');
+        } catch (error) {
+            console.error('ERROR loading hand pose detector:', error);
+            throw error;
+        }
     }
 }
 
 export async function startHandTracking() {
-    if (isHandTrackingActive) return;
+    console.log('=== START HAND TRACKING ===');
+    if (isHandTrackingActive) {
+        console.log('Hand tracking already active, returning');
+        return;
+    }
 
     video = document.getElementById('webcam-feed');
     if (!video) {
@@ -63,14 +74,21 @@ export async function startHandTracking() {
     }
 
     try {
+        console.log('Requesting camera access...');
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = stream;
         video.play();
         isHandTrackingActive = true;
         console.log('Webcam stream started.');
 
-        if (controls) {
-            controls.enabled = false; // Disable OrbitControls when hand tracking is active
+        if (globals.controls) {
+            console.log('Disabling OrbitControls inputs');
+            // Don't disable the entire controls, just disable inputs
+            globals.controls.enableRotate = false;
+            globals.controls.enableZoom = false;
+            globals.controls.enablePan = false;
+        } else {
+            console.log('WARNING: controls is null/undefined');
         }
         
         // Initialize 2D hand tracking canvas
@@ -79,9 +97,13 @@ export async function startHandTracking() {
             handCanvasCtx = handCanvas.getContext('2d');
             resizeHandCanvas();
             window.addEventListener('resize', resizeHandCanvas);
+            console.log('Hand tracking canvas initialized');
+        } else {
+            console.error('handTrackingCanvas element not found');
         }
         
         video.onloadedmetadata = () => {
+            console.log('Video metadata loaded, starting hand detection loop');
             detectHandsContinuously();
         };
 
@@ -117,8 +139,10 @@ export function stopHandTracking() {
 
     console.log('Hand tracking stopped.');
 
-    if (controls) {
-        controls.enabled = true; // Re-enable OrbitControls when hand tracking is stopped
+    if (globals.controls) {
+        globals.controls.enableRotate = true;
+        globals.controls.enableZoom = true;
+        globals.controls.enablePan = true;
     }
     // Remove 2D canvas resize listener
     window.removeEventListener('resize', resizeHandCanvas);
@@ -127,29 +151,41 @@ export function stopHandTracking() {
     }
 }
 
+let lastLogTime = 0;
+
 async function detectHandsContinuously() {
     if (!isHandTrackingActive || !handPoseDetector || !video) {
         return;
     }
 
-    const hands = await handPoseDetector.estimateHands(video, {
-        flipHorizontal: true // Assuming the video feed is mirrored
-    });
-    
-    console.log('Detected hands:', hands);
-    console.log('detectHandsContinuously: isHandTrackingActive:', isHandTrackingActive, 'handPoseDetector:', handPoseDetector ? 'Loaded' : 'Not Loaded', 'video:', video ? 'Available' : 'Not Available'); // Added log
-    
-    // Process hand landmarks for Three.js controls
-    if (controls) { // Controls are disabled globally if hand tracking is active, but we can manually control them
-        processHandGestures(hands);
-    }
+    try {
+        const hands = await handPoseDetector.estimateHands(video, {
+            flipHorizontal: true
+        });
+        
+        // Log every 30 frames (~500ms at 60fps)
+        const now = Date.now();
+        if (now - lastLogTime > 500) {
+            lastLogTime = now;
+            console.warn('[HANDS] Detected:', hands.length, 'hands | controls:', !!globals.controls, 'isShiftHeld:', globals.isShiftHeld);
+        }
+        
+        // Process hand landmarks for Three.js controls
+        if (globals.controls && hands.length > 0) {
+            console.warn('[GESTURE] Processing gestures');
+            processHandGestures(hands);
+        }
 
-    // Always check for pinch to play, regardless of camera control
-    if (hands.length > 0) {
-        processPinchToPlay(hands);
-    }
+        // Always check for pinch to play
+        if (hands.length > 0) {
+            console.warn('[PINCH] Checking pinch');
+            processPinchToPlay(hands);
+        }
 
-    drawHandsOnCanvas(hands); // Update virtual hands visualization (2D canvas)
+        drawHandsOnCanvas(hands);
+    } catch (error) {
+        console.error('[ERROR] detectHandsContinuously:', error);
+    }
 
     animationFrameId = requestAnimationFrame(detectHandsContinuously);
 }
@@ -226,14 +262,15 @@ function handleTwoHandGestures(leftHand, rightHand) {
 
     if (lastTwoHandDistance !== null) {
         const deltaDistance = currentTwoHandDistance - lastTwoHandDistance;
+        console.log('Two-hand zoom: deltaDistance=', deltaDistance, 'lastDistance=', lastTwoHandDistance, 'currentDistance=', currentTwoHandDistance);
 
-        const currentCameraDistance = camera.position.distanceTo(controls.target);
-        let newCameraDistance = currentCameraDistance - deltaDistance * zoomSensitivity * 50; // Inverted sign to match intuitive zoom: hands apart -> zoom out (increase distance)
+        const currentCameraDistance = globals.camera.position.distanceTo(globals.controls.target);
+        let newCameraDistance = currentCameraDistance - deltaDistance * zoomSensitivity * 50;
 
-        newCameraDistance = Math.max(controls.minDistance, Math.min(controls.maxDistance, newCameraDistance));
-        const direction = new THREE.Vector3().subVectors(camera.position, controls.target).normalize();
-        camera.position.copy(direction.multiplyScalar(newCameraDistance).add(controls.target));
-        controls.update();
+        newCameraDistance = Math.max(globals.controls.minDistance, Math.min(globals.controls.maxDistance, newCameraDistance));
+        const direction = new THREE.Vector3().subVectors(globals.camera.position, globals.controls.target).normalize();
+        globals.camera.position.copy(direction.multiplyScalar(newCameraDistance).add(globals.controls.target));
+        globals.controls.update();
     }
     lastTwoHandDistance = currentTwoHandDistance;
 
@@ -242,12 +279,14 @@ function handleTwoHandGestures(leftHand, rightHand) {
 
     if (lastHandsCenter !== null) {
         const deltaX = currentHandsCenter.x - lastHandsCenter.x;
-        const deltaY = currentHandsCenter.x - lastHandsCenter.y; // Corrected to use currentHandsCenter.y - lastHandsCenter.y
+        const deltaY = currentHandsCenter.y - lastHandsCenter.y;
+        
+        console.log('Two-hand rotation: deltaX=', deltaX, 'deltaY=', deltaY, 'leftWrist=', leftWrist, 'rightWrist=', rightWrist);
 
         const thetaDelta = -deltaX * rotationSensitivity * 20; 
         const phiDelta = -deltaY * rotationSensitivity * 20; 
 
-        const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
+        const offset = new THREE.Vector3().subVectors(globals.camera.position, globals.controls.target);
         const spherical = new THREE.Spherical().setFromVector3(offset);
 
         spherical.phi += phiDelta; 
@@ -256,35 +295,42 @@ function handleTwoHandGestures(leftHand, rightHand) {
         spherical.phi = Math.max(0.001, Math.min(Math.PI - 0.001, spherical.phi));
 
         offset.setFromSpherical(spherical);
-        camera.position.copy(controls.target).add(offset);
-        controls.update();
+        globals.camera.position.copy(globals.controls.target).add(offset);
+        globals.controls.update();
     }
     lastHandsCenter = currentHandsCenter;
 }
 
 function processHandGestures(hands) {
-    if (!controls || isShiftHeld) {
+    if (!globals.controls || globals.isShiftHeld) {
         return; 
     }
+
+    console.warn('[GESTURE] Processing hand gestures with', hands.length, 'hands');
 
     let leftHand = null;
     let rightHand = null;
 
-    hands.forEach(hand => {
+    hands.forEach((hand, idx) => {
+        console.warn('[GESTURE] Hand', idx, '- handedness:', hand.handedness, 'keypoints3D:', hand.keypoints3D ? hand.keypoints3D.length : 'none');
         if (hand.handedness && hand.handedness.length > 0 && hand.handedness[0] && hand.handedness[0].label) {
             const handednessLabel = hand.handedness[0].label;
-            // Adjust handedness because flipHorizontal is true in estimateHands
-            // MediaPipe's 'Right' is the user's visible 'Left' and vice versa.
             const lowerCaseLabel = handednessLabel.toLowerCase();
+            console.warn('[GESTURE] Hand', idx, '- label:', handednessLabel, 'lowercase:', lowerCaseLabel);
             if (lowerCaseLabel.includes('right')) {
                 leftHand = hand;
+                console.warn('[GESTURE] Assigned hand', idx, 'to leftHand (MediaPipe Right)');
             } else if (lowerCaseLabel.includes('left')) {
                 rightHand = hand;
+                console.warn('[GESTURE] Assigned hand', idx, 'to rightHand (MediaPipe Left)');
             }
         }
     });
 
+    console.warn('[GESTURE] leftHand:', !!leftHand, 'rightHand:', !!rightHand);
+
     if (leftHand && rightHand) {
+        console.warn('[GESTURE] Executing two-hand gestures');
         handleTwoHandGestures(leftHand, rightHand);
     } else {
         lastTwoHandDistance = null;
@@ -299,15 +345,35 @@ function processPinchToPlay(hands) {
     // This implies that if a right hand pinch is detected, it overrides other right hand gestures for camera control
     // and instead triggers the play functionality.
 
-    const rightHand = hands.find(hand => hand.handedness[0].label === 'Right');
+    console.warn('[PINCH] Starting pinch detection with', hands.length, 'hands');
+
+    // Find the right hand - accounting for flipHorizontal: true inversion
+    // When flipHorizontal is true, MediaPipe 'Left' is the user's right hand
+    let rightHand = null;
+    hands.forEach((hand, idx) => {
+        console.warn('[PINCH] Hand', idx, '- handedness:', hand.handedness);
+        if (hand.handedness && hand.handedness.length > 0 && hand.handedness[0] && hand.handedness[0].label) {
+            const handednessLabel = hand.handedness[0].label;
+            const lowerCaseLabel = handednessLabel.toLowerCase();
+            console.warn('[PINCH] Hand', idx, '- label:', handednessLabel);
+            // Due to flipHorizontal: true, user's RIGHT hand = MediaPipe 'LEFT'
+            if (lowerCaseLabel.includes('left')) {
+                rightHand = hand;
+                console.warn('[PINCH] Found user right hand at index', idx);
+            }
+        }
+    });
+    
+    console.log('DEBUG processPinchToPlay: rightHand found=', !!rightHand, 'hands.length=', hands.length);
 
     if (!rightHand) {
         // If no right hand, ensure shift is released and sound is stopped
-        if (isShiftHeld) {
+        if (globals.isShiftHeld) {
+            console.log('DEBUG: Releasing pinch (no right hand detected)');
             setIsShiftHeld(false);
             const playButtonElement = document.getElementById('playButton');
-            if (!isClickPlayModeActive) {
-                if (controls) controls.enablePan = true;
+            if (!globals.isClickPlayModeActive) {
+                if (globals.controls) globals.controls.enablePan = true;
                 if (playButtonElement) playButtonElement.classList.remove('play-button-active');
             }
             stopChord();
@@ -324,16 +390,17 @@ function processPinchToPlay(hands) {
         const dy = thumbTip.y - indexTip.y;
         const dz = thumbTip.z - indexTip.z;
         const pinchDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
+        
         const pinchThreshold = 0.05; // This value will need tuning
+        console.warn('[PINCH] Distance:', pinchDistance.toFixed(4), 'Threshold:', pinchThreshold);
 
         if (pinchDistance < pinchThreshold) {
-            if (!isShiftHeld) { // Simulate shift being held for pinch
+            if (!globals.isShiftHeld) { // Simulate shift being held for pinch
                 initAudio();
                 setIsShiftHeld(true);
                 // When pinch is active, disable other right hand camera controls
                 lastRightHandIndexTip = null; 
-                if (controls) controls.enablePan = false;
+                if (globals.controls) globals.controls.enablePan = false;
                 const playButtonElement = document.getElementById('playButton');
                 if (playButtonElement) playButtonElement.classList.add('play-button-active');
                 stopChord();
@@ -341,35 +408,41 @@ function processPinchToPlay(hands) {
 
             // Perform raycasting at the pinch location
             const pinchScreenPos = convertWorldToScreen(indexTip); // Use index finger as pinch point
+            console.log('DEBUG: pinchScreenPos=', pinchScreenPos, 'currentSprites.length=', globals.currentSprites.length);
 
             if (pinchScreenPos) {
                 const mouse = new THREE.Vector2(pinchScreenPos.x, pinchScreenPos.y);
                 const raycaster = new THREE.Raycaster();
-                raycaster.setFromCamera(mouse, camera);
-                const intersects = raycaster.intersectObjects(currentSprites);
+                raycaster.setFromCamera(mouse, globals.camera);
+                const intersects = raycaster.intersectObjects(globals.currentSprites);
+                console.log('DEBUG: Raycast intersects=', intersects.length);
 
                 if (intersects.length > 0) {
                     const firstHit = intersects[0].object;
-                    if (currentlyHovered !== firstHit) {
+                    if (globals.currentlyHovered !== firstHit) {
                         if (firstHit.userData.ratio) {
+                            console.log('DEBUG: Playing note at ratio=', firstHit.userData.ratio);
                             setCurrentlyHovered(firstHit);
                             playChord(firstHit.userData.ratio);
                         }
                     }
                 } else {
-                    if (currentlyHovered) {
+                    if (globals.currentlyHovered) {
+                        console.log('DEBUG: No intersects, stopping chord');
                         stopChord();
                         setCurrentlyHovered(null);
                     }
                 }
+            } else {
+                console.log('DEBUG: pinchScreenPos is null');
             }
         } else {
             // Pinch released
-            if (isShiftHeld) {
+            if (globals.isShiftHeld) {
                 setIsShiftHeld(false);
                 const playButtonElement = document.getElementById('playButton');
-                if (!isClickPlayModeActive) {
-                    if (controls) controls.enablePan = true;
+                if (!globals.isClickPlayModeActive) {
+                    if (globals.controls) globals.controls.enablePan = true;
                     if (playButtonElement) playButtonElement.classList.remove('play-button-active');
                 }
                 stopChord();
@@ -378,11 +451,11 @@ function processPinchToPlay(hands) {
         }
     } else {
         // No index or thumb tip detected on right hand, ensure shift is released
-        if (isShiftHeld) {
+        if (globals.isShiftHeld) {
             setIsShiftHeld(false);
             const playButtonElement = document.getElementById('playButton');
-            if (!isClickPlayModeActive) {
-                if (controls) controls.enablePan = true;
+            if (!globals.isClickPlayModeActive) {
+                if (globals.controls) globals.controls.enablePan = true;
                 if (playButtonElement) playButtonElement.classList.remove('play-button-active');
             }
             stopChord();
@@ -394,7 +467,7 @@ function processPinchToPlay(hands) {
 // Helper to convert 3D world coordinates to 2D screen coordinates
 function convertWorldToScreen(landmark) {
     const vector = new THREE.Vector3(landmark.x, landmark.y, landmark.z);
-    vector.project(camera);
+    vector.project(globals.camera);
 
     // raycaster.setFromCamera expects normalized device coordinates (-1 to 1)
     return { x: vector.x, y: vector.y };
