@@ -430,10 +430,10 @@ body, html {
 }
 
 .heji-cell .notation-dev-notename-inline {
-    font-size: 1.5em; /* Increased for priority */
+    font-size: 3.0em; /* Doubled for priority */
 }
 .heji-cell .heji-extensions, .heji-cell .heji2 {
-    font-size: 1.8em; /* Increased for priority */
+    font-size: 3.6em; /* Doubled for priority */
 }
 
 .deviation-cell .notation-dev-notename-inline,
