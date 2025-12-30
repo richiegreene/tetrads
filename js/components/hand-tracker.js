@@ -24,9 +24,10 @@ let handCanvas = null;
 let handCanvasCtx = null;
 
 // Parameters for controlling camera movement with hand tracking
-const rotationSensitivity = 0.005;
-const zoomSensitivity = 0.02;
-const panSensitivity = 0.005;
+// Increased for more responsive control - feel like physically grabbing/manipulating the object
+const rotationSensitivity = 0.05;   // 10x increase from 0.005
+const zoomSensitivity = 0.15;       // 7.5x increase from 0.02
+const panSensitivity = 0.05;        // 10x increase from 0.005
 
 // State variables for smooth camera control
 let lastHandPosition = null;
@@ -265,7 +266,7 @@ function handleTwoHandGestures(leftHand, rightHand) {
         console.log('Two-hand zoom: deltaDistance=', deltaDistance, 'lastDistance=', lastTwoHandDistance, 'currentDistance=', currentTwoHandDistance);
 
         const currentCameraDistance = globals.camera.position.distanceTo(globals.controls.target);
-        let newCameraDistance = currentCameraDistance - deltaDistance * zoomSensitivity * 50;
+        let newCameraDistance = currentCameraDistance - deltaDistance * zoomSensitivity * 200;  // Increased from 50 to 200
 
         newCameraDistance = Math.max(globals.controls.minDistance, Math.min(globals.controls.maxDistance, newCameraDistance));
         const direction = new THREE.Vector3().subVectors(globals.camera.position, globals.controls.target).normalize();
@@ -283,8 +284,8 @@ function handleTwoHandGestures(leftHand, rightHand) {
         
         console.log('Two-hand rotation: deltaX=', deltaX, 'deltaY=', deltaY, 'leftWrist=', leftWrist, 'rightWrist=', rightWrist);
 
-        const thetaDelta = -deltaX * rotationSensitivity * 20; 
-        const phiDelta = -deltaY * rotationSensitivity * 20; 
+        const thetaDelta = -deltaX * rotationSensitivity * 100;  // Increased from 20 to 100
+        const phiDelta = -deltaY * rotationSensitivity * 100;    // Increased from 20 to 100 
 
         const offset = new THREE.Vector3().subVectors(globals.camera.position, globals.controls.target);
         const spherical = new THREE.Spherical().setFromVector3(offset);
