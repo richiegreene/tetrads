@@ -2,9 +2,9 @@
 import {
     enableNotation, notationType, enableSlide, slideDuration, playbackMode,
     notationDisplay, playButton, pivotButtons, currentPivotVoiceIndex,
-    isClickPlayModeActive, isShiftHeld,
+    isClickPlayModeActive, isShiftHeld, enableHandTracking, handTrackingMode,
     setEnableNotation, setNotationType, setEnableSlide, setSlideDuration, setPlaybackMode,
-    setCurrentPivotVoiceIndex, setIsClickPlayModeActive, setCurrentlyHovered,
+    setCurrentPivotVoiceIndex, setIsClickPlayModeActive, setCurrentlyHovered, setEnableHandTracking, setHandTrackingMode,
     controls
 } from '../globals.js';
 import { updateWaveform } from '../components/audio-engine.js';
@@ -12,6 +12,7 @@ import { updateTetrahedron, cycleLayoutMode } from '../calculations/tetrahedron-
 import { stopChord } from '../components/audio-engine.js';
 import { exportToSVG, downloadSVG, exportToCSV, downloadCSV } from './data-export.js';
 import { initMidiOutput } from '../midi/midi-output.js'; // Import initMidiOutput
+import { startHandTracking, stopHandTracking } from '../components/hand-tracker.js'; // Import hand tracking functions
 
 export function setupUIEventListeners() {
     const limitTypeSelect = document.getElementById('limitType');
@@ -20,6 +21,8 @@ export function setupUIEventListeners() {
     const notationTypeSelect = document.getElementById('notationType');
     const enableSlideCheckbox = document.getElementById('enableSlide');
     const slideDurationInput = document.getElementById('slideDuration');
+    const enableHandTrackingCheckbox = document.getElementById('enableHandTracking');
+    const handTrackingModeSelect = document.getElementById('handTrackingMode'); // Get hand tracking mode select
     const timbreSlider = document.getElementById('timbreSlider');
     const baseSizeSlider = document.getElementById('baseSize');
     const scalingFactorSlider = document.getElementById('scalingFactor');
@@ -79,6 +82,21 @@ export function setupUIEventListeners() {
 
     slideDurationInput.addEventListener('change', (event) => {
         setSlideDuration(parseFloat(event.target.value));
+    });
+
+    enableHandTrackingCheckbox.addEventListener('change', async (event) => {
+        const isEnabled = event.target.checked;
+        setEnableHandTracking(isEnabled);
+        handTrackingModeSelect.style.display = isEnabled ? 'inline-block' : 'none'; // Show/hide mode select
+        if (isEnabled) {
+            await startHandTracking();
+        } else {
+            stopHandTracking();
+        }
+    });
+
+    handTrackingModeSelect.addEventListener('change', (event) => {
+        setHandTrackingMode(event.target.value);
     });
 
     timbreSlider.addEventListener('input', (event) => {
@@ -211,6 +229,11 @@ export function setupUIEventListeners() {
     settingsHeader.classList.add('collapsed');
     settingsContent.style.display = 'none';
     toggleIcon.textContent = '';
+
+    // Initial state for hand tracking mode select
+    if (!enableHandTrackingCheckbox.checked) {
+        handTrackingModeSelect.style.display = 'none';
+    }
 
     document.getElementById('layoutDisplay').addEventListener('change', () => {
         updateButton.click();

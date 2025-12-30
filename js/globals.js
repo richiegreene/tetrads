@@ -20,6 +20,8 @@ export const initialBaseFreq = 130.8128; // The fixed base frequency for the ver
 export const rotationSpeed = 0.01;
 export let enableSlide = true;
 export let slideDuration = 0.25;
+export let enableHandTracking = false; // New global state for hand tracking
+export let handTrackingMode = 'displayVirtualHands'; // Default to displaying virtual hands
 export let currentPeriodicWave = null; // For custom waveforms
 export let compensationGainNode;
 
@@ -59,6 +61,8 @@ export function setLastPlayedRatios(val) { lastPlayedRatios = val; }
 export function setLatestUpdateToken(val) { latestUpdateToken = val; }
 export function setEnableSlide(val) { enableSlide = val; }
 export function setSlideDuration(val) { slideDuration = val; }
+export function setEnableHandTracking(val) { enableHandTracking = val; } // New setter for hand tracking
+export function setHandTrackingMode(val) { handTrackingMode = val; } // New setter for hand tracking mode
 export function setCurrentPeriodicWave(val) { currentPeriodicWave = val; }
 export function setCompensationGainNode(val) { compensationGainNode = val; }
 export function setPlaybackMode(val) { playbackMode = val; } // New setter

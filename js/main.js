@@ -11,6 +11,7 @@ import { initThreeJS, animate, onWindowResize, updatePivotButtonSelection } from
 import { initAudio, stopChord, playChord, updateWaveform } from './components/audio-engine.js';
 import { updateTetrahedron, cycleLayoutMode } from './calculations/tetrahedron-updater.js';
 import { setupUIEventListeners } from './utils/ui-handlers.js';
+import { initHandTracker } from './components/hand-tracker.js'; // Import initHandTracker
 
 import { initMidiOutput } from './midi/midi-output.js';
 
@@ -336,6 +337,7 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
 
     initThreeJS();
     animate();
+    await initHandTracker(); // Initialize hand tracking model after Three.js
     
     // Initial UI setup and tetrahedron update
     const limitType = document.getElementById('limitType').value;

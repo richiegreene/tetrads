@@ -1,0 +1,43 @@
+# Hand Tracking UI Controls and Functions
+
+This document outlines the controls and functions available when Hand Tracking is enabled.
+
+## UI Controls
+
+*   **Hand Tracking Checkbox:**
+    *   **Location:** Settings area, just above "Playback".
+    *   **Function:** Toggles the hand tracking feature on and off.
+        *   When enabled, it prompts for camera access and starts detecting hands.
+        *   When disabled, it stops the camera feed and hand detection.
+    *   **Default State:** Off.
+
+*   **Hand Tracking Mode Selector:**
+    *   **Location:** Next to the "Hand Tracking" checkbox.
+    *   **Function:** Determines how virtual hands are displayed.
+        *   **"Display Virtual Hands" (Default):** Shows 2D line-dot representations of detected hands overlayed on the 3D space. Left hand is rendered in Cyan, Right hand in Green.
+        *   **"Hide Hands":** No visual representation of the hands is displayed.
+
+## Gesture Functions
+
+When Hand Tracking is enabled and hands are detected, the following gestures control the 3D visualizer:
+
+*   **Left Hand Pinch (Thumb and Index Finger):**
+    *   **Function:** Controls camera **Zoom**.
+    *   **Behavior:**
+        *   Moving thumb and index finger closer together (pinching in) zooms the camera **in**.
+        *   Moving thumb and index finger further apart (opening the pinch) zooms the camera **out**.
+
+*   **Right Hand Index Finger Movement (when not pinching):**
+    *   **Function:** Controls camera **Orbit** and **Pan**.
+    *   **Behavior:**
+        *   Moving the index finger horizontally (left/right) orbits the camera around the central target horizontally.
+        *   Moving the index finger vertically (up/down) orbits the camera around the central target vertically.
+        *   The camera's target and position are adjusted to simulate a pan effect based on the index finger's movement.
+
+*   **Right Hand Thumb-Index Pinch:**
+    *   **Function:** Simulates holding down the **Shift** key, enabling point selection for playing notes.
+    *   **Behavior:**
+        *   When the right hand forms a pinch (thumb and index finger close together), it activates a "play mode" similar to holding Shift with a mouse.
+        *   The location of the pinch (specifically, the index finger tip) is used for raycasting to select and play notes on the 3D tetrahedron.
+        *   Releasing the pinch deactivates this "play mode".
+        *   This gesture takes precedence over the right-hand orbit/pan control; when pinching, the orbit/pan is temporarily suspended.
