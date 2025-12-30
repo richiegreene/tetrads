@@ -5,9 +5,10 @@ import {
     isClickPlayModeActive, isShiftHeld, enableHandTracking, handTrackingMode,
     setEnableNotation, setNotationType, setEnableSlide, setSlideDuration, setPlaybackMode,
     setCurrentPivotVoiceIndex, setIsClickPlayModeActive, setCurrentlyHovered, setEnableHandTracking, setHandTrackingMode,
+    setLastPlayedFrequencies, setLastPlayedRatios, // Added these imports
     controls
 } from '../globals.js';
-import { updateWaveform } from '../components/audio-engine.js';
+import { updateWaveform, playChord } from '../components/audio-engine.js'; // Added playChord import
 import { updateTetrahedron, cycleLayoutMode } from '../calculations/tetrahedron-updater.js';
 import { stopChord } from '../components/audio-engine.js';
 import { exportToSVG, downloadSVG, exportToCSV, downloadCSV } from './data-export.js';
@@ -236,6 +237,13 @@ export function setupUIEventListeners() {
         if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'S') {
             event.preventDefault();
             exportToCSV();
+        }
+        // New: Spacebar to reset base frequency
+        if (event.key === ' ') {
+            event.preventDefault(); // Prevent default spacebar behavior (e.g., scrolling)
+            setLastPlayedFrequencies([]); // Clear last played frequencies
+            setLastPlayedRatios([]); // Clear last played ratios
+            // Removed stopChord() and playChord("1:1:1:1") to make reset less abrupt
         }
     });
 
