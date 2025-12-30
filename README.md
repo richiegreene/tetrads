@@ -13,6 +13,7 @@ Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of
 * Zoom: two-finger scroll/mouse-wheel
 * Layout/Looks: ⇧⌘L
   * Cycle through colormaps: Plasma, Viridis, Binary Black/White
+* (Beta Feature) Hand Tracking: ⇧⌘K 
 
 ### Settings
 * Select/Define Limit of JI terads.
@@ -29,7 +30,8 @@ Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of
   * [Weil](https://en.xen.wiki/w/Weil_norm,_Tenney%E2%80%93Weil_norm,_and_TWp_interval_and_tuning_space), $log_2(max(n,d))$
   * [Wilson](https://en.xen.wiki/w/Wilson_norm), sum of prime factors (with repetition) $\text{sopfr}(pq)$
 * Display: Points (Dots) or Labels (Enumerated Ratios)
-* Notation: depicts played chord as ratio or cents
+* Notation: depicts played chord as list of cent sizes, ratios, or via the [_Extended Helmholtz-Ellis JI Pitch Notation_](https://masa.plainsound.org/pdfs/notation.pdf) expanding on it from the 47-limit to 89-limit via my [custom designed accidentals.](https://en.xen.wiki/w/Richie%27s_HEJI_extensions). For more information on notation conversion, see my app [_Notation_](https://github.com/richiegreene/notation).
+* ratio or cents
   * Refference pitch: 1/1 = C3 130.8128Hz
 * Base Size: Set minimum size (e.g. 0.25) of Point/Label
 * Scaling Factor: adjust to change rate of sizing/coloration difference
