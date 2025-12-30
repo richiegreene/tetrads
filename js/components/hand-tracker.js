@@ -245,6 +245,16 @@ function drawHandsOnCanvas(hands) {
         return;
     }
 
+    // Compute video dimensions and canvas center offset
+    const videoWidth = video.videoWidth || 640;
+    const videoHeight = video.videoHeight || 480;
+    const canvasWidth = handCanvas.width;
+    const canvasHeight = handCanvas.height;
+
+    // Center the video feed on the canvas
+    const offsetX = (canvasWidth - videoWidth) / 2;
+    const offsetY = (canvasHeight - videoHeight) / 2;
+
     hands.forEach(hand => {
         const landmarks = hand.keypoints; // Use 2D keypoints for 2D drawing
         const handedness = (typeof hand.handedness === 'string') ? hand.handedness : (hand.handedness[0]?.label || 'Right');
@@ -252,13 +262,13 @@ function drawHandsOnCanvas(hands) {
 
         // Initialize smoothed keypoints if missing
         if (!smoothedHandKeypoints[key] || smoothedHandKeypoints[key].length !== landmarks.length) {
-            smoothedHandKeypoints[key] = landmarks.map(l => ({ x: l.x, y: l.y }));
+            smoothedHandKeypoints[key] = landmarks.map(l => ({ x: l.x + offsetX, y: l.y + offsetY }));
         } else {
             // EMA smoothing for each landmark
             for (let i = 0; i < landmarks.length; i++) {
                 const s = smoothedHandKeypoints[key][i];
-                s.x = s.x * (1 - landmarkSmoothing) + landmarks[i].x * landmarkSmoothing;
-                s.y = s.y * (1 - landmarkSmoothing) + landmarks[i].y * landmarkSmoothing;
+                s.x = s.x * (1 - landmarkSmoothing) + (landmarks[i].x + offsetX) * landmarkSmoothing;
+                s.y = s.y * (1 - landmarkSmoothing) + (landmarks[i].y + offsetY) * landmarkSmoothing;
             }
         }
 
