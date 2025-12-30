@@ -694,6 +694,121 @@ export function floatToReducedFraction(value, maxDenominator = 10000) {
     };
 }
 
+
+/**
+ * Generates the HTML string for HEJI notation.
+ * @param {string} ratioString The ratio string (e.g., "1:1:1:1").
+ * @param {number} effectiveBaseFreq The effective base frequency.
+ * @returns {string} The HTML string for HEJI notation.
+ */
+function getHejiNotationHtml(ratioString, effectiveBaseFreq) {
+    const ratioParts = ratioString.split(':').map(Number);
+    if (ratioParts.length !== 4 || ratioParts.some(isNaN)) {
+        console.error(`Invalid ratio format for HEJI: ${ratioString}`);
+        return 'n/a';
+    }
+
+    let fullHejiOutput = '';
+    const referenceValue = ratioParts[0];
+
+    const baseRatio = effectiveBaseFreq / initialBaseFreq;
+    const baseRatioFraction = floatToReducedFraction(baseRatio);
+    const baseRatioNumMonzo = U.getArray(baseRatioFraction.numerator);
+    const baseRatioDenMonzo = U.getArray(baseRatioFraction.denominator);
+    const baseRatioMonzo = U.diffArray(baseRatioNumMonzo, baseRatioDenMonzo);
+
+    for (let i = 0; i < ratioParts.length; i++) {
+        const numerator = ratioParts[i];
+        const denominator = referenceValue;
+
+        if (denominator === 0) {
+            fullHejiOutput += 'n/a (denom is zero) ';
+        } else {
+            const reduced = U.reduce(numerator, denominator);
+            const numMonzo = U.getArray(reduced[0]);
+            const denMonzo = U.getArray(reduced[1]);
+            let intervalMonzo = U.diffArray(numMonzo, denMonzo);
+            
+            intervalMonzo = U.sumArray(intervalMonzo, baseRatioMonzo);
+            
+            hejiState.displayNumValue = reduced[0];
+            hejiState.displayDenValue = reduced[1];
+
+            prepareCentsCalculationData(intervalMonzo);
+            calculateJiCents();
+            const hejiOutput = _getPC(intervalMonzo);
+
+            fullHejiOutput += `<span class="notation-dev-notename-inline">${hejiOutput.diatonicNote}</span>` + hejiOutput.notationHtml;
+            if (i < ratioParts.length - 1) {
+                fullHejiOutput += '&nbsp;';
+            }
+        }
+    }
+    return fullHejiOutput;
+}
+
+/**
+ * Generates the HTML string for Deviation notation.
+ * @param {string} ratioString The ratio string (e.g., "1:1:1:1").
+ * @param {number[]} frequencies The calculated frequencies for the chord.
+ * @param {number} effectiveBaseFreq The effective base frequency.
+ * @returns {string} The HTML string for Deviation notation.
+ */
+function getDeviationNotationHtml(ratioString, frequencies, effectiveBaseFreq) {
+    const ratioParts = ratioString.split(':').map(Number);
+    if (ratioParts.length !== 4 || ratioParts.some(isNaN)) {
+        console.error(`Invalid ratio format for Deviation: ${ratioString}`);
+        return 'n/a';
+    }
+
+    let fullDeviationOutput = '';
+    const referenceValue = ratioParts[0];
+
+    const baseRatio = effectiveBaseFreq / initialBaseFreq;
+    const baseRatioFraction = floatToReducedFraction(baseRatio);
+    const baseRatioNumMonzo = U.getArray(baseRatioFraction.numerator);
+    const baseRatioDenMonzo = U.getArray(baseRatioFraction.denominator);
+    const baseRatioMonzo = U.diffArray(baseRatioNumMonzo, baseRatioDenMonzo);
+
+    for (let i = 0; i < ratioParts.length; i++) {
+        const numerator = ratioParts[i];
+        const denominator = referenceValue;
+
+        if (denominator === 0) {
+            fullDeviationOutput += 'n/a (denom is zero) ';
+        } else {
+            const reduced = U.reduce(numerator, denominator);
+            const numMonzo = U.getArray(reduced[0]);
+            const denMonzo = U.getArray(reduced[1]);
+            let intervalMonzo = U.diffArray(numMonzo, denMonzo);
+            
+            intervalMonzo = U.sumArray(intervalMonzo, baseRatioMonzo);
+            
+            hejiState.displayNumValue = reduced[0];
+            hejiState.displayDenValue = reduced[1];
+
+            prepareCentsCalculationData(intervalMonzo);
+            calculateJiCents();
+            const hejiOutput = _getPC(intervalMonzo);
+            const centsDeviation = getCentDeviation();
+
+            const midiNote = parseMidiNoteOutput(hejiOutput.refMidiNoteOutput);
+            const noteLetter = midiNote.letter;
+            const accidental = midiNote.accidental === 'j' ? '' : midiNote.accidental;
+            
+            fullDeviationOutput += `<span class="notation-dev-notename-inline">${noteLetter}</span>` + 
+                                   `<span class="midiAccidental-heji-font">${accidental}</span>` + 
+                                   `<span class="deviation-cents-monospace">${centsDeviation}</span>`;
+            
+            if (i < ratioParts.length - 1) {
+                fullDeviationOutput += '&nbsp;&nbsp;';
+            }
+        }
+    }
+    return fullDeviationOutput;
+}
+
+
 export function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
     if (!enableNotation || !notationDisplay) return;
 
@@ -702,118 +817,29 @@ export function updateNotationDisplay(ratioString, frequencies, effectiveBaseFre
         const baseRatio = effectiveBaseFreq / initialBaseFreq;
         const fractionString = floatToReducedFraction(baseRatio).numerator + '/' + floatToReducedFraction(baseRatio).denominator;
         output = `<span class="notation-ratio-base">${fractionString}</span><br><span class="notation-ratio-chord">${ratioString}</span>`;
-        notationDisplay.className = 'notation-display notation-ratio'; // Add class for styling
+        notationDisplay.className = 'notation-display notation-ratio';
     } else if (notationType === 'cents') {
         const cents = frequencies.map(freq => 1200 * Math.log2(freq / initialBaseFreq));
-        // Display in descending order as per user example
         output = cents.reverse().map(c => Math.round(c)).join('<br>');
-        notationDisplay.className = 'notation-display notation-cents'; // Add class for styling
+        notationDisplay.className = 'notation-display notation-cents';
     } else if (notationType === 'heji') {
-        const ratioParts = ratioString.split(':').map(Number);
-        if (ratioParts.length !== 4 || ratioParts.some(isNaN)) {
-            console.error(`Invalid ratio format for HEJI: ${ratioString}`);
-            output = 'n/a';
-        } else {
-            let fullHejiOutput = '';
-            const referenceValue = ratioParts[0]; // The fundamental for these ratios
-            
-            // Calculate baseRatioMonzo
-            const baseRatio = effectiveBaseFreq / initialBaseFreq;
-            const baseRatioFraction = floatToReducedFraction(baseRatio);
-            const baseRatioNumMonzo = U.getArray(baseRatioFraction.numerator);
-            const baseRatioDenMonzo = U.getArray(baseRatioFraction.denominator);
-            const baseRatioMonzo = U.diffArray(baseRatioNumMonzo, baseRatioDenMonzo);
-
-            for (let i = 0; i < ratioParts.length; i++) {
-                const numerator = ratioParts[i];
-                const denominator = referenceValue;
-
-                if (denominator === 0) {
-                    fullHejiOutput += 'n/a (denom is zero) ';
-                } else {
-                    const reduced = U.reduce(numerator, denominator);
-                    const numMonzo = U.getArray(reduced[0]);
-                    const denMonzo = U.getArray(reduced[1]);
-                    let intervalMonzo = U.diffArray(numMonzo, denMonzo);
-                    
-                    // Apply baseRatioMonzo
-                    intervalMonzo = U.sumArray(intervalMonzo, baseRatioMonzo);
-                    
-                    // Temporarily set hejiState.displayNumValue and hejiState.displayDenValue for calculateJiCents
-                    hejiState.displayNumValue = reduced[0];
-                    hejiState.displayDenValue = reduced[1];
-
-                    prepareCentsCalculationData(intervalMonzo);
-                    calculateJiCents();
-                    const hejiOutput = _getPC(intervalMonzo);
-                    // The Notation Dev's HEJI output does not display cents deviation by default, so we won't add it here for consistency.
-
-                    fullHejiOutput += `<span class="notation-dev-notename-inline">${hejiOutput.diatonicNote}</span>` + hejiOutput.notationHtml;
-                    if (i < ratioParts.length - 1) {
-                        fullHejiOutput += '&nbsp;'; // Add a non-breaking space between notes
-                    }
-                }
-            }
-            output = fullHejiOutput;
-        }
-        notationDisplay.className = 'notation-display notation-heji'; // Add class for styling
+        output = getHejiNotationHtml(ratioString, effectiveBaseFreq);
+        notationDisplay.className = 'notation-display notation-heji';
     } else if (notationType === 'deviation') {
-        const ratioParts = ratioString.split(':').map(Number);
-        if (ratioParts.length !== 4 || ratioParts.some(isNaN)) {
-            console.error(`Invalid ratio format for Deviation: ${ratioString}`);
-            output = 'n/a';
-        } else {
-            let fullDeviationOutput = '';
-            const referenceValue = ratioParts[0]; // The fundamental for these ratios
+        output = getDeviationNotationHtml(ratioString, frequencies, effectiveBaseFreq);
+        notationDisplay.className = 'notation-display notation-deviation';
+    } else if (notationType === 'all') {
+        // Row 1: Enumerated Ratio (a:b:c:d)
+        let row1 = `<span class="notation-ratio-chord">${ratioString}</span>`;
 
-            // Calculate baseRatioMonzo (same logic as heji)
-            const baseRatio = effectiveBaseFreq / initialBaseFreq;
-            const baseRatioFraction = floatToReducedFraction(baseRatio);
-            const baseRatioNumMonzo = U.getArray(baseRatioFraction.numerator);
-            const baseRatioDenMonzo = U.getArray(baseRatioFraction.denominator);
-            const baseRatioMonzo = U.diffArray(baseRatioNumMonzo, baseRatioDenMonzo);
+        // Row 2: HEJI Ext
+        let row2 = getHejiNotationHtml(ratioString, effectiveBaseFreq);
 
-            for (let i = 0; i < ratioParts.length; i++) {
-                const numerator = ratioParts[i];
-                const denominator = referenceValue;
+        // Row 3: Deviation
+        let row3 = getDeviationNotationHtml(ratioString, frequencies, effectiveBaseFreq);
 
-                if (denominator === 0) {
-                    fullDeviationOutput += 'n/a (denom is zero) ';
-                } else {
-                    const reduced = U.reduce(numerator, denominator);
-                    const numMonzo = U.getArray(reduced[0]);
-                    const denMonzo = U.getArray(reduced[1]);
-                    let intervalMonzo = U.diffArray(numMonzo, denMonzo);
-                    
-                    // Apply baseRatioMonzo
-                    intervalMonzo = U.sumArray(intervalMonzo, baseRatioMonzo);
-                    
-                    // Temporarily set hejiState.displayNumValue and hejiState.displayDenValue for calculateJiCents
-                    hejiState.displayNumValue = reduced[0];
-                    hejiState.displayDenValue = reduced[1];
-
-                    prepareCentsCalculationData(intervalMonzo);
-                    calculateJiCents();
-                    const hejiOutput = _getPC(intervalMonzo);
-                    const centsDeviation = getCentDeviation();
-
-                    // Format deviation output
-                    const midiNote = parseMidiNoteOutput(hejiOutput.refMidiNoteOutput);
-                    const noteLetter = midiNote.letter;
-                    const accidental = midiNote.accidental === 'j' ? '' : midiNote.accidental; // 'j' means natural, show as empty string
-                    
-                    fullDeviationOutput += `<span class="notation-dev-notename-inline">${noteLetter}</span>` + 
-                                           `<span class="midiAccidental-heji-font">${accidental}</span>` + 
-                                           `<span class="deviation-cents-monospace">${centsDeviation}</span>`; // Removed 'c'
-                    
-                    if (i < ratioParts.length - 1) {
-                        fullDeviationOutput += '&nbsp;&nbsp;'; // Use non-breaking spaces for horizontal layout
-                    }
-                }
-            }
-            output = fullDeviationOutput;
-        }
-        notationDisplay.className = 'notation-display notation-deviation'; // Add class for styling
+        output = row1 + '<br>' + row2 + '<br>' + row3;
+        notationDisplay.className = 'notation-display notation-all';
     }
 
     notationDisplay.innerHTML = output;
