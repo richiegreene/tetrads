@@ -4,7 +4,7 @@ import {
     setScene, setCamera, setRenderer, setControls,
     setIsShiftHeld, setKeyState, setCurrentlyHovered,
     setPlayButton, setPivotButtons,
-    enableNotation, notationType, setNotationDisplay,
+    enableNotation, notationType, setNotationDisplay, setNotationType,
     setCurrentLayoutDisplay
 } from './globals.js';
 import { initThreeJS, animate, onWindowResize, updatePivotButtonSelection } from './components/three-visualizer.js';
@@ -408,6 +408,10 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
     // Set initial waveform and pivot button selection
     updateWaveform(parseFloat(document.getElementById('timbreSlider').value));
     updatePivotButtonSelection(0); // Set initial pivot to Bass (index 0)
+
+    // Set initial notation type from HTML
+    const initialNotationType = document.getElementById('notationType').value;
+    setNotationType(initialNotationType);
 
     // Setup all UI event listeners
     setupUIEventListeners();
