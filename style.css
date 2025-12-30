@@ -429,10 +429,11 @@ body, html {
     /* Removed font-weight: bold; */
 }
 
-.heji-cell .notation-dev-notename-inline {
+#notation-display.notation-all .heji-cell .notation-dev-notename-inline {
     font-size: 3.0em; /* Doubled for priority */
 }
-.heji-cell .heji-extensions, .heji-cell .heji2 {
+#notation-display.notation-all .heji-cell .heji-extensions,
+#notation-display.notation-all .heji-cell .heji2 {
     font-size: 3.6em; /* Doubled for priority */
 }
 
