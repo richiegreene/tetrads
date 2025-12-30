@@ -183,8 +183,6 @@ body, html {
     font-family: monospace;
 }
 
-
-
 #timbre-row {
     grid-column: 1 / -1;
     display: grid;
@@ -236,8 +234,6 @@ body, html {
     background-color: #2a2a2a;
     border-radius: 4px;
 }
-
-
 #settings-menu button {
     grid-column: 1 / -1;
     cursor: pointer;
@@ -257,8 +253,6 @@ body, html {
     background-color: #0056b3;
     border-color: #0056b3;
 }
-
-
 
 /* New styles for pivot buttons */
 .settings-row {
@@ -316,8 +310,6 @@ body, html {
     border-color: #0056b3;
 }
 
-
-
 .symbol {
     font-family: Arial, sans-serif;
 }
@@ -327,8 +319,6 @@ body, html {
     align-items: center;
     gap: 8px;
 }
-
-
 
 .controls-container select, .controls-container input[type="number"] {
     width: auto;
@@ -392,7 +382,7 @@ body, html {
 .notation-all-grid {
     display: grid;
     grid-template-rows: repeat(3, auto); /* Three rows for Ratio, HEJI, Deviation */
-    gap: 5px; /* Gap between rows */
+    gap: 10px; /* Gap between rows */
 }
 
 .notation-all-row {
@@ -430,11 +420,11 @@ body, html {
 }
 
 #notation-display.notation-all .heji-cell .notation-dev-notename-inline {
-    font-size: 3.0em; /* Doubled for priority */
+    font-size: 2.0em; /* Doubled for priority */
 }
 #notation-display.notation-all .heji-cell .heji-extensions,
 #notation-display.notation-all .heji-cell .heji2 {
-    font-size: 3.6em; /* Doubled for priority */
+    font-size: 2.376em; /* Doubled for priority */
 }
 
 .deviation-cell .notation-dev-notename-inline,
