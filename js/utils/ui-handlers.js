@@ -24,6 +24,8 @@ export function setupUIEventListeners() {
     const enableHandTrackingCheckbox = document.getElementById('enableHandTracking');
     const handTrackingModeSelect = document.getElementById('handTrackingMode'); // Get hand tracking mode select
     const timbreSlider = document.getElementById('timbreSlider');
+    const handSmoothingRow = document.getElementById('hand-smoothing-row');
+    const handSmoothingSlider = document.getElementById('handSmoothingSlider');
     const baseSizeSlider = document.getElementById('baseSize');
     const scalingFactorSlider = document.getElementById('scalingFactor');
     const updateButton = document.getElementById('updateButton');
@@ -88,6 +90,7 @@ export function setupUIEventListeners() {
         const isEnabled = event.target.checked;
         setEnableHandTracking(isEnabled);
         handTrackingModeSelect.style.display = isEnabled ? 'inline-block' : 'none'; // Show/hide mode select
+        if (handSmoothingRow) handSmoothingRow.style.display = isEnabled ? 'flex' : 'none';
         if (isEnabled) {
             await startHandTracking();
         } else {
@@ -98,6 +101,28 @@ export function setupUIEventListeners() {
     handTrackingModeSelect.addEventListener('change', (event) => {
         setHandTrackingMode(event.target.value);
     });
+
+    // Hand smoothing slider wiring (updates hand-tracker smoothing)
+    if (handSmoothingSlider) {
+        // lazy import setter from hand-tracker to avoid circular deps at top-level
+        handSmoothingSlider.addEventListener('input', (ev) => {
+            const val = parseFloat(ev.target.value);
+            import('../components/hand-tracker.js').then(mod => {
+                if (mod && typeof mod.setHandSmoothing === 'function') {
+                    mod.setHandSmoothing(val / 100);
+                }
+            }).catch(err => console.warn('Failed to set hand smoothing', err));
+        });
+        // initial visibility
+        handSmoothingRow.style.display = enableHandTracking ? 'flex' : 'none';
+        // set initial slider value from module
+        import('../components/hand-tracker.js').then(mod => {
+            if (mod && typeof mod.getHandSmoothing === 'function') {
+                const cur = mod.getHandSmoothing();
+                handSmoothingSlider.value = cur;
+            }
+        }).catch(() => {});
+    }
 
     timbreSlider.addEventListener('input', (event) => {
         updateWaveform(parseFloat(event.target.value));

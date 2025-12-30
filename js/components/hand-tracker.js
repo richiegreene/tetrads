@@ -59,8 +59,21 @@ const zoomHoldStartThreshold = 0.02; // delta distance threshold
 
 // Smoothing parameters
 let smoothedHandKeypoints = { left: null, right: null };
-const landmarkSmoothing = 0.25; // EMA smoothing for drawn landmarks (0..1)
-const transformSmoothing = 0.15; // lerp factor for camera transforms (0..1)
+let landmarkSmoothing = 0.25; // EMA smoothing for drawn landmarks (0..1)
+let transformSmoothing = 0.15; // lerp factor for camera transforms (0..1)
+
+// Expose setter/getter to allow UI to update smoothing
+export function setHandSmoothing(normalized) {
+    // normalized expected 0..1
+    const n = Math.max(0, Math.min(1, normalized));
+    landmarkSmoothing = n; // direct map
+    transformSmoothing = n * 0.6; // keep transform smoothing lower than landmark smoothing
+}
+
+export function getHandSmoothing() {
+    // return 0..100 for slider convenience
+    return Math.round(landmarkSmoothing * 100);
+}
 
 export async function initHandTracker() {
     if (!handPoseDetector) {
