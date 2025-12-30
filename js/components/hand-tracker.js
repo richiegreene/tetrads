@@ -38,8 +38,29 @@ let lastRightHandIndexTip = null; // For right hand orbit/pan
 let lastTwoHandDistance = null;
 let lastHandsCenter = null;
 
+// State variables for single-hand rotation
+let lastSingleHandWristPosition = null;
+let lastSingleHandRotationAxis = null;
+
 // Scale factor for hand landmarks from MediaPipe to our scene
 const worldScale = 2;
+
+// Hold / continuous action state
+let leftHoldCandidateStart = null;
+let leftHoldActive = false;
+let leftHoldSpeed = 0; // radians per second
+const leftHoldStartThreshold = 0.02; // minimal wrist rotation to consider
+const holdActivationMs = 300; // ms to hold before activating continuous spin
+
+let continuousZoomCandidateStart = null;
+let continuousZoomActive = false;
+let continuousZoomSpeed = 0; // units per second
+const zoomHoldStartThreshold = 0.02; // delta distance threshold
+
+// Smoothing parameters
+let smoothedHandKeypoints = { left: null, right: null };
+const landmarkSmoothing = 0.25; // EMA smoothing for drawn landmarks (0..1)
+const transformSmoothing = 0.15; // lerp factor for camera transforms (0..1)
 
 export async function initHandTracker() {
     if (!handPoseDetector) {
@@ -153,6 +174,7 @@ export function stopHandTracking() {
 }
 
 let lastLogTime = 0;
+let lastFrameTime = Date.now();
 
 async function detectHandsContinuously() {
     if (!isHandTrackingActive || !handPoseDetector || !video) {
@@ -171,6 +193,11 @@ async function detectHandsContinuously() {
             console.warn('[HANDS] Detected:', hands.length, 'hands | controls:', !!globals.controls, 'isShiftHeld:', globals.isShiftHeld);
         }
         
+        // Compute frame delta for continuous effects
+        const nowFrame = Date.now();
+        const deltaMs = Math.max(0, nowFrame - lastFrameTime);
+        lastFrameTime = nowFrame;
+
         // Process hand landmarks for Three.js controls
         if (globals.controls && hands.length > 0) {
             console.warn('[GESTURE] Processing gestures');
@@ -184,6 +211,9 @@ async function detectHandsContinuously() {
         }
 
         drawHandsOnCanvas(hands);
+
+        // Apply continuous effects (spin/zoom) based on hold state
+        applyContinuousEffects(deltaMs / 1000); // seconds
     } catch (error) {
         console.error('[ERROR] detectHandsContinuously:', error);
     }
@@ -196,11 +226,7 @@ function drawHandsOnCanvas(hands) {
     if (!handCanvasCtx || handTrackingMode === 'hideHands') {
         return;
     }
-
-    // console.log('drawHandsOnCanvas: width=', handCanvas.width, 'height=', handCanvas.height, 'ctx=', handCanvasCtx); // Debug log
     handCanvasCtx.clearRect(0, 0, handCanvas.width, handCanvas.height);
-    
-    // TEMPORARILY REMOVED: Static drawing for debugging
 
     if (!hands || hands.length === 0) {
         return;
@@ -208,31 +234,41 @@ function drawHandsOnCanvas(hands) {
 
     hands.forEach(hand => {
         const landmarks = hand.keypoints; // Use 2D keypoints for 2D drawing
-        const handedness = hand.handedness[0].label;
+        const handedness = (typeof hand.handedness === 'string') ? hand.handedness : (hand.handedness[0]?.label || 'Right');
+        const key = handedness.toLowerCase().includes('left') ? 'left' : 'right';
 
-        const isLeftHand = handedness === 'Left';
-        const drawColor = 'gray'; // Uniform gray for both hands
+        // Initialize smoothed keypoints if missing
+        if (!smoothedHandKeypoints[key] || smoothedHandKeypoints[key].length !== landmarks.length) {
+            smoothedHandKeypoints[key] = landmarks.map(l => ({ x: l.x, y: l.y }));
+        } else {
+            // EMA smoothing for each landmark
+            for (let i = 0; i < landmarks.length; i++) {
+                const s = smoothedHandKeypoints[key][i];
+                s.x = s.x * (1 - landmarkSmoothing) + landmarks[i].x * landmarkSmoothing;
+                s.y = s.y * (1 - landmarkSmoothing) + landmarks[i].y * landmarkSmoothing;
+            }
+        }
 
+        const drawColor = 'rgba(200,200,200,0.95)';
         handCanvasCtx.strokeStyle = drawColor;
         handCanvasCtx.fillStyle = drawColor;
-        handCanvasCtx.lineWidth = 4; // Increased line thickness
+        handCanvasCtx.lineWidth = 3;
 
-        // Draw connections
+        // Draw connections using smoothed points
         HAND_CONNECTIONS.forEach(([startIdx, endIdx]) => {
-            const start = landmarks[startIdx];
-            const end = landmarks[endIdx];
-
+            const start = smoothedHandKeypoints[key][startIdx];
+            const end = smoothedHandKeypoints[key][endIdx];
+            if (!start || !end) return;
             handCanvasCtx.beginPath();
-            handCanvasCtx.moveTo(start.x, start.y); // Use raw pixel coordinates
-            handCanvasCtx.lineTo(end.x, end.y); // Use raw pixel coordinates
+            handCanvasCtx.moveTo(start.x, start.y);
+            handCanvasCtx.lineTo(end.x, end.y);
             handCanvasCtx.stroke();
         });
 
-        // Draw landmarks
-        landmarks.forEach(landmark => {
-            // console.log('Landmark for drawing:', landmark.x, landmark.y); // Simplified log
+        // Draw smoothed landmarks
+        smoothedHandKeypoints[key].forEach(landmark => {
             handCanvasCtx.beginPath();
-            handCanvasCtx.arc(landmark.x, landmark.y, 8, 0, 2 * Math.PI); // Use raw pixel coordinates, increased radius
+            handCanvasCtx.arc(landmark.x, landmark.y, 6, 0, 2 * Math.PI);
             handCanvasCtx.fill();
         });
     });
@@ -246,6 +282,58 @@ function getHandLandmarkPosition(hand, landmarkName) {
         return new THREE.Vector3(landmark.x, landmark.y, landmark.z);
     }
     return null;
+}
+
+// Calculate hand's rotation axis (wrist normal) based on palm orientation
+// Returns a Vector3 representing the hand's twist/rotation
+function getHandRotationAxis(hand) {
+    // Get key hand landmarks for orientation
+    const wrist = getHandLandmarkPosition(hand, 'wrist');
+    const middleBase = getHandLandmarkPosition(hand, 'middle_finger_mcp');
+    const thumbTip = getHandLandmarkPosition(hand, 'thumb_tip');
+    const pinkyBase = getHandLandmarkPosition(hand, 'pinky_mcp');
+    
+    if (!wrist || !middleBase || !thumbTip || !pinkyBase) {
+        return null;
+    }
+    
+    // Vector from wrist to middle finger (palm direction)
+    const palmDir = new THREE.Vector3().subVectors(middleBase, wrist).normalize();
+    
+    // Vector from thumb to pinky (hand width)
+    const handWidth = new THREE.Vector3().subVectors(pinkyBase, thumbTip).normalize();
+    
+    // Cross product gives the hand's normal (twist axis)
+    const rotationAxis = new THREE.Vector3().crossVectors(palmDir, handWidth).normalize();
+    
+    return rotationAxis;
+}
+
+// Apply continuous spin/zoom effects each frame
+function applyContinuousEffects(dtSeconds) {
+    if (!globals.camera || !globals.controls) return;
+
+    // Left-hand continuous spin
+    if (leftHoldActive && Math.abs(leftHoldSpeed) > 1e-6) {
+        const offset = new THREE.Vector3().subVectors(globals.camera.position, globals.controls.target);
+        const spherical = new THREE.Spherical().setFromVector3(offset);
+        spherical.theta += leftHoldSpeed * dtSeconds;
+        offset.setFromSpherical(spherical);
+        const targetPos = new THREE.Vector3().copy(globals.controls.target).add(offset);
+        globals.camera.position.lerp(targetPos, transformSmoothing);
+        globals.controls.update();
+    }
+
+    // Continuous zoom (two-hand hold)
+    if (continuousZoomActive && Math.abs(continuousZoomSpeed) > 1e-6) {
+        const currentCameraDistance = globals.camera.position.distanceTo(globals.controls.target);
+        let newCameraDistance = currentCameraDistance - continuousZoomSpeed * dtSeconds;
+        newCameraDistance = Math.max(globals.controls.minDistance, Math.min(globals.controls.maxDistance, newCameraDistance));
+        const direction = new THREE.Vector3().subVectors(globals.camera.position, globals.controls.target).normalize();
+        const targetPos = new THREE.Vector3().copy(globals.controls.target).add(direction.multiplyScalar(newCameraDistance));
+        globals.camera.position.lerp(targetPos, transformSmoothing);
+        globals.controls.update();
+    }
 }
 
 function handleTwoHandGestures(leftHand, rightHand) {
@@ -265,12 +353,31 @@ function handleTwoHandGestures(leftHand, rightHand) {
         const deltaDistance = currentTwoHandDistance - lastTwoHandDistance;
         console.log('Two-hand zoom: deltaDistance=', deltaDistance, 'lastDistance=', lastTwoHandDistance, 'currentDistance=', currentTwoHandDistance);
 
+        // Evaluate continuous zoom hold candidate
+        if (Math.abs(deltaDistance) > zoomHoldStartThreshold) {
+            if (!continuousZoomCandidateStart) {
+                continuousZoomCandidateStart = Date.now();
+            } else if (!continuousZoomActive && (Date.now() - continuousZoomCandidateStart) > holdActivationMs) {
+                continuousZoomActive = true;
+                continuousZoomSpeed = deltaDistance * zoomSensitivity * 50; // speed units/sec
+                console.warn('[HOLD] Continuous zoom activated speed=', continuousZoomSpeed.toFixed(4));
+            }
+        } else {
+            continuousZoomCandidateStart = null;
+            if (continuousZoomActive) {
+                continuousZoomActive = false;
+                continuousZoomSpeed = 0;
+                console.warn('[HOLD] Continuous zoom deactivated');
+            }
+        }
+
         const currentCameraDistance = globals.camera.position.distanceTo(globals.controls.target);
         let newCameraDistance = currentCameraDistance - deltaDistance * zoomSensitivity * 200;  // Increased from 50 to 200
 
         newCameraDistance = Math.max(globals.controls.minDistance, Math.min(globals.controls.maxDistance, newCameraDistance));
         const direction = new THREE.Vector3().subVectors(globals.camera.position, globals.controls.target).normalize();
-        globals.camera.position.copy(direction.multiplyScalar(newCameraDistance).add(globals.controls.target));
+        const targetPos = new THREE.Vector3().copy(globals.controls.target).add(direction.multiplyScalar(newCameraDistance));
+        globals.camera.position.lerp(targetPos, transformSmoothing);
         globals.controls.update();
     }
     lastTwoHandDistance = currentTwoHandDistance;
@@ -296,10 +403,90 @@ function handleTwoHandGestures(leftHand, rightHand) {
         spherical.phi = Math.max(0.001, Math.min(Math.PI - 0.001, spherical.phi));
 
         offset.setFromSpherical(spherical);
-        globals.camera.position.copy(globals.controls.target).add(offset);
+        const targetPos = new THREE.Vector3().copy(globals.controls.target).add(offset);
+        globals.camera.position.lerp(targetPos, transformSmoothing);
         globals.controls.update();
     }
     lastHandsCenter = currentHandsCenter;
+}
+
+// Single-hand rotation using hand twist (wrist orientation change)
+function handleSingleHandRotation(hand) {
+    // determine handedness
+    let handednessLabel = null;
+    if (typeof hand.handedness === 'string') {
+        handednessLabel = hand.handedness;
+    } else if (Array.isArray(hand.handedness) && hand.handedness.length > 0) {
+        handednessLabel = hand.handedness[0]?.label || (typeof hand.handedness[0] === 'string' ? hand.handedness[0] : null);
+    }
+    const lowerHandedness = handednessLabel ? handednessLabel.toLowerCase() : null;
+
+    const wrist = getHandLandmarkPosition(hand, 'wrist');
+    const rotationAxis = getHandRotationAxis(hand);
+    
+    if (!wrist || !rotationAxis) {
+        lastSingleHandWristPosition = null;
+        lastSingleHandRotationAxis = null;
+        return;
+    }
+    
+    // Detect rotation by comparing hand orientation changes
+    if (lastSingleHandRotationAxis !== null && lastSingleHandWristPosition !== null) {
+        // Calculate angle change between last and current rotation axis
+        const dotProduct = Math.max(-1, Math.min(1, lastSingleHandRotationAxis.dot(rotationAxis)));
+        const angleDelta = Math.acos(dotProduct);
+        
+        // Determine rotation direction via cross product
+        const rotationDirection = new THREE.Vector3().crossVectors(lastSingleHandRotationAxis, rotationAxis);
+        
+        // Also track wrist movement for additional rotation
+        const wristDelta = new THREE.Vector3().subVectors(wrist, lastSingleHandWristPosition);
+        
+        // Combined rotation: axis twist + wrist movement
+        const axisRotationMagnitude = angleDelta * 150; // Amplify twist detection
+        const wristRotationX = -wristDelta.y * rotationSensitivity * 100;
+        const wristRotationY = wristDelta.x * rotationSensitivity * 100;
+        
+        console.log('[ROTATE] Single hand: angleDelta=', angleDelta.toFixed(4), 'wristDelta=', wristDelta.length().toFixed(4));
+        
+        // If this is the left hand, evaluate hold-to-spin candidate
+        if (lowerHandedness === 'left') {
+            const spinCandidate = wristRotationY + (axisRotationMagnitude * 0.01);
+            if (Math.abs(spinCandidate) > leftHoldStartThreshold) {
+                if (!leftHoldCandidateStart) leftHoldCandidateStart = Date.now();
+                else if (!leftHoldActive && Date.now() - leftHoldCandidateStart > holdActivationMs) {
+                    leftHoldActive = true;
+                    leftHoldSpeed = spinCandidate * 3; // set continuous spin speed (rad/s)
+                    console.warn('[HOLD] Left hold activated speed=', leftHoldSpeed.toFixed(4));
+                }
+            } else {
+                leftHoldCandidateStart = null;
+                if (leftHoldActive) {
+                    leftHoldActive = false;
+                    leftHoldSpeed = 0;
+                    console.warn('[HOLD] Left hold deactivated');
+                }
+            }
+        }
+
+        if (Math.abs(wristRotationX) > 0.001 || Math.abs(wristRotationY) > 0.001) {
+            const offset = new THREE.Vector3().subVectors(globals.camera.position, globals.controls.target);
+            const spherical = new THREE.Spherical().setFromVector3(offset);
+
+            spherical.theta += wristRotationY;
+            spherical.phi += wristRotationX;
+
+            spherical.phi = Math.max(0.001, Math.min(Math.PI - 0.001, spherical.phi));
+
+            offset.setFromSpherical(spherical);
+            const targetPos = new THREE.Vector3().copy(globals.controls.target).add(offset);
+            globals.camera.position.lerp(targetPos, transformSmoothing);
+            globals.controls.update();
+        }
+    }
+    
+    lastSingleHandWristPosition = wrist;
+    lastSingleHandRotationAxis = rotationAxis;
 }
 
 function processHandGestures(hands) {
@@ -345,11 +532,32 @@ function processHandGestures(hands) {
     console.warn('[GESTURE] leftHand:', !!leftHand, 'rightHand:', !!rightHand);
 
     if (leftHand && rightHand) {
-        console.warn('[GESTURE] Executing two-hand gestures');
+        console.warn('[GESTURE] Executing two-hand gestures (zoom & rotation)');
         handleTwoHandGestures(leftHand, rightHand);
+        lastSingleHandWristPosition = null;  // Reset single-hand state
+        lastSingleHandRotationAxis = null;
+    } else if (leftHand) {
+        console.warn('[GESTURE] Single left hand - rotation via twist');
+        handleSingleHandRotation(leftHand);
+        lastTwoHandDistance = null;
+        lastHandsCenter = null;
+    } else if (rightHand) {
+        console.warn('[GESTURE] Single right hand - rotation via twist');
+        handleSingleHandRotation(rightHand);
+        lastTwoHandDistance = null;
+        lastHandsCenter = null;
     } else {
         lastTwoHandDistance = null;
         lastHandsCenter = null;
+        lastSingleHandWristPosition = null;
+        lastSingleHandRotationAxis = null;
+        // Deactivate any hold states when no hands present
+        leftHoldCandidateStart = null;
+        leftHoldActive = false;
+        leftHoldSpeed = 0;
+        continuousZoomCandidateStart = null;
+        continuousZoomActive = false;
+        continuousZoomSpeed = 0;
     }
 }
 
