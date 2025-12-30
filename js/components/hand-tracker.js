@@ -32,6 +32,10 @@ let lastHandPosition = null;
 let lastLeftHandPinchDistance = null;
 let lastRightHandIndexTip = null; // For right hand orbit/pan
 
+// State variables for two-hand gestures
+let lastTwoHandDistance = null;
+let lastHandsCenter = null;
+
 // Scale factor for hand landmarks from MediaPipe to our scene
 const worldScale = 2;
 
@@ -108,6 +112,8 @@ export function stopHandTracking() {
     lastHandPosition = null;
     lastLeftHandPinchDistance = null;
     lastRightHandIndexTip = null;
+    lastTwoHandDistance = null; // Reset two-hand state
+    lastHandsCenter = null;     // Reset two-hand state
 
     console.log('Hand tracking stopped.');
 
@@ -131,6 +137,7 @@ async function detectHandsContinuously() {
     });
     
     console.log('Detected hands:', hands);
+    console.log('detectHandsContinuously: isHandTrackingActive:', isHandTrackingActive, 'handPoseDetector:', handPoseDetector ? 'Loaded' : 'Not Loaded', 'video:', video ? 'Available' : 'Not Available'); // Added log
     
     // Process hand landmarks for Three.js controls
     if (controls) { // Controls are disabled globally if hand tracking is active, but we can manually control them
@@ -153,7 +160,7 @@ function drawHandsOnCanvas(hands) {
         return;
     }
 
-    console.log('drawHandsOnCanvas: width=', handCanvas.width, 'height=', handCanvas.height, 'ctx=', handCanvasCtx); // Debug log
+    // console.log('drawHandsOnCanvas: width=', handCanvas.width, 'height=', handCanvas.height, 'ctx=', handCanvasCtx); // Debug log
     handCanvasCtx.clearRect(0, 0, handCanvas.width, handCanvas.height);
     
     // TEMPORARILY REMOVED: Static drawing for debugging
@@ -186,7 +193,7 @@ function drawHandsOnCanvas(hands) {
 
         // Draw landmarks
         landmarks.forEach(landmark => {
-            console.log('Landmark for drawing:', landmark.x, landmark.y); // Simplified log
+            // console.log('Landmark for drawing:', landmark.x, landmark.y); // Simplified log
             handCanvasCtx.beginPath();
             handCanvasCtx.arc(landmark.x, landmark.y, 8, 0, 2 * Math.PI); // Use raw pixel coordinates, increased radius
             handCanvasCtx.fill();
@@ -194,120 +201,97 @@ function drawHandsOnCanvas(hands) {
     });
 }
 
+// Helper to get a specific 3D landmark position
+function getHandLandmarkPosition(hand, landmarkName) {
+    const landmark = hand.keypoints3D.find(lm => lm.name === landmarkName);
+    if (landmark) {
+        // Return a new Vector3 to ensure it's a distinct object and can be manipulated
+        return new THREE.Vector3(landmark.x, landmark.y, landmark.z);
+    }
+    return null;
+}
+
+function handleTwoHandGestures(leftHand, rightHand) {
+    const leftWrist = getHandLandmarkPosition(leftHand, 'wrist');
+    const rightWrist = getHandLandmarkPosition(rightHand, 'wrist');
+
+    if (!leftWrist || !rightWrist) {
+        lastTwoHandDistance = null;
+        lastHandsCenter = null;
+        return;
+    }
+
+    // --- Two-Hand Zoom (Scaling) ---
+    const currentTwoHandDistance = leftWrist.distanceTo(rightWrist);
+
+    if (lastTwoHandDistance !== null) {
+        const deltaDistance = currentTwoHandDistance - lastTwoHandDistance;
+
+        const currentCameraDistance = camera.position.distanceTo(controls.target);
+        let newCameraDistance = currentCameraDistance - deltaDistance * zoomSensitivity * 50; // Inverted sign to match intuitive zoom: hands apart -> zoom out (increase distance)
+
+        newCameraDistance = Math.max(controls.minDistance, Math.min(controls.maxDistance, newCameraDistance));
+        const direction = new THREE.Vector3().subVectors(camera.position, controls.target).normalize();
+        camera.position.copy(direction.multiplyScalar(newCameraDistance).add(controls.target));
+        controls.update();
+    }
+    lastTwoHandDistance = currentTwoHandDistance;
+
+    // --- Two-Hand Rotation ---
+    const currentHandsCenter = new THREE.Vector3().addVectors(leftWrist, rightWrist).multiplyScalar(0.5);
+
+    if (lastHandsCenter !== null) {
+        const deltaX = currentHandsCenter.x - lastHandsCenter.x;
+        const deltaY = currentHandsCenter.x - lastHandsCenter.y; // Corrected to use currentHandsCenter.y - lastHandsCenter.y
+
+        const thetaDelta = -deltaX * rotationSensitivity * 20; 
+        const phiDelta = -deltaY * rotationSensitivity * 20; 
+
+        const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
+        const spherical = new THREE.Spherical().setFromVector3(offset);
+
+        spherical.phi += phiDelta; 
+        spherical.theta += thetaDelta; 
+
+        spherical.phi = Math.max(0.001, Math.min(Math.PI - 0.001, spherical.phi));
+
+        offset.setFromSpherical(spherical);
+        camera.position.copy(controls.target).add(offset);
+        controls.update();
+    }
+    lastHandsCenter = currentHandsCenter;
+}
+
 function processHandGestures(hands) {
-    if (!controls) return;
-
-    // Reset hand position states if no hands detected
-    const foundLeftHand = hands.some(hand => hand.handedness[0].label === 'Left');
-    const foundRightHand = hands.some(hand => hand.handedness[0].label === 'Right');
-
-    if (!foundLeftHand) {
-        lastLeftHandPinchDistance = null;
+    if (!controls || isShiftHeld) {
+        return; 
     }
-    if (!foundRightHand) {
-        lastRightHandIndexTip = null;
-    }
+
+    let leftHand = null;
+    let rightHand = null;
 
     hands.forEach(hand => {
-        const landmarks = hand.keypoints3D;
-        const handedness = hand.handedness[0].label;
-        const isLeftHand = handedness === 'Left';
-
-        if (isLeftHand) {
-            // LEFT HAND: Pinch for Zoom
-            const thumbTip = landmarks.find(lm => lm.name === 'thumb_tip');
-            const indexTip = landmarks.find(lm => lm.name === 'index_finger_tip');
-
-            if (thumbTip && indexTip) {
-                const dx = thumbTip.x - indexTip.x;
-                const dy = thumbTip.y - indexTip.y;
-                const dz = thumbTip.z - indexTip.z;
-                const pinchDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-                if (lastLeftHandPinchDistance !== null) {
-                    const deltaPinch = pinchDistance - lastLeftHandPinchDistance;
-                    
-                    // A smaller pinch distance means zoom in, larger means zoom out
-                    // Adjust camera distance from target
-                    const currentDistance = camera.position.distanceTo(controls.target);
-                    let newDistance = currentDistance - deltaPinch * 100; // Multiplier for sensitivity
-                    
-                    // Clamp distance to min/max
-                    newDistance = Math.max(controls.minDistance, Math.min(controls.maxDistance, newDistance));
-
-                    // Apply new distance
-                    const direction = new THREE.Vector3().subVectors(camera.position, controls.target).normalize();
-                    camera.position.copy(direction.multiplyScalar(newDistance).add(controls.target));
-
-                    controls.update(); // Update controls after manual camera manipulation
-                }
-                lastLeftHandPinchDistance = pinchDistance;
-            } else {
-                lastLeftHandPinchDistance = null;
-            }
-        } else { // Right Hand
-            // RIGHT HAND: Point and Drag for Orbit/Pan (only if not pinching to play)
-            if (!isShiftHeld) { // isShiftHeld is set by processPinchToPlay for right hand pinch
-                const indexTip = landmarks.find(lm => lm.name === 'index_finger_tip');
-                if (indexTip) {
-                    // Use a smoothed value for lastRightHandIndexTip to prevent jitter
-                    const currentRightIndexTip = new THREE.Vector3(indexTip.x, indexTip.y, indexTip.z);
-
-                    if (lastRightHandIndexTip) {
-                        const deltaX = currentRightIndexTip.x - lastRightHandIndexTip.x;
-                        const deltaY = currentRightIndexTip.y - lastRightHandIndexTip.y;
-                        
-                        // ORBIT: Rotate around the controls.target
-                        // Rotate horizontally (around Y axis of scene)
-                        const phiDelta = -deltaX * rotationSensitivity * 5; // Horizontal movement for yaw
-                        // Rotate vertically (around X axis of camera)
-                        const thetaDelta = -deltaY * rotationSensitivity * 5; // Vertical movement for pitch
-
-                        // Get current spherical coordinates relative to target
-                        const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
-                        const spherical = new THREE.Spherical().setFromVector3(offset);
-
-                        // Apply deltas to spherical coordinates
-                        spherical.phi += thetaDelta; // Vertical angle
-                        spherical.theta += phiDelta; // Horizontal angle
-
-                        // Clamp vertical angle to prevent flipping
-                        spherical.phi = Math.max(0.001, Math.min(Math.PI - 0.001, spherical.phi)); // Avoid gimbal lock
-
-                        // Convert back to Cartesian and update camera position
-                        offset.setFromSpherical(spherical);
-                        camera.position.copy(controls.target).add(offset);
-                        
-                        // PAN: Translate controls.target and camera in screen space
-                        // For a simple single hand pan, we can interpret hand movement directly
-                        const panSpeed = panSensitivity * 0.5; // Adjust sensitivity
-                        const panLeft = -deltaX * panSpeed;
-                        const panUp = deltaY * panSpeed; // Y movement for vertical pan
-
-                        // Get the camera's local X and Y directions for panning
-                        const panX = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0);
-                        const panY = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1);
-                        
-                        // Apply pan movement to target and camera position
-                        controls.target.addScaledVector(panX, panLeft);
-                        controls.object.position.addScaledVector(panX, panLeft);
-
-                        controls.target.addScaledVector(panY, panUp);
-                        controls.object.position.addScaledVector(panY, panUp);
-                        
-                        controls.update(); // Update controls after manual camera/target manipulation
-                    }
-                    lastRightHandIndexTip = currentRightIndexTip;
-                } else {
-                    lastRightHandIndexTip = null;
-                }
-            } else {
-                // If right hand is pinching, clear previous state to avoid jump when released
-                lastRightHandIndexTip = null;
+        if (hand.handedness && hand.handedness.length > 0 && hand.handedness[0] && hand.handedness[0].label) {
+            const handednessLabel = hand.handedness[0].label;
+            // Adjust handedness because flipHorizontal is true in estimateHands
+            // MediaPipe's 'Right' is the user's visible 'Left' and vice versa.
+            const lowerCaseLabel = handednessLabel.toLowerCase();
+            if (lowerCaseLabel.includes('right')) {
+                leftHand = hand;
+            } else if (lowerCaseLabel.includes('left')) {
+                rightHand = hand;
             }
         }
     });
+
+    if (leftHand && rightHand) {
+        handleTwoHandGestures(leftHand, rightHand);
+    } else {
+        lastTwoHandDistance = null;
+        lastHandsCenter = null;
+    }
 }
+
 
 function processPinchToPlay(hands) {
     // This function will prioritize the user's explicit request to
