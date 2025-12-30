@@ -313,16 +313,30 @@ function processHandGestures(hands) {
 
     hands.forEach((hand, idx) => {
         console.warn('[GESTURE] Hand', idx, '- handedness:', hand.handedness, 'keypoints3D:', hand.keypoints3D ? hand.keypoints3D.length : 'none');
-        if (hand.handedness && hand.handedness.length > 0 && hand.handedness[0] && hand.handedness[0].label) {
-            const handednessLabel = hand.handedness[0].label;
+        
+        // MediaPipe returns handedness as a string directly ('Right' or 'Left')
+        let handednessLabel = null;
+        if (typeof hand.handedness === 'string') {
+            handednessLabel = hand.handedness;
+        } else if (Array.isArray(hand.handedness) && hand.handedness.length > 0) {
+            // Fallback: if it's an array with objects
+            if (hand.handedness[0].label) {
+                handednessLabel = hand.handedness[0].label;
+            } else if (typeof hand.handedness[0] === 'string') {
+                handednessLabel = hand.handedness[0];
+            }
+        }
+        
+        if (handednessLabel) {
             const lowerCaseLabel = handednessLabel.toLowerCase();
             console.warn('[GESTURE] Hand', idx, '- label:', handednessLabel, 'lowercase:', lowerCaseLabel);
-            if (lowerCaseLabel.includes('right')) {
-                leftHand = hand;
-                console.warn('[GESTURE] Assigned hand', idx, 'to leftHand (MediaPipe Right)');
-            } else if (lowerCaseLabel.includes('left')) {
+            // With flipHorizontal: true, MediaPipe 'Right' = user's right hand
+            if (lowerCaseLabel === 'right') {
                 rightHand = hand;
-                console.warn('[GESTURE] Assigned hand', idx, 'to rightHand (MediaPipe Left)');
+                console.warn('[GESTURE] Assigned hand', idx, 'to rightHand');
+            } else if (lowerCaseLabel === 'left') {
+                leftHand = hand;
+                console.warn('[GESTURE] Assigned hand', idx, 'to leftHand');
             }
         }
     });
@@ -347,17 +361,30 @@ function processPinchToPlay(hands) {
 
     console.warn('[PINCH] Starting pinch detection with', hands.length, 'hands');
 
-    // Find the right hand - accounting for flipHorizontal: true inversion
-    // When flipHorizontal is true, MediaPipe 'Left' is the user's right hand
+    // Find the right hand
+    // MediaPipe returns handedness as a string ('Right' or 'Left')
     let rightHand = null;
     hands.forEach((hand, idx) => {
         console.warn('[PINCH] Hand', idx, '- handedness:', hand.handedness);
-        if (hand.handedness && hand.handedness.length > 0 && hand.handedness[0] && hand.handedness[0].label) {
-            const handednessLabel = hand.handedness[0].label;
+        
+        // MediaPipe returns handedness as a string directly
+        let handednessLabel = null;
+        if (typeof hand.handedness === 'string') {
+            handednessLabel = hand.handedness;
+        } else if (Array.isArray(hand.handedness) && hand.handedness.length > 0) {
+            // Fallback: if it's an array with objects
+            if (hand.handedness[0].label) {
+                handednessLabel = hand.handedness[0].label;
+            } else if (typeof hand.handedness[0] === 'string') {
+                handednessLabel = hand.handedness[0];
+            }
+        }
+        
+        if (handednessLabel) {
             const lowerCaseLabel = handednessLabel.toLowerCase();
             console.warn('[PINCH] Hand', idx, '- label:', handednessLabel);
-            // Due to flipHorizontal: true, user's RIGHT hand = MediaPipe 'LEFT'
-            if (lowerCaseLabel.includes('left')) {
+            // With flipHorizontal: true, MediaPipe 'Right' = user's right hand
+            if (lowerCaseLabel === 'right') {
                 rightHand = hand;
                 console.warn('[PINCH] Found user right hand at index', idx);
             }
