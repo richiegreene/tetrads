@@ -117,12 +117,14 @@
                 <option value="mpe-midi">MIDI Polyphonic Expression (MPE)</option>
                 <option value="both">Both</option>
             </select>
-            <div class="settings-row" id="midi-device-selector" style="display: none; align-items: center; gap: 8px;">
+            <div class="settings-row" id="midi-device-selector" style="display: none;">
                 <label for="midiOutputSelect">MIDI Out</label>
-                <select id="midiOutputSelect">
-                    <option>No devices found</option>
-                </select>
-                <input type="range" id="mpePressureSlider" min="0" max="127" value="64" step="1" style="display: none;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <select id="midiOutputSelect" style="flex-grow: 0.7;">
+                        <option>No devices found</option>
+                    </select>
+                    <input type="range" id="mpePressureSlider" min="0" max="127" value="64" step="1" style="display: none; flex-grow: 0.3;">
+                </div>
             </div>
             <label for="enableSlide">Enable Slide</label>
             <div class="controls-container">

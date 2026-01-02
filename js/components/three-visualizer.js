@@ -176,10 +176,10 @@ function onKeyDown(event) {
         }
         updatePivotButtonSelection(selectedIndex);
         event.preventDefault(); 
-    } else if (event.key === '=' || event.key === '+') { // Key for increasing pressure
+    } else if (event.key === '=' || event.key === '+' || event.key === '2' || event.key === '@') { // Keys for increasing pressure
         startRampingPressureUp();
         event.preventDefault();
-    } else if (event.key === '-' || event.key === '_') { // Key for decreasing pressure (including unshifted '_')
+    } else if (event.key === '-' || event.key === '_' || event.key === '1' || event.key === '!') { // Keys for decreasing pressure
         startRampingPressureDown();
         event.preventDefault();
     }
@@ -201,7 +201,7 @@ function onKeyUp(event) {
         }
         stopChord(); 
         setCurrentlyHovered(null); 
-    } else if (event.key === '=' || event.key === '+' || event.key === '-' || event.key === '_') {
+    } else if (event.key === '=' || event.key === '+' || event.key === '-' || event.key === '_' || event.key === '1' || event.key === '!' || event.key === '2' || event.key === '@') {
         stopRampingPressure();
         event.preventDefault();
     }
