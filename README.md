@@ -10,6 +10,7 @@ Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of
 ## Display 
 ### Controls
 * Rotate Tetrahedron: click/drag or arrow keys
+  * Perpetually Rotate: caps lock + arrow keys
 * Zoom: two-finger scroll/mouse-wheel
 * Layout/Looks: ⇧⌘L
   * Cycle through colormaps: Plasma, Viridis, Binary Black/White
