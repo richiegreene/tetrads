@@ -8,10 +8,14 @@ import {
     playButton, pivotButtons, currentPivotVoiceIndex,
     setScene, setCamera, setRenderer, setControls,
     setCurrentSprites, setIsShiftHeld, setIsClickPlayModeActive, setCurrentlyHovered,
-    setCurrentPivotVoiceIndex, setKeyState
+    setCurrentPivotVoiceIndex, setKeyState,
+    mpePressure, mpePressureRampSpeed, mpePressureIntervalTime, mpePressureIntervalId,
+    setMpePressure, setMpePressureRampSpeed, setMpePressureIntervalTime, setMpePressureIntervalId
 } from '../globals.js';
 
 import { initAudio, stopChord, playChord } from '../components/audio-engine.js';
+import { sendMpePressure, mpeChannels } from '../midi/midi-output.js';
+import { updateMpePressureSliderUI } from '../utils/ui-handlers.js';
 
 // Create a circular texture for points
 function createCircleTexture() {
@@ -122,6 +126,36 @@ export function transformToRegularTetrahedron(c1, c2, c3, max_val) {
     return [x_transformed, y_transformed, z_transformed + overall_vertical_offset];
 }
 
+// --- MPE Pressure Ramping Functions ---
+function startRampingPressureUp() {
+    if (mpePressureIntervalId !== null) return; // Already ramping
+    setMpePressureIntervalId(setInterval(() => {
+        setMpePressure(Math.min(127, mpePressure + mpePressureRampSpeed));
+        mpeChannels.forEach(channel => {
+            sendMpePressure(channel, mpePressure);
+        });
+        updateMpePressureSliderUI(); // Update the UI slider
+    }, mpePressureIntervalTime));
+}
+
+function startRampingPressureDown() {
+    if (mpePressureIntervalId !== null) return; // Already ramping
+    setMpePressureIntervalId(setInterval(() => {
+        setMpePressure(Math.max(0, mpePressure - mpePressureRampSpeed));
+        mpeChannels.forEach(channel => {
+            sendMpePressure(channel, mpePressure);
+        });
+        updateMpePressureSliderUI(); // Update the UI slider
+    }, mpePressureIntervalTime));
+}
+
+function stopRampingPressure() {
+    if (mpePressureIntervalId !== null) {
+        clearInterval(mpePressureIntervalId);
+        setMpePressureIntervalId(null);
+    }
+}
+
 // --- Event Handlers for Three.js Interactions ---
 function onKeyDown(event) {
     if (event.key === 'Shift' && !isShiftHeld) {
@@ -142,6 +176,12 @@ function onKeyDown(event) {
         }
         updatePivotButtonSelection(selectedIndex);
         event.preventDefault(); 
+    } else if (event.key === '=' || event.key === '+') { // Key for increasing pressure
+        startRampingPressureUp();
+        event.preventDefault();
+    } else if (event.key === '-' || event.key === '_') { // Key for decreasing pressure (including unshifted '_')
+        startRampingPressureDown();
+        event.preventDefault();
     }
 
     if (keyState.hasOwnProperty(event.key)) {
@@ -161,6 +201,9 @@ function onKeyUp(event) {
         }
         stopChord(); 
         setCurrentlyHovered(null); 
+    } else if (event.key === '=' || event.key === '+' || event.key === '-' || event.key === '_') {
+        stopRampingPressure();
+        event.preventDefault();
     }
 
     if (keyState.hasOwnProperty(event.key)) {

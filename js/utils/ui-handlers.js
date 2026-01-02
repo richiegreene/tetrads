@@ -6,14 +6,22 @@ import {
     setEnableNotation, setNotationType, setEnableSlide, setSlideDuration, setPlaybackMode,
     setCurrentPivotVoiceIndex, setIsClickPlayModeActive, setCurrentlyHovered, setEnableHandTracking, setHandTrackingMode,
     setLastPlayedFrequencies, setLastPlayedRatios, // Added these imports
-    controls
+    controls,
+    mpePressure, setMpePressure 
 } from '../globals.js';
 import { updateWaveform, playChord } from '../components/audio-engine.js'; // Added playChord import
 import { updateTetrahedron, cycleLayoutMode } from '../calculations/tetrahedron-updater.js';
 import { stopChord } from '../components/audio-engine.js';
 import { exportToSVG, downloadSVG, exportToCSV, downloadCSV } from './data-export.js';
-import { initMidiOutput } from '../midi/midi-output.js'; // Import initMidiOutput
+import { initMidiOutput, sendMpePressure, mpeChannels } from '../midi/midi-output.js'; // Import initMidiOutput and sendMpePressure
 import { startHandTracking, stopHandTracking } from '../components/hand-tracker.js'; // Import hand tracking functions
+
+export function updateMpePressureSliderUI() {
+    const mpePressureSlider = document.getElementById('mpePressureSlider');
+    if (mpePressureSlider) {
+        mpePressureSlider.value = mpePressure;
+    }
+}
 
 export function setupUIEventListeners() {
     const limitTypeSelect = document.getElementById('limitType');
@@ -37,9 +45,22 @@ export function setupUIEventListeners() {
     const toggleIcon = settingsHeader.querySelector('.toggle-icon');
     const infoLink = document.getElementById('info-link');
     const playbackModeSelect = document.getElementById('playbackMode'); // Get new dropdown
+    const midiOutputSelect = document.getElementById('midiOutputSelect'); // Get MIDI output select
+    const mpePressureSlider = document.getElementById('mpePressureSlider'); // Get MPE Pressure slider
 
     // Initial setup for prime limit options
     primeLimitOptions.style.display = limitTypeSelect.value === 'Prime' ? 'flex' : 'none';
+    if (mpePressureSlider) {
+        mpePressureSlider.value = mpePressure;
+    }
+
+    const updateMpePressureSliderVisibility = () => {
+        const isMpePlayback = playbackModeSelect.value === 'mpe-midi' || playbackModeSelect.value === 'both';
+        const isMidiOutputSelected = midiOutputSelect && midiOutputSelect.value !== 'No devices found' && midiOutputSelect.value !== '';
+        if (mpePressureSlider) {
+            mpePressureSlider.style.display = (isMpePlayback && isMidiOutputSelected) ? 'inline-block' : 'none';
+        }
+    };
 
     playbackModeSelect.addEventListener('change', async (event) => {
         const selectedMode = event.target.value;
@@ -59,7 +80,17 @@ export function setupUIEventListeners() {
             // Optionally, add logic here to stop current browser audio if switching to MPE MIDI only
             // or re-trigger updateTetrahedron if playback mode affects visualization logic
         }
+        updateMpePressureSliderVisibility();
     });
+
+    if (midiOutputSelect) {
+        midiOutputSelect.addEventListener('change', () => {
+            updateMpePressureSliderVisibility();
+        });
+    }
+
+    // Initial visibility check for the MPE pressure slider
+    updateMpePressureSliderVisibility();
 
 
     limitTypeSelect.addEventListener('change', (event) => {
@@ -128,6 +159,16 @@ export function setupUIEventListeners() {
     timbreSlider.addEventListener('input', (event) => {
         updateWaveform(parseFloat(event.target.value));
     });
+
+    if (mpePressureSlider) {
+        mpePressureSlider.addEventListener('input', (event) => {
+            const newPressure = parseInt(event.target.value);
+            setMpePressure(newPressure);
+            mpeChannels.forEach(channel => {
+                sendMpePressure(channel, newPressure);
+            });
+        });
+    }
 
     // Live-update sliders: Base Size and Measure (scalingFactor)
     if (baseSizeSlider) {

@@ -25,6 +25,11 @@ export let handTrackingMode = 'displayVirtualHands'; // Default to displaying vi
 export let currentPeriodicWave = null; // For custom waveforms
 export let compensationGainNode;
 
+export let mpePressure = 64; // Current MPE pressure value (0-127)
+export let mpePressureRampSpeed = 1; // How quickly pressure changes per interval
+export let mpePressureIntervalTime = 50; // Milliseconds between pressure updates
+export let mpePressureIntervalId = null; // To store the interval ID for clearing
+
 // Playback state
 export let playbackMode = 'browser'; // Default to browser audio
 
@@ -65,6 +70,10 @@ export function setEnableHandTracking(val) { enableHandTracking = val; } // New 
 export function setHandTrackingMode(val) { handTrackingMode = val; } // New setter for hand tracking mode
 export function setCurrentPeriodicWave(val) { currentPeriodicWave = val; }
 export function setCompensationGainNode(val) { compensationGainNode = val; }
+export function setMpePressure(val) { mpePressure = val; }
+export function setMpePressureRampSpeed(val) { mpePressureRampSpeed = val; }
+export function setMpePressureIntervalTime(val) { mpePressureIntervalTime = val; }
+export function setMpePressureIntervalId(val) { mpePressureIntervalId = val; }
 export function setPlaybackMode(val) { playbackMode = val; } // New setter
 export function setEnableNotation(val) { enableNotation = val; }
 export function setNotationType(val) { notationType = val; }

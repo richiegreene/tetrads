@@ -6,7 +6,7 @@ let midiOutput = null; // Currently selected MIDI output device
 let midiOutputSelect = null; // HTML select element for MIDI output devices
 let midiDeviceSelectorDiv = null; // HTML div containing the selector
 
-let mpeChannels = new Set(); // Keep track of active MPE channels (2-16)
+export let mpeChannels = new Set(); // Keep track of active MPE channels (2-16)
 
 const MPE_PITCH_BEND_RANGE = 48; // Common MPE pitch bend range in semitones
 const MIDI_CHANNEL_START = 2;
@@ -234,6 +234,18 @@ export function sendMpeNoteOn(index, frequency, velocity = 100) {
     midiOutput.send([0x90 | channel, midiNote, velocity]); // Note On
 
     activeMpeNotes.set(index, { channel, midiNote, lastPitchBend });
+}
+
+export function sendMpePressure(channel, pressure) {
+    if (!midiOutput) {
+        console.warn("No MIDI output selected or available. Cannot send MPE Pressure.");
+        return;
+    }
+    // Channel Pressure (Aftertouch) message: 0xD0 | channel, pressure
+    // Pressure value is 0-127
+    const clampedPressure = Math.max(0, Math.min(127, Math.round(pressure)));
+    midiOutput.send([0xD0 | channel, clampedPressure]);
+    // console.log(`Sent MPE Pressure: channel=${channel}, pressure=${clampedPressure}`);
 }
 
 export function sendMpeNoteOff(index, velocity = 64) {
