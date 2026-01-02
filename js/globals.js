@@ -32,6 +32,8 @@ export let mpePressureIntervalId = null; // To store the interval ID for clearin
 
 // Playback state
 export let playbackMode = 'browser'; // Default to browser audio
+export let isCapsLockActive = false; // To track Caps Lock state
+export const continuousRotationKeys = new Set(); // To track keys for continuous rotation
 
 // Notation state
 export let enableNotation = true;
@@ -78,6 +80,10 @@ export function setPlaybackMode(val) { playbackMode = val; } // New setter
 export function setEnableNotation(val) { enableNotation = val; }
 export function setNotationType(val) { notationType = val; }
 export function setNotationDisplay(val) { notationDisplay = val; }
+export function setIsCapsLockActive(val) { isCapsLockActive = val; }
+export function clearContinuousRotationKeys() {
+    continuousRotationKeys.clear();
+}
 
 // Helper for keyState
 export function setKeyState(key, value) {

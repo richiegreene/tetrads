@@ -10,7 +10,9 @@ import {
     setCurrentSprites, setIsShiftHeld, setIsClickPlayModeActive, setCurrentlyHovered,
     setCurrentPivotVoiceIndex, setKeyState,
     mpePressure, mpePressureRampSpeed, mpePressureIntervalTime, mpePressureIntervalId,
-    setMpePressure, setMpePressureRampSpeed, setMpePressureIntervalTime, setMpePressureIntervalId
+    setMpePressure, setMpePressureRampSpeed, setMpePressureIntervalTime, setMpePressureIntervalId,
+    isCapsLockActive, setIsCapsLockActive,
+    continuousRotationKeys, clearContinuousRotationKeys
 } from '../globals.js';
 
 import { initAudio, stopChord, playChord } from '../components/audio-engine.js';
@@ -158,6 +160,33 @@ function stopRampingPressure() {
 
 // --- Event Handlers for Three.js Interactions ---
 function onKeyDown(event) {
+    const capsLockWasActive = isCapsLockActive;
+    const currentCapsLockState = event.getModifierState('CapsLock');
+    setIsCapsLockActive(currentCapsLockState);
+    const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+
+    if (currentCapsLockState) { // Caps Lock is active
+        if (arrowKeys.includes(event.key)) {
+            // If an arrow key is pressed, clear all previous continuous rotation keys
+            // and add only the newly pressed one(s). This handles conflicting directions by overriding.
+            clearContinuousRotationKeys();
+            continuousRotationKeys.add(event.key);
+            
+            // Explicitly set keyState for all arrow keys to false to prevent normal rotation fallback
+            arrowKeys.forEach(key => setKeyState(key, false));
+            event.preventDefault(); // Prevent default scroll behavior
+        }
+        // Other keys (non-arrow) should not affect continuousRotationKeys.
+    } else { // Caps Lock is NOT active
+        // If Caps Lock just turned off, or was already off, clear continuous rotation.
+        // This ensures continuous rotation stops immediately when Caps Lock is deactivated.
+        if (capsLockWasActive && !currentCapsLockState || continuousRotationKeys.size > 0) {
+            clearContinuousRotationKeys();
+            // Also ensure keyState for arrow keys are false when exiting CapsLock continuous mode
+            arrowKeys.forEach(key => setKeyState(key, false));
+        }
+    }
+
     if (event.key === 'Shift' && !isShiftHeld) {
         initAudio();
         setIsShiftHeld(true);
@@ -184,13 +213,28 @@ function onKeyDown(event) {
         event.preventDefault();
     }
 
-    if (keyState.hasOwnProperty(event.key)) {
-        setKeyState(event.key, true);
-        event.preventDefault();
+    // Update keyState for non-arrow keys normally, or for arrow keys when CapsLock is off
+    // Only update if the key is not an arrow key OR if Caps Lock is not active
+    if (!arrowKeys.includes(event.key) || !currentCapsLockState) {
+        if (keyState.hasOwnProperty(event.key)) {
+            setKeyState(event.key, true);
+            event.preventDefault();
+        }
     }
 }
 
 function onKeyUp(event) {
+    const capsLockWasActive = isCapsLockActive;
+    const currentCapsLockState = event.getModifierState('CapsLock');
+    setIsCapsLockActive(currentCapsLockState);
+    const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+
+    // If Caps Lock was active and is now deactivated, stop continuous rotation and clear keyStates
+    if (capsLockWasActive && !currentCapsLockState) {
+        clearContinuousRotationKeys();
+        arrowKeys.forEach(key => setKeyState(key, false)); // Ensure all arrow keyStates are false
+    }
+
     if (event.key === 'Shift') {
         setIsShiftHeld(false);
         const playButtonElement = document.getElementById('playButton'); 
@@ -205,8 +249,11 @@ function onKeyUp(event) {
         stopRampingPressure();
         event.preventDefault();
     }
-
-    if (keyState.hasOwnProperty(event.key)) {
+    
+    // When CapsLock is active, arrow keys being released should NOT stop continuous rotation.
+    // Continuous rotation is managed by CapsLock state and subsequent arrow key presses.
+    // For non-arrow keys (or arrow keys when CapsLock is off), set keyState to false.
+    if (!currentCapsLockState && keyState.hasOwnProperty(event.key)) {
         setKeyState(event.key, false);
         event.preventDefault();
     }
@@ -322,17 +369,36 @@ export function animate() {
     requestAnimationFrame(animate);
     if (controls) controls.update();
 
-    if (keyState.ArrowUp) {
-        if (scene) scene.rotation.x -= rotationSpeed;
-    }
-    if (keyState.ArrowDown) {
-        if (scene) scene.rotation.x += rotationSpeed;
-    }
-    if (keyState.ArrowLeft) {
-        if (scene) scene.rotation.y -= rotationSpeed;
-    }
-    if (keyState.ArrowRight) {
-        if (scene) scene.rotation.y += rotationSpeed;
+    const continuousRotationSpeed = rotationSpeed * 0.125;
+
+    // Apply continuous rotation if Caps Lock is active and keys are in continuousRotationKeys
+    if (isCapsLockActive) {
+        if (continuousRotationKeys.has('ArrowUp')) {
+            if (scene) scene.rotation.x -= continuousRotationSpeed;
+        }
+        if (continuousRotationKeys.has('ArrowDown')) {
+            if (scene) scene.rotation.x += continuousRotationSpeed;
+        }
+        if (continuousRotationKeys.has('ArrowLeft')) {
+            if (scene) scene.rotation.y -= continuousRotationSpeed;
+        }
+        if (continuousRotationKeys.has('ArrowRight')) {
+            if (scene) scene.rotation.y += continuousRotationSpeed;
+        }
+    } else {
+        // Fallback to normal rotation behavior if Caps Lock is off
+        if (keyState.ArrowUp) {
+            if (scene) scene.rotation.x -= rotationSpeed;
+        }
+        if (keyState.ArrowDown) {
+            if (scene) scene.rotation.x += rotationSpeed;
+        }
+        if (keyState.ArrowLeft) {
+            if (scene) scene.rotation.y -= rotationSpeed;
+        }
+        if (keyState.ArrowRight) {
+            if (scene) scene.rotation.y += rotationSpeed;
+        }
     }
 
     if (currentLayoutDisplay === 'labels' || currentLayoutDisplay === 'points') {
