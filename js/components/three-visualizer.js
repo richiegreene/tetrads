@@ -205,10 +205,10 @@ function onKeyDown(event) {
         }
         updatePivotButtonSelection(selectedIndex);
         event.preventDefault(); 
-    } else if (event.key === '=' || event.key === '+' || event.key === '2' || event.key === '@') { // Keys for increasing pressure
+    } else if (event.key === '=' || event.key === '+' || event.key === '@') { // Keys for increasing pressure
         startRampingPressureUp();
         event.preventDefault();
-    } else if (event.key === '-' || event.key === '_' || event.key === '1' || event.key === '!') { // Keys for decreasing pressure
+    } else if (event.key === '-' || event.key === '_' || event.key === '!') { // Keys for decreasing pressure
         startRampingPressureDown();
         event.preventDefault();
     }
