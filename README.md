@@ -44,8 +44,8 @@ Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of
 * ⇧+Hover(Click Hold): sustain a chord; next chord on release
 * s, a, t, b keys to toggle the pivot/common-tone between adjacent chords
 * Change Pressure (for MPE):
-  * reduce via L or RH keycommands: !1 or _-
-  * increase via L or RH keycommands: @2 or +=
+  * reduce via L or RH keycommands: ! or _-
+  * increase via L or RH keycommands: @ or +=
 
 ### Settings
 * Enable Slide: set duration (sec) of portamento for adjacent SATB voices
