@@ -3,7 +3,7 @@ import { OrbitControls } from 'https://unpkg.com/three@0.126.0/examples/jsm/cont
 
 import { 
     scene, camera, renderer, controls,
-    currentSprites, currentLayoutDisplay, rotationSpeed,
+    currentSprites, currentLayoutDisplay, rotationSpeed, setRotationSpeed,
     keyState, isShiftHeld, isClickPlayModeActive, currentlyHovered,
     playButton, pivotButtons, currentPivotVoiceIndex,
     setScene, setCamera, setRenderer, setControls,
@@ -210,6 +210,12 @@ function onKeyDown(event) {
         event.preventDefault();
     } else if (event.key === '-' || event.key === '_' || event.key === '!') { // Keys for decreasing pressure
         startRampingPressureDown();
+        event.preventDefault();
+    } else if (event.key === ']' || event.key === '}') { // Speed up rotation
+        setRotationSpeed(Math.min(0.1, rotationSpeed * 1.1)); // Increase speed by 10%, max 0.1
+        event.preventDefault();
+    } else if (event.key === '[' || event.key === '{') { // Slow down rotation
+        setRotationSpeed(Math.max(0.001, rotationSpeed * 0.9)); // Decrease speed by 10%, min 0.001
         event.preventDefault();
     }
 
