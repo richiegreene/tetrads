@@ -7,6 +7,15 @@ Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of
 ## Demo
 ![display demo](https://github.com/user-attachments/assets/4247d114-28db-4907-9da5-dc5b3bece989)
 
+Performance Demo (with audio):
+<a href="https://www.youtube.com/watch?v=oT9uwUcLqag">
+  <img
+    src="https://img.youtube.com/vi/oT9uwUcLqag/maxresdefault.jpg"
+    alt="Interactive lattice app demo"
+    width="900"
+  />
+</a>
+
 ## Display 
 ### Controls
 * Rotate Tetrahedron: click/drag or arrow keys
