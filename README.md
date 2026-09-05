@@ -12,9 +12,13 @@ The panel is a side rail of three modes — Complexity Measures, Display and Pla
 ## Display 
 ### Controls
 * Rotate Tetrahedron: click/drag or arrow keys
+  * Continuous Rotation: caps lock + arrow keys
+    * speed up: ] or }
+    * slow dow: [ or {
 * Zoom: two-finger scroll/mouse-wheel
 * Layout/Looks: ⇧⌘L
   * Cycle through colormaps: Plasma, Viridis, Binary Black/White
+* (Beta Feature) Hand Tracking: ⇧⌘K 
 
 ### Settings
 * Select/Define Limit of JI terads.
@@ -31,6 +35,8 @@ The panel is a side rail of three modes — Complexity Measures, Display and Pla
   * [Weil](https://en.xen.wiki/w/Weil_norm,_Tenney%E2%80%93Weil_norm,_and_TWp_interval_and_tuning_space), $log_2(max(n,d))$
   * [Wilson](https://en.xen.wiki/w/Wilson_norm), sum of prime factors (with repetition) $\text{sopfr}(pq)$
 * Display: Points (Dots) or Labels (Enumerated Ratios)
+* Notation: depicts played chord as ratio or cents
+  * Refference pitch: 1/1 = C3 130.8128Hz
 * Base Size: Set minimum size (e.g. 0.25) of Point/Label
 * Scaling Factor: adjust to change rate of sizing/coloration difference
 * Omit Unisons/Octaves to display only chords with unique pitch classes
@@ -49,6 +55,9 @@ How the sounding chord is written out. Reference pitch: 1/1 = C3 130.8128Hz.
 * ⇧: hover to play corresponding chord
 * ⇧+Hover(Click Hold): sustain a chord; next chord on release
 * s, a, t, b keys to toggle the pivot/common-tone between adjacent chords
+* Change Pressure (for MPE):
+  * reduce via L or RH keycommands: ! or _-
+  * increase via L or RH keycommands: @ or +=
 
 ### Settings
 * Playback: In-browser audio, MIDI Polyphonic Expression (MPE), or both
