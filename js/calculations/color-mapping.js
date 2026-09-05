@@ -229,7 +229,11 @@ export function setConstantColor(which, hex) {
 function specularFor(hex) {
     const c = rgb(hex);
     const l = luminance(hex);
-    const target = Math.min(0.88, Math.max(0.22, 1.12 - l * 1.25));
+    /* The floor is not decoration. A pale body's highlight is dimmer than its
+       own diffuse, so it can only show as the crests clipping to white — and
+       below about 0.4 it does not reach even that, which made Gloss do
+       nothing at all on a near-white constant. */
+    const target = Math.min(0.88, Math.max(0.40, 1.12 - l * 1.25));
     const here = Math.max(0.02, l);
     const k = target / here;
     return hexOf({

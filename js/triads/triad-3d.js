@@ -270,8 +270,20 @@ export function rebuild(o, force = false) {
        the key actually carve the relief; a value-coloured surface wants flat,
        even light so the colours read as the numbers they are. */
     const material = colormapMaterial();
-    fillLight.intensity = material ? (material.ambient ?? 0.3) : 0.62;
-    keyLight.intensity = material ? 0.95 : 0.7;
+    if (material) {
+        /* Ambient and key have to SUM to about one, not each be about one.
+           A pale body under 0.43 fill and 0.95 key is asking for 1.38x its own
+           colour, so most of the surface clips to flat white — the relief goes
+           with it, and a specular highlight has nowhere left to go, which is
+           exactly what made Gloss do nothing on a near-white constant. */
+        fillLight.intensity = material.ambient ?? 0.3;
+        keyLight.intensity = Math.max(0.35, 1 - fillLight.intensity);
+    } else {
+        /* A value-coloured surface wants flat, even light so the colours read
+           as the numbers they are rather than as shading. */
+        fillLight.intensity = 0.62;
+        keyLight.intensity = 0.7;
+    }
 
     surface = field ? buildSurface(field) : buildPlate();
     world.add(surface);
