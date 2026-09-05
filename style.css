@@ -192,13 +192,18 @@ button.latched{background:#24405c;border-color:var(--accent);color:#cfe6ff}
   font-family:Arial,sans-serif;letter-spacing:.04em}
 
 /* ---------- the colour layouts ----------
-   Two by two rather than a strip: a chip has to show a ramp AND the ground
-   that ramp is drawn on, and four of those side by side would be four
-   slivers. The ground is the chip's own background, which is the whole
-   reason the two greyscales are legible as two layouts — one goes to light
-   on black, the other to ink on white, and a strip of ramps alone would
-   show them as the same gradient twice. */
-.maps{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 9px}
+   Two columns, and the grid runs DOWN one before starting the next — the left
+   column is every dark layout, the right every bright one, each ending in its
+   own constant. Row-major would have interleaved them, which is the one thing
+   the arrangement is for: you pick a ground first and a ramp second, so the
+   grounds should be the columns.
+
+   A chip has to show a ramp AND the ground that ramp is drawn on, which is the
+   whole reason the two greyscales read as two layouts rather than as one
+   gradient twice — and now also why Bone reads as paper rather than as brown.
+   The ground is the chip's own background, painted from the layout itself. */
+.maps{display:grid;grid-auto-flow:column;grid-template-columns:1fr 1fr;
+  grid-template-rows:repeat(6,auto);gap:6px;margin:0 0 9px}
 /* align-items and an explicit width because this is a <button>: a button is
    not a plain flex container in every engine, and without them the swatch
    collapses to its content width — which for an empty span is nothing, so the
@@ -209,15 +214,27 @@ button.latched{background:#24405c;border-color:var(--accent);color:#cfe6ff}
   border:1px solid rgba(128,128,128,.35);flex:0 0 auto}
 .map:hover{border-color:var(--accent)}
 .map.on{box-shadow:inset 0 0 0 1px var(--accent);color:var(--text)}
-/* Drawn on white in the scene, so drawn on white here. */
-.map[data-ground="light"]{background:#e9e9ec;color:#5c5d66;border-color:#c9cad0}
+/* Drawn on a light ground in the scene, so drawn on one here — and the text
+   has to come off that ground rather than off the panel's. */
+.map[data-ground="light"]{color:#5c5d66;border-color:#c9cad0}
 .map[data-ground="light"]:hover,.map[data-ground="light"].on{color:#1b1c20}
-/* A material layout's swatch is a lit body rather than a ramp, so it is drawn
-   as one: rounder, and with a little depth under it. The chip has to show what
-   the surface will look like, and a strip of gradient would be a picture of
-   the ramp its dots are coloured by instead. */
+/* A constant's swatch is a lit body rather than a ramp, so it is drawn as one:
+   rounder, and with a little depth under it. The chip has to show what the
+   surface will look like, and a strip of gradient would be a picture of the
+   ramp its dots are coloured by instead. */
 .map[data-kind="material"] .ramp{height:19px;border-radius:10px;
   box-shadow:inset 0 -1px 2px rgba(0,0,0,.35)}
+
+/* The picker sits on the chip, beside the name, because there are two
+   constants with two remembered colours and a picker anywhere else could not
+   say which one it belonged to. */
+.const-row{display:flex;align-items:center;gap:5px}
+.const-row input[type=color]{-webkit-appearance:none;appearance:none;
+  width:16px;height:16px;padding:0;border:1px solid rgba(128,128,128,.55);
+  border-radius:4px;background:none;cursor:pointer;flex:0 0 auto}
+.const-row input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+.const-row input[type=color]::-webkit-color-swatch{border:none;border-radius:3px}
+.const-row input[type=color]::-moz-color-swatch{border:none;border-radius:3px}
 
 /* ---------- checkbox rows ---------- */
 .vis{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;

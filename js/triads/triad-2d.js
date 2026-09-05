@@ -28,14 +28,16 @@ import {
 } from './triad-state.js';
 import { currentTriads, currentField, complexityRange } from './triad-surface.js';
 import { currentLayoutMode } from '../globals.js';
-import { colormapAt, lighting } from '../calculations/color-mapping.js';
+import { colormapAt, lighting, isLightGround, groundCss, layoutSignature } from '../calculations/color-mapping.js';
 
 /** The colour layout the whole app is currently set to. */
 export function colormap() { return colormapAt(currentLayoutMode); }
 /** Its ramp — what dots, contours and gradient shading are coloured by. */
 export function colormapFn() { return colormap().ramp; }
-/** Whether that layout is drawn on white, which every other colour follows. */
-export function onLight() { return colormap().ground === 0xffffff; }
+/** Whether that layout's ground is light, which every other colour follows. */
+export function onLight() { return isLightGround(colormap().ground); }
+/** The ground itself — cream, blush and sage as readily as black or white. */
+export function groundColor() { return colormap().ground; }
 /** Its material, if it is a lit layout rather than a value-coloured one. */
 export function colormapMaterial() { return colormap().material; }
 
@@ -89,7 +91,7 @@ export function resize() {
  *  The shaded ground
  * ------------------------------------------------------------------ */
 function buildShade(field) {
-    const key = `${field.w}x${field.h}|${currentLayoutMode}|${triadRelief}|${triadGloss}|${field.min}|${field.max}`;
+    const key = `${field.w}x${field.h}|${layoutSignature(currentLayoutMode)}|${triadRelief}|${triadGloss}|${field.min}|${field.max}`;
     if (key === shadeKey && shade) return shade;
 
     const off = document.createElement('canvas');
@@ -315,7 +317,10 @@ export function draw(o) {
     const light = onLight();
 
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = light ? '#ffffff' : '#000000';
+    /* The layout's own ground, not a black-or-white guess: the bright ones
+       sit on tinted paper, and a pane painted hard white behind them would
+       show the tint as a rectangle floating on a lamp. */
+    ctx.fillStyle = groundCss(groundColor());
     ctx.fillRect(0, 0, w, h);
 
     const [v0, v1, v2] = fit.vertices();

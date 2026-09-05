@@ -13,7 +13,7 @@ import { updateTetrahedron, cycleLayoutMode } from './calculations/tetrahedron-u
 import { setupUIEventListeners } from './utils/ui-handlers.js';
 import { initMidiOutput } from './midi/midi-output.js';
 import { TRIADS_PY } from './triads/triad-python.js';
-import { initTriads } from './triads/triad-mode.js';
+import { initTriads, applyModeClasses, bootTriads } from './triads/triad-mode.js';
 
 // --- MAIN PYODIDE INITIALIZATION ---
 async function initPyodide() {
@@ -369,46 +369,11 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
 
     initThreeJS();
     animate();
-    initTriads();
 
-    const limitType = document.getElementById('limitType').value;
-    const limitValueInput = document.getElementById('limitValue').value;
-    let limitValue = limitValueInput;
-    let virtualFundamentalFilter = null;
-
-    if (limitValueInput.includes('/')) {
-        const parts = limitValueInput.split('/');
-        limitValue = parts[0].trim();
-        const filterStr = parts[1].trim();
-        
-        virtualFundamentalFilter = [];
-        if (filterStr.includes('...')) {
-            const rangeParts = filterStr.split('...');
-            const start = parseInt(rangeParts[0]);
-            const end = parseInt(rangeParts[1]);
-            if (!isNaN(start) && !isNaN(end)) {
-                for (let i = start; i <= end; i++) {
-                    virtualFundamentalFilter.push(i);
-                }
-            }
-        } else {
-            virtualFundamentalFilter = filterStr.split('.').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
-        }
-    }
-
-    const maxExponent = document.getElementById('maxExponent').value;
-    const equaveRatio = parseFloat(document.getElementById('equaveRatio').value);
-    const complexityMethod = document.getElementById('complexityMethod').value;
-    const hideUnisonVoices = document.getElementById('hideUnisonVoices').checked;
-    const omitOctaves = document.getElementById('omitOctaves').checked;
-    const baseSize = parseFloat(document.getElementById('baseSize').value);
-    const scalingFactor = parseFloat(document.getElementById('scalingFactor').value);
-    const enableSize = document.getElementById('enableSize').checked;
-    const enableColor = document.getElementById('enableColor').checked;
-    const layoutDisplay = document.getElementById('layoutDisplay').value;
-    setCurrentLayoutDisplay(layoutDisplay); // Update global state for layout display
-
-    // Get references to DOM elements that are now managed by globals
+    /* Both scenes exist from the start; only one of them is asked to draw.
+       See animate(), which stands down while Triads is up, and switchMode,
+       which builds the tetrahedron the first time it is actually wanted. */
+    setCurrentLayoutDisplay(document.getElementById('layoutDisplay').value);
     setPlayButton(document.getElementById('playButton'));
     setPivotButtons(document.querySelectorAll('.pivot-button'));
     setNotationDisplay(document.getElementById('notation-display'));
@@ -420,12 +385,14 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
     // Setup all UI event listeners
     setupUIEventListeners();
 
-    await updateTetrahedron(
-        limitType, limitValue, maxExponent, virtualFundamentalFilter, equaveRatio, complexityMethod, 
-        hideUnisonVoices, omitOctaves, baseSize, scalingFactor, 
-        enableSize, enableColor, layoutDisplay
-    );
+    /* The app opens in Triads, so the triangle is what gets generated. The
+       tetrahedron costs several hundred milliseconds of a blocked thread and
+       nobody has asked to see it yet, so it waits until they do. */
+    applyModeClasses('triads');
+    initTriads();
+    await bootTriads();
 }
+
 
 // Initial call to start the application
 initPyodide();

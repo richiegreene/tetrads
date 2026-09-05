@@ -7,24 +7,24 @@ import {
     camera
 } from '../globals.js';
 import { transformToRegularTetrahedron, makeTextSprite, makePointSprite } from '../components/three-visualizer.js';
-import { COLORMAPS, colormapAt } from './color-mapping.js';
+import { colormaps, colormapAt, COLORMAP_COUNT, isLightGround } from './color-mapping.js';
 
 /**
  * The ground each colour layout is drawn on, in the order the mode index
  * counts them.
  *
- * Derived from the one table rather than written out beside it — see COLORMAPS
- * in color-mapping.js, which is also what the panel's chips are painted from
+ * Derived from the one table rather than written out beside it — see
+ * color-mapping.js, which is also what the panel's chips are painted from
  * and what the triangle shades itself with. A layout is a ramp AND its ground,
  * which is why Black and White are two layouts rather than one inverted:
  * greyscale on black runs dark to light so the simplest chords glow, and on
  * white it runs the other way so they go to ink.
  */
-export const LAYOUT_GROUNDS = COLORMAPS.map((m) => m.ground);
+export const LAYOUT_GROUNDS = colormaps().map((m) => m.ground);
 
 /** Step to the next layout — what ⇧⌘L has always done. */
 export async function cycleLayoutMode() {
-    await setLayoutMode((currentLayoutMode + 1) % COLORMAPS.length);
+    await setLayoutMode((currentLayoutMode + 1) % COLORMAP_COUNT);
 }
 
 /**
@@ -36,9 +36,9 @@ export async function cycleLayoutMode() {
  * re-runs the update rather than just recolouring what is on screen.
  */
 export async function setLayoutMode(index) {
-    const n = COLORMAPS.length;
+    const n = COLORMAP_COUNT;
     setCurrentLayoutMode(((index % n) + n) % n);
-    scene.background = new THREE.Color(LAYOUT_GROUNDS[currentLayoutMode]);
+    scene.background = new THREE.Color(colormapAt(currentLayoutMode).ground);
 
     // We need to re-run updateTetrahedron to apply new colors
     const limitType = document.getElementById('limitType').value;
@@ -185,9 +185,10 @@ export async function updateTetrahedron(limit_type, limit_value, max_exponent, v
         let spritePointColor = new THREE.Color(1, 1, 1);
         let spritePointOpacity = 0.7;
         /* On a light ground a translucent point washes out, so it is given
-           more body. Asked of the layout rather than of its index — there are
-           two light layouts now, and there may be more. */
-        const onLightGround = LAYOUT_GROUNDS[currentLayoutMode] === 0xffffff;
+           more body. A luminance test rather than a comparison with white:
+           the bright layouts sit on cream, blush and sage as well as on hard
+           white, and all of them want dark ink. */
+        const onLightGround = isLightGround(colormapAt(currentLayoutMode).ground);
         if (onLightGround) {
             spritePointOpacity = 0.9;
         }

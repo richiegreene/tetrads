@@ -1,5 +1,8 @@
 
-import * as THREE from 'https://unpkg.com/three@0.126.0/build/three.module.js';
+/* No three.js here on purpose. This module is pure arithmetic over colours —
+   nothing in it touches a scene — and keeping it that way means the colour
+   model can be tested on its own, without a browser or a GPU. The import that
+   used to sit here was unused. */
 
 export function greyscaleColormap(value) {
     // Clamp value between 0 and 1
@@ -90,33 +93,39 @@ export function plasmaColormap(value) {
  *  THE COLOUR LAYOUTS
  * =====================================================================
  *
- * A layout is a ramp, the ground that ramp is drawn on, and — for some of
- * them — a material. Everything that colours anything reads this one table:
- * the panel's chips are painted by sampling it, the tetrahedron's sprites are
- * baked from it, and the triangle's shading, contours, dots and surface all
- * come out of it. It used to be three parallel lists (a switch in the updater,
- * a table in the panel, and LAYOUT_GROUNDS) that had to be kept in the same
- * order by hand; adding a colour to one of them and not the others was a chip
- * that advertised a ramp the scene did not use.
+ * A layout is a ramp and the ground that ramp is drawn on — and, for the last
+ * two, a body colour to be lit instead of a ramp to be read. Everything that
+ * colours anything reads this one table: the panel's chips are painted by
+ * sampling it, the tetrahedron's sprites are baked from it, and the triangle's
+ * shading, contours, dots and surface all come out of it.
  *
- * GRADIENT LAYOUTS vs MATERIAL LAYOUTS.  Most of these are ramps: value
+ * THE GROUND IS A COLOUR, NOT A SWITCH.  It used to be black or white and the
+ * code tested for 0xffffff to mean "light". It is now any colour — the bright
+ * layouts sit on warm paper, pale blue-grey, blush and sage rather than on
+ * hard white, because a white ground is a lamp pointed at the reader and a
+ * tinted one is a page. Everything that used to compare against 0xffffff now
+ * asks `isLightGround`, which is a luminance test, so adding a ground of any
+ * shade is one line here.
+ *
+ * GRADIENT LAYOUTS vs CONSTANT LAYOUTS.  Most of these are ramps: value
  * becomes hue, and the 3D surface is coloured per-vertex so its height and its
  * colour say the same thing twice. That is legible, and it is also flat —
  * every facet is lit identically, so the shape reads as a contour map that
  * happens to be tilted.
  *
- * A material layout does the opposite. The surface is ONE colour, and all of
- * the modelling comes from light: an angled key, a soft fill, and a specular
- * highlight that slides across the peaks as the shape turns. Height stops
- * being redundant with colour and starts being the only thing carrying the
- * model, which is what makes a shallow ridge you would miss in a ramp visible
- * as a ridge. The flat pane renders these as hillshading — the same light on
- * the same surface, seen from directly above — so the two panes stay two views
- * of one thing rather than two different pictures.
+ * A CONSTANT layout does the opposite. The surface is one colour — the colour
+ * YOU pick, from the swatch on the chip — and all of the modelling comes from
+ * light: an angled key, a soft fill, and a specular highlight that slides
+ * across the peaks as the shape turns. Height stops being redundant with
+ * colour and starts being the only thing carrying the model, which is what
+ * makes a shallow ridge you would miss in a ramp visible as a ridge. The flat
+ * pane renders these as hillshading — the same light on the same surface, seen
+ * from directly above — so the two panes stay two views of one thing.
  *
- * A material still carries a ramp, because the tetrahedron is sprites with no
- * surface to light, and because the dots and contours on the triangle have to
- * be coloured by something.
+ * There are two of them because there are two grounds. What reads as a wet
+ * slick on black is invisible on paper, and what reads as a glazed relief on
+ * paper is a grey smudge on black — so each column ends with a constant of its
+ * own, and each remembers its own colour.
  * ------------------------------------------------------------------ */
 
 /** A ramp through a list of hex stops, evenly spaced. */
@@ -135,6 +144,41 @@ function rampFromStops(hexes) {
     };
 }
 
+const rgb = (hex) => ({
+    r: ((hex >> 16) & 255) / 255,
+    g: ((hex >> 8) & 255) / 255,
+    b: (hex & 255) / 255,
+});
+const hexOf = ({ r, g, b }) => (
+    (Math.round(Math.min(1, Math.max(0, r)) * 255) << 16)
+    | (Math.round(Math.min(1, Math.max(0, g)) * 255) << 8)
+    | Math.round(Math.min(1, Math.max(0, b)) * 255)
+);
+
+/** Rec. 709 relative luminance, 0..1. */
+export function luminance(hex) {
+    const c = rgb(hex);
+    return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+}
+
+/**
+ * Whether a ground counts as light — which decides the ink everything else is
+ * drawn in, and whether the panel goes to day mode.
+ *
+ * A threshold rather than an equality test, so a ground can be cream or pale
+ * sage rather than only #ffffff. Set well above mid so a mid-tone ground is
+ * treated as dark, which is the safer way to be wrong: light ink on a medium
+ * ground is dim, dark ink on a medium ground is unreadable.
+ */
+export function isLightGround(hex) {
+    return luminance(hex) > 0.55;
+}
+
+/** A ground as CSS, for the canvas and the exporter. */
+export function groundCss(hex) {
+    return '#' + (hex >>> 0).toString(16).padStart(6, '0');
+}
+
 const magmaRamp = rampFromStops([
     0x000004, 0x1c1044, 0x4f127b, 0x812581, 0xb5367a, 0xe55064, 0xfb8761, 0xfec287, 0xfcfdbf,
 ]);
@@ -146,17 +190,89 @@ const blueRamp = rampFromStops([
     0x23262f, 0x1e1861, 0x1a0ebe, 0x0437f2, 0x7895fc, 0xa7c6ed, 0xd0e1f9, 0xf0f4ff, 0xffffff,
 ]);
 
-/* Oil on water: near-black at the bottom, and what little colour there is
-   arrives as the cold iridescence a slick throws rather than as a hue of its
-   own. Kept dark for most of its range — a petroleum that brightened evenly
-   would just be a blue ramp. */
-const petroleumRamp = rampFromStops([
-    0x05060a, 0x0b0f18, 0x122232, 0x1a3b46, 0x27604f, 0x4a6a80, 0x8c8bad, 0xd6d9e4,
-]);
+/* ---- the bright ramps ----
+   These run the other way from the dark ones. On black the simplest chords
+   come out brightest and glow; on paper they go to ink, so t rises from a
+   mid tint into the darkest shade. Starting at the palest tint instead would
+   put the most complex chords at the same value as the paper and lose them. */
+const boneRamp   = rampFromStops([0xcbb894, 0xa8905f, 0x7d6738, 0x54421f, 0x2e2210]);
+const mistRamp   = rampFromStops([0xa8b6c8, 0x7d8ea6, 0x566880, 0x35455c, 0x1b2635]);
+const blushRamp  = rampFromStops([0xd7a8b4, 0xb87f92, 0x8f5468, 0x63313f, 0x381821]);
+const sageRamp   = rampFromStops([0xa8c2a0, 0x7fa077, 0x587a52, 0x365434, 0x1c331c]);
 
-const porcelainRamp = rampFromStops([
-    0xf4f2ee, 0xd8d4cc, 0xb0aaa0, 0x807a72, 0x504b46, 0x2a2724,
-]);
+/* ---------------------------------------------------------------------
+ *  The two constants
+ *
+ *  Their colour is the user's, so it is state rather than a literal, and the
+ *  entries below are resolved against it every time they are read. The
+ *  defaults are the two materials this replaced — a black slick and a pale
+ *  glaze — so the layouts open looking like themselves and the swatch is an
+ *  invitation rather than a blank.
+ * ------------------------------------------------------------------ */
+export const constantColors = { dark: 0x15171c, light: 0xe8e4dc };
+
+export function setConstantColor(which, hex) {
+    if (which in constantColors) constantColors[which] = hex & 0xffffff;
+}
+
+/**
+ * The highlight a body of this colour should throw.
+ *
+ * Not a fixed colour, because the same specular cannot serve both ends: a
+ * black body has no diffuse to speak of and its shape exists ONLY where the
+ * light catches it, so it needs a highlight far brighter than itself; a body
+ * already near white needs one well under it, or the highlight clips whole
+ * slopes flat and takes the relief with it. So the target brightness runs
+ * opposite to the body's, and the hue is pulled most of the way to neutral —
+ * a highlight is the colour of the lamp, not of the thing.
+ */
+function specularFor(hex) {
+    const c = rgb(hex);
+    const l = luminance(hex);
+    const target = Math.min(0.88, Math.max(0.22, 1.12 - l * 1.25));
+    const here = Math.max(0.02, l);
+    const k = target / here;
+    return hexOf({
+        r: c.r * k * 0.35 + target * 0.65,
+        g: c.g * k * 0.35 + target * 0.65,
+        b: c.b * k * 0.35 + target * 0.68,
+    });
+}
+
+/** A constant's ramp — what its dots, labels and contours are coloured by. */
+function constantRamp(hex, lightGround) {
+    const c = rgb(hex);
+    const shade = (k) => hexOf({ r: c.r * k, g: c.g * k, b: c.b * k });
+    const tint = (k) => hexOf({
+        r: c.r + (1 - c.r) * k, g: c.g + (1 - c.g) * k, b: c.b + (1 - c.b) * k,
+    });
+    /* The lattice has to stay legible against the ground whatever colour the
+       body is, so it is spread across the whole range from that colour rather
+       than drawn in it: to ink on paper, to light on black. */
+    return lightGround
+        ? rampFromStops([tint(0.45), tint(0.15), shade(0.75), shade(0.42), shade(0.18)])
+        : rampFromStops([shade(0.35), shade(0.7), hex, tint(0.35), tint(0.72)]);
+}
+
+function constantEntry(which, ground, name, title) {
+    const hex = constantColors[which];
+    const light = isLightGround(ground);
+    return {
+        name,
+        title,
+        constant: which,
+        ground,
+        ramp: constantRamp(hex, light),
+        material: {
+            color: hex,
+            specular: specularFor(hex),
+            shininess: 62,
+            /* A dark body needs the fill kept down or the key cannot carve
+               anything; a pale one needs it up or the shadows go to mud. */
+            ambient: 0.14 + luminance(hex) * 0.34,
+        },
+    };
+}
 
 /**
  * @typedef {object} Colormap
@@ -164,10 +280,16 @@ const porcelainRamp = rampFromStops([
  * @property {string} title       what the chip's tooltip says
  * @property {(t:number)=>{r,g,b}} ramp
  * @property {number} ground      the background this layout is drawn on
+ * @property {?string} constant   'dark'|'light' if its colour is the user's
  * @property {?object} material   present iff the 3D surface is lit rather than
  *                                value-coloured: `{ color, specular, shininess }`
  */
-export const COLORMAPS = [
+
+/* The order is the order the chips are laid out in, and the grid runs them
+   down one column before starting the next — so the first six are the dark
+   column and the last six the bright one, each ending in its constant. See
+   `.maps` in style.css. */
+const DARK = [
     {
         name: 'Plasma', ramp: plasmaColormap, ground: 0x000000, material: null,
         title: 'Perceptually uniform, dark blue through magenta to yellow.',
@@ -188,28 +310,64 @@ export const COLORMAPS = [
         name: 'Black', ramp: greyscaleBlackColormap, ground: 0x000000, material: null,
         title: 'Greyscale on a black ground: the simplest chords come out brightest.',
     },
+];
+
+const BRIGHT = [
     {
         name: 'White', ramp: greyscaleColormap, ground: 0xffffff, material: null,
-        title: 'Greyscale on a white ground: the simplest chords come out darkest — the layout to print.',
+        title: 'Greyscale on hard white: the simplest chords go to ink — the layout to print.',
     },
     {
-        name: 'Petroleum', ramp: petroleumRamp, ground: 0x000000,
-        /* The one case where the specular is far BRIGHTER than the body. A
-           black surface has no diffuse to speak of, so the highlight is not an
-           accent on the shading — it is the entire reading of the shape, and
-           the relief exists only where the light catches it. */
-        material: { color: 0x15171c, specular: 0x9fb4c6, shininess: 70, ambient: 0.16 },
-        title: 'A black slick: almost no body, so the shape is read entirely off the cold sheen the light leaves on it. Raise Gloss to wet it further.',
+        name: 'Bone', ramp: boneRamp, ground: 0xf7f2e8, material: null,
+        title: 'Sepia on warm paper. A tinted ground rather than hard white, which stops the page reading as a lamp.',
     },
     {
-        name: 'Porcelain', ramp: porcelainRamp, ground: 0xffffff,
-        /* The opposite case: a pale body already near white, so the specular
-           has to stay well under it or the highlight clips whole slopes flat
-           and takes the relief with it. */
-        material: { color: 0xe8e4dc, specular: 0x7d7a73, shininess: 48, ambient: 0.42 },
-        title: 'The same lighting on a pale glaze over a white ground — the material layout to print.',
+        name: 'Mist', ramp: mistRamp, ground: 0xeef1f6, material: null,
+        title: 'Slate on pale blue-grey — the coolest of the bright layouts.',
+    },
+    {
+        name: 'Blush', ramp: blushRamp, ground: 0xfaf0f1, material: null,
+        title: 'Plum on soft pink.',
+    },
+    {
+        name: 'Sage', ramp: sageRamp, ground: 0xeef3ed, material: null,
+        title: 'Deep green on pale sage.',
     },
 ];
+
+/** The layouts, in chip order, resolved against the current constant colours. */
+export function colormaps() {
+    return [
+        ...DARK,
+        constantEntry('dark', 0x000000, 'Constant',
+            'One colour of your choosing on black, modelled entirely by light — the shape is read off the highlight rather than off a ramp. Pick it with the swatch.'),
+        ...BRIGHT,
+        constantEntry('light', 0xf4f4f2, 'Constant',
+            'The same lighting on a pale ground: one colour of your choosing, glazed. Pick it with the swatch.'),
+    ];
+}
+
+/** How many there are. Used by the cycling shortcut and the mode arithmetic. */
+export const COLORMAP_COUNT = DARK.length + BRIGHT.length + 2;
+
+/** The layout currently counted by `currentLayoutMode`. */
+export function colormapAt(index) {
+    const all = colormaps();
+    return all[((index % all.length) + all.length) % all.length];
+}
+
+/**
+ * Everything about a layout that a rendered picture depends on.
+ *
+ * The renderers cache what they have drawn, and they used to key that cache on
+ * the layout's INDEX — which is wrong for the constants, whose colour can
+ * change without the index moving. Anything holding a painted surface should
+ * hold this beside it instead.
+ */
+export function layoutSignature(index) {
+    const m = colormapAt(index);
+    return `${index}|${m.ground}|${m.material ? m.material.color : 'ramp'}`;
+}
 
 /**
  * How a layout is lit, at this Gloss setting.
@@ -221,16 +379,14 @@ export const COLORMAPS = [
  *   A GRADIENT layout is not lit at all. Its colours ARE the values, and
  *   shading them by the local slope would make the map lie about its own
  *   numbers. So gloss adds only a highlight over the top — a varnish on the
- *   map rather than a light on it — and it starts at NOTHING. At the default
- *   these layouts are pixel-for-pixel the flat surfaces they always were, and
- *   the slider is something you turn up if you want it.
+ *   map rather than a light on it.
  *
- *   A MATERIAL layout is nothing BUT light: a black slick has no diffuse worth
- *   speaking of, and its shape exists only where the highlight catches it. So
- *   its sheen does not start at nothing — it starts at most of the way up and
- *   the slider wets it further. A material at true zero would be a black slab
- *   with the relief invisible inside it, which is not a duller version of the
- *   layout, it is the absence of one.
+ *   A CONSTANT layout is one colour modelled by light, so gloss runs its full
+ *   range: at 0 the surface is MATTE — shaded by the key and the fill, with no
+ *   highlight at all — and at 1 it is a mirror. The shading alone still
+ *   carries the relief, so matte is a reading of the shape rather than the
+ *   absence of one; how legible it is depends on the colour you picked, which
+ *   is now yours to pick.
  *
  * @param {Colormap} map
  * @param {number} gloss 0..1
@@ -238,10 +394,8 @@ export const COLORMAPS = [
 export function lighting(map, gloss) {
     const g = Math.min(1, Math.max(0, gloss));
     const tint = (hex, k) => {
-        const r = Math.round(Math.min(255, ((hex >> 16) & 255) * k));
-        const gg = Math.round(Math.min(255, ((hex >> 8) & 255) * k));
-        const b = Math.round(Math.min(255, (hex & 255) * k));
-        return (r << 16) | (gg << 8) | b;
+        const c = rgb(hex);
+        return hexOf({ r: c.r * k, g: c.g * k, b: c.b * k });
     };
 
     if (map.material) {
@@ -250,13 +404,16 @@ export function lighting(map, gloss) {
             material: true,
             color: m.color,
             ambient: m.ambient ?? 0.3,
-            /* Floored, so the layout is always legible, and headroom above its
-               designed value so the slider has somewhere to go. */
-            specular: tint(m.specular, 0.5 + 0.85 * g),
+            /* Straight through, with no floor under it: at 0 the specular is
+               black, which is a matte surface — the diffuse shading is left to
+               carry the relief on its own. */
+            specular: tint(m.specular, g),
             /* A dull sheen is a broad one and a wet one is tight, so shininess
                rises too — otherwise turning gloss up would only make the same
                soft patch brighter until it clipped. */
             shininess: m.shininess + g * (118 - m.shininess),
+            /* Still lit even at 0: `strength` says whether to shade at all,
+               and a matte constant is shaded, just not shiny. */
             strength: 1,
         };
     }
@@ -269,9 +426,4 @@ export function lighting(map, gloss) {
         shininess: 10 + g * 84,
         strength: g,
     };
-}
-
-/** The layout currently counted by `currentLayoutMode`. */
-export function colormapAt(index) {
-    return COLORMAPS[((index % COLORMAPS.length) + COLORMAPS.length) % COLORMAPS.length];
 }

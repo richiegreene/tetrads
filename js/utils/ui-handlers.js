@@ -31,7 +31,10 @@ import { stopChord, setTimbre, setAdsr } from '../components/audio-engine.js';
 import { updateTetrahedron, setLayoutMode, LAYOUT_GROUNDS } from '../calculations/tetrahedron-updater.js';
 import { exportToSVG, downloadSVG, exportToPNG, exportToCSV } from './data-export.js';
 import { saveTriadSVG, saveTriadPNG, exportTriadCSV } from '../triads/triad-export.js';
-import { COLORMAPS } from '../calculations/color-mapping.js';
+import {
+    colormaps, colormapAt, COLORMAP_COUNT, constantColors, setConstantColor,
+    isLightGround, groundCss,
+} from '../calculations/color-mapping.js';
 import { estimateWork, sayWork, WORK_BUDGET } from '../calculations/work-estimate.js';
 import { initMidiOutput, sendMpePressure, mpeChannels } from '../midi/midi-output.js';
 import { createTimbrePicker, FILTERED_MIN } from '../synth/timbre.js';
@@ -45,6 +48,7 @@ import {
 import {
     switchMode, refreshSet, generateSurface, applyView, applyPivot,
     invalidate as invalidateTriads, resetReference, layout as layoutStage,
+    setTetradBuilder,
 } from '../triads/triad-mode.js';
 
 const $ = (id) => document.getElementById(id);
@@ -328,7 +332,10 @@ export function setupUIEventListeners() {
     };
 
     seg('mode-seg', (v) => { switchMode(v); placeLatticeGroup(v); updateChannelVisibility(); });
-    document.body.dataset.mode = 'tetrads';
+    /* Seeded rather than assumed: the app opens in Triads, so the lattice
+       group starts where Triads keeps it and the channels start hidden or not
+       according to whether the lattice is actually showing. */
+    placeLatticeGroup(appMode);
     updateChannelVisibility();
 
     /* ---------------- Complexity Measures ---------------- */
@@ -365,41 +372,76 @@ export function setupUIEventListeners() {
         else scheduleApply('set');
     });
 
-    /* ---------------- the colormap chips ---------------- */
+    /* ---------------- the colormap chips ----------------
+     * Painted by sampling the very functions the scene colours itself with, so
+     * a swatch is the map rather than a picture of it. Rebuilt rather than
+     * restyled when a constant's colour changes, because its ramp, its
+     * highlight and its ambient are all derived from that colour. */
     const mapsEl = $('colormap-seg');
-    COLORMAPS.forEach((m, i) => {
-        const b = document.createElement('button');
-        b.className = 'map' + (i === currentLayoutMode ? ' on' : '');
-        b.dataset.v = String(i);
-        b.dataset.ground = m.ground === 0xffffff ? 'light' : 'dark';
-        /* A material layout is marked, because its chip cannot show what makes
-           it different: the ramp is only what its dots and contours are
-           coloured by, and the surface itself is that one colour under a light. */
-        if (m.material) b.dataset.kind = 'material';
-        b.title = m.title;
-        b.innerHTML = `<span class="ramp"></span>${m.name}`;
-        b.querySelector('.ramp').style.background = m.material
-            ? materialCss(m.material)
-            : rampCss(m.ramp);
-        mapsEl.append(b);
-    });
+
+    const paintChips = () => {
+        mapsEl.textContent = '';
+        colormaps().forEach((m, i) => {
+            const b = document.createElement('button');
+            b.className = 'map' + (i === currentLayoutMode ? ' on' : '');
+            b.dataset.v = String(i);
+            b.dataset.ground = isLightGround(m.ground) ? 'light' : 'dark';
+            /* The chip is drawn on the ground the layout is drawn on, which is
+               the whole reason two greyscales read as two layouts rather than
+               as one gradient twice — and now also why Bone reads as paper. */
+            b.style.background = groundCss(m.ground);
+            if (m.material) b.dataset.kind = 'material';
+            b.title = m.title;
+
+            const ramp = document.createElement('span');
+            ramp.className = 'ramp';
+            ramp.style.background = m.material ? materialCss(m.material) : rampCss(m.ramp);
+            b.append(ramp);
+
+            if (m.constant) {
+                /* The swatch IS the setting, so it lives on the chip rather
+                   than in a row underneath: there are two constants and they
+                   remember separate colours, and a single picker somewhere
+                   else could not say which one it was about. */
+                const row = document.createElement('span');
+                row.className = 'const-row';
+                const picker = document.createElement('input');
+                picker.type = 'color';
+                picker.value = groundCss(constantColors[m.constant]);
+                picker.title = 'The colour the light is applied to';
+                /* The press underneath selects the layout; the picker must not
+                   also toggle it on the way to opening. */
+                picker.addEventListener('click', (ev) => ev.stopPropagation());
+                picker.addEventListener('input', () => {
+                    setConstantColor(m.constant, parseInt(picker.value.slice(1), 16));
+                    paintChips();
+                    if (currentLayoutMode === i) applyColormap(i);
+                });
+                row.append(picker, document.createTextNode(m.name));
+                b.append(row);
+            } else {
+                b.append(document.createTextNode(m.name));
+            }
+            mapsEl.append(b);
+        });
+    };
 
     /**
      * Day mode, when the view is in day mode.
      *
      * Xenachord Designer's own arrangement, and its own tokens: when the
      * viewport goes light the rail and the drawer go with it, because a dark
-     * panel against a white view is a bezel with a lamp behind it. The whole
+     * panel against a light view is a bezel with a lamp behind it. The whole
      * chrome reads off the same custom properties, so overriding them on
      * `body.bright` recolours the subtree without a second stylesheet.
      *
-     * Which layouts are light is asked of the layout rather than hardcoded —
-     * White and Porcelain are both drawn on white, and there may be more.
+     * Which layouts are light is a luminance test rather than a list: the
+     * bright ones sit on cream, blush and sage as well as on hard white, and
+     * a constant's ground is whatever its column's is.
      */
     const applyBrightMode = (index) => {
-        document.body.classList.toggle('bright', COLORMAPS[index]?.ground === 0xffffff);
+        document.body.classList.toggle('bright', isLightGround(colormapAt(index).ground));
     };
-    applyBrightMode(currentLayoutMode);
 
     /**
      * Light one chip and take the scene to it. The seg and ⇧⌘L share this.
@@ -422,6 +464,8 @@ export function setupUIEventListeners() {
             setLayoutMode(index);
         }
     };
+    paintChips();
+    applyBrightMode(currentLayoutMode);
     seg('colormap-seg', (v) => applyColormap(parseInt(v)));
 
     for (const id of ['baseSize', 'scalingFactor']) {
@@ -442,9 +486,10 @@ export function setupUIEventListeners() {
      * ------------------------------------------------------------------ */
 
     /* ---- which model is under the triangle ----
-     * Choosing shows that model's parameters and nothing more. The field is
-     * not built until Generate, so you can set a model up before paying for
-     * it — and Blank takes effect at once, because it costs nothing. */
+     * Choosing one shows that model's parameters and builds it, a beat later.
+     * Which one is selected at startup is read off the markup rather than
+     * duplicated here: the lit chip is the single statement of it, so the
+     * panel and the state cannot open disagreeing about what is loaded. */
     const modelParams = { he: $('he-params'), sethares: $('sm-params') };
     const resRow = $('triad-res-row'), resInput = $('triadResolution');
     const showModelParams = (model) => {
@@ -460,7 +505,9 @@ export function setupUIEventListeners() {
         showModelParams(v);
         scheduleApply('model');
     });
-    showModelParams(triadModel);
+    const bootModel = $('triad-model-seg').querySelector('button.on')?.dataset.v || 'blank';
+    setTriadModel(bootModel);
+    showModelParams(bootModel);
 
     /* The model's own numbers. Each one rebuilds the field a beat after the
        hand comes off it — a drag sends a value a frame, and the settle timer
@@ -857,6 +904,15 @@ export function setupUIEventListeners() {
         }
     };
 
+    /* The tetrahedron, when it is first asked for. See switchMode: the app
+       opens in Triads and never generates a set nobody has looked at. */
+    setTetradBuilder(async () => {
+        showStatus('working…', true);
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await applyTetrads(true);
+        showStatus('tetrads');
+    });
+
     /* ---------------- keyboard ---------------- */
 
     /* S, A and T hold a voice, exactly as S/A/T/B do in Tetrads — where the
@@ -894,7 +950,7 @@ export function setupUIEventListeners() {
         if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'L') {
             event.preventDefault();
             // Through the chips, so the panel keeps saying which layout is on.
-            applyColormap((currentLayoutMode + 1) % COLORMAPS.length);
+            applyColormap((currentLayoutMode + 1) % COLORMAP_COUNT);
         }
         if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'S') {
             event.preventDefault();

@@ -13,8 +13,17 @@
  * inputs Tetrads does, so a 13-limit means one thing in this app.
  * ------------------------------------------------------------------ */
 
-/** Which app you are in. The rest of the app branches on this and little else. */
-export let appMode = 'tetrads'; // 'tetrads' | 'triads'
+/**
+ * Which app you are in. The rest of the app branches on this and little else.
+ *
+ * Triads is where it opens. It is the mode with something to look at before
+ * you have set anything — a concordance surface you can drag a chord across —
+ * whereas the tetrahedron is a cloud of points that has to be read before it
+ * says much. The tetrahedron is therefore not built at startup at all; it is
+ * generated the first time you ask for it, which is also several hundred
+ * milliseconds off the boot.
+ */
+export let appMode = 'triads'; // 'tetrads' | 'triads'
 export function setAppMode(v) { appMode = v; }
 
 /**
@@ -54,11 +63,10 @@ export function setTriadContours(v) { triadContours = v; }
  * and shading them would corrupt the reading, so gloss lays a highlight over
  * the top and touches nothing underneath.
  *
- * The material layouts ignore the bottom of the range — their sheen is
- * floored, because a material at true zero is a black slab with the relief
- * invisible inside it rather than a duller version of the same picture.
+ * The constant layouts use the full range: at 0 they are matte, shaded by the
+ * light but with no highlight, and at 1 they are a mirror.
  */
-export let triadGloss = 0;
+export let triadGloss = 0.5;
 export function setTriadGloss(v) { triadGloss = v; }
 
 /** How far the 3D pane lifts the field, as a fraction of the triangle's side. */

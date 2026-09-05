@@ -23,8 +23,9 @@ import {
     triadFill, triadLines, triadContours, triadDots, triadLabels, triadView,
 } from './triad-state.js';
 import { currentTriads, currentField, currentFieldModel, complexityRange } from './triad-surface.js';
-import { colormapFn, onLight, contourSegments } from './triad-2d.js';
+import { colormapFn, onLight, groundColor, contourSegments } from './triad-2d.js';
 import { domElement as gl3d } from './triad-3d.js';
+import { groundCss } from '../calculations/color-mapping.js';
 import { downloadSVG, downloadCSV, simplifyFraction } from '../utils/data-export.js';
 import { readPanel } from './triad-mode.js';
 
@@ -82,7 +83,7 @@ export function exportTriadSVG() {
         width, height, viewBox: `0 0 ${width} ${height}`,
     });
     svg.appendChild(el('rect', {
-        x: 0, y: 0, width, height, fill: light ? '#ffffff' : '#000000',
+        x: 0, y: 0, width, height, fill: groundCss(groundColor()),
     }));
 
     const [v0, v1, v2] = fit.vertices();
@@ -227,7 +228,7 @@ export function saveTriadPNG(filename = 'triads-export.png') {
         canvas.width = Math.round(width * scale);
         canvas.height = Math.round(height * scale);
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = onLight() ? '#ffffff' : '#000000';
+        ctx.fillStyle = groundCss(groundColor());
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
         URL.revokeObjectURL(url);

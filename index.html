@@ -19,14 +19,14 @@
        viewport keeps everything it gives back. -->
   <aside id="panel" class="open">
     <div class="rail">
-      <!-- Complexity: three pitches and the edges between them, which is
-           what a limit and a complexity measure are read over. -->
+      <!-- Complexity: a caliper, because a complexity measure is a
+           measurement taken across the set. -->
       <button class="rail-btn" data-drawer="complexity" aria-expanded="true"
         title="Complexity Measures — which tetrads exist at all">
         <svg class="rail-icon" viewBox="0 0 26 26" fill="none" stroke="currentColor"
           stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M13 4.5L21 19H5z" />
-          <path d="M13 4.5v14.5M13 19l-8-6M13 19l8-6" />
+          <rect x="3" y="9.5" width="20" height="7" rx="1" />
+          <path d="M7.5 9.5v3M11.5 9.5v3M15.5 9.5v2M19.5 9.5v3" />
         </svg>
       </button>
       <!-- Display: an eye, because the drawer changes nothing but what you
@@ -79,9 +79,9 @@
            appear or go, marked `data-mode` in the markup below. -->
       <div class="mode-switch">
         <div class="seg" id="mode-seg">
-          <button data-v="triads"
+          <button data-v="triads" class="on"
             title="Three voices in a triangle: the same limit read over two intervals, on a concordance surface you can play">Triads</button>
-          <button data-v="tetrads" class="on"
+          <button data-v="tetrads"
             title="Four voices in a tetrahedron: every JI tetrad under the limit, placed by its three intervals">Tetrads</button>
         </div>
       </div>
@@ -132,7 +132,7 @@
                trick — Pyodide runs on the page's own thread, so a model that
                recomputed on every intermediate value of a drag would freeze
                the slider being dragged. See scheduleApply in ui-handlers.js. -->
-          <fieldset data-mode="triads" class="mode-off">
+          <fieldset data-mode="triads">
             <legend>Model</legend>
             <div class="seg" id="triad-model-seg">
               <button data-v="blank"
@@ -220,7 +220,7 @@
                and nothing about how deep, a lifted surface says how deep and
                blurs where — so "Both" is not a compromise between them but the
                reason the setting exists. One cursor drives both. -->
-          <fieldset data-mode="triads" class="mode-off">
+          <fieldset data-mode="triads">
             <legend>View</legend>
             <div class="seg" id="triad-view-seg">
               <button data-v="topo" class="on"
@@ -260,7 +260,7 @@
           <!-- The lattice, on Isoharmonics' own terms: whether the just
                triads are marked at all, and whether each mark says which
                chord it is. Two questions, so two switches. -->
-          <fieldset id="triad-lattice-fieldset" data-mode="triads" class="mode-off">
+          <fieldset id="triad-lattice-fieldset" data-mode="triads">
             <legend>Lattice</legend>
             <div class="seg" id="triad-lattice-seg">
               <button data-v="triadDots"
@@ -281,7 +281,7 @@
               title="How close the pointer must come to a just triad before it lands on it exactly. At 0 the surface is continuous everywhere.">
           </fieldset>
 
-          <fieldset data-mode="tetrads">
+          <fieldset data-mode="tetrads" class="mode-off">
             <legend>Type/Setting</legend>
             <div class="seg" id="layout-seg">
               <button data-v="points" class="on" title="One point per tetrad">Points</button>
@@ -390,12 +390,12 @@
 
                  Triads only: the tetrahedron is drawn as flat sprites, and
                  there is no surface there for a light to catch. -->
-            <div class="pressrow mode-off" data-mode="triads">
+            <div class="pressrow" data-mode="triads">
               <label for="triadGloss">Gloss</label>
-              <span class="pressval" id="gloss-v">0%</span>
+              <span class="pressval" id="gloss-v">50%</span>
             </div>
-            <input type="range" id="triadGloss" min="0" max="100" step="1" value="0"
-              class="mode-off" data-mode="triads"
+            <input type="range" id="triadGloss" min="0" max="100" step="1" value="50"
+              data-mode="triads"
               title="How wet the lifted surface is. On Petroleum and Porcelain this is matte through to a mirror; on the colour ramps it adds a highlight over the top without touching the colours underneath.">
 
             <!-- ---- how fast the shape turns ----
@@ -406,7 +406,7 @@
             <div class="tune-h">Motion <span class="key-hint">[ ]</span></div>
             <div class="pressrow">
               <label for="rotationSpeed">Rotation</label>
-              <span class="pressval" id="rotation-v">34°/s</span>
+              <span class="pressval" id="rotation-v">3°/s</span>
             </div>
             <input type="range" id="rotationSpeed" min="0" max="100" step="1" value="50"
               title="How far one press of an arrow key turns the shape, and how fast it turns on its own.">
@@ -448,9 +448,9 @@
                while it happens. -->
           <fieldset>
             <legend>Voice Leading</legend>
-            <label class="vis" data-mode="tetrads">
+            <label class="vis mode-off" data-mode="tetrads">
               <input type="checkbox" id="enableSlide" checked>Portamento</label>
-            <div id="slide-duration-row" data-mode="tetrads">
+            <div id="slide-duration-row" class="mode-off" data-mode="tetrads">
               <div class="pressrow">
                 <label for="slideDuration">Time</label>
                 <span class="pressval" id="slide-v">0.25 s</span>
@@ -459,8 +459,8 @@
                 title="How long the four voices take to reach the next tetrad. At 0 they arrive at once.">
             </div>
 
-            <div class="tune-h" data-mode="tetrads">Pivot</div>
-            <div class="seg" id="pivot-seg" data-mode="tetrads">
+            <div class="tune-h mode-off" data-mode="tetrads">Pivot</div>
+            <div class="seg mode-off" id="pivot-seg" data-mode="tetrads">
               <button class="pivot-button" data-pivot-index="3" title="Soprano held">S</button>
               <button class="pivot-button" data-pivot-index="2" title="Alto held">A</button>
               <button class="pivot-button" data-pivot-index="1" title="Tenor held">T</button>
@@ -477,8 +477,8 @@
                  Switching while a chord is sounding is silent: the incoming
                  pivot inherits the pitch that voice already has, and only
                  later drags are measured from it. -->
-            <div class="tune-h mode-off" data-mode="triads">Pivot</div>
-            <div class="seg mode-off" id="triad-pivot-seg" data-mode="triads">
+            <div class="tune-h" data-mode="triads">Pivot</div>
+            <div class="seg" id="triad-pivot-seg" data-mode="triads">
               <button data-v="2" title="Soprano held (S)">S</button>
               <button data-v="1" title="Alto held (A)">A</button>
               <button data-v="0" class="on" title="Tenor held (T)">T</button>
@@ -495,7 +495,7 @@
                follow: at 0 the pitch is exactly under the pointer, and a little
                smoothing takes the stair-stepping off a fast drag without the
                hand feeling ahead of the sound. -->
-          <fieldset data-mode="triads" class="mode-off">
+          <fieldset data-mode="triads">
             <legend>Tracking</legend>
             <div class="pressrow">
               <label for="triadGlide">Portamento</label>
@@ -574,7 +574,7 @@
              goes down on the triangle and three voices come with it, so a
              latch that says "now clicks make sound" would be describing
              something that is already true. -->
-        <button id="playButton" data-mode="tetrads"
+        <button id="playButton" class="mode-off" data-mode="tetrads"
           title="Sound the tetrad under the pointer (hold ⇧)">Play (<span class="symbol">⇧</span>)</button>
         <div id="panel-status" title="What the panel has just produced">ready</div>
       </div>
@@ -587,7 +587,7 @@
          tetrahedron, the flat triangle, the lifted surface, or the last two
          side by side. Laid out rather than swapped so that "Both" is the same
          two panes at half the width, not a third thing to keep working. -->
-    <div id="stage" data-view="tetra">
+    <div id="stage" data-view="topo">
       <div id="container"></div>
       <div id="triad-topo-pane"><canvas id="triad-canvas"></canvas></div>
       <div id="triad-3d-pane"></div>

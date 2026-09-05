@@ -56,6 +56,14 @@ let dirty = true;
    drawn on a black ground. */
 let layoutOnEntry = null;
 
+/* The tetrahedron is not built at startup — the app opens in Triads, and
+   generating a set nobody has asked to see is several hundred milliseconds of
+   a blocked thread on the way to a picture of something else. ui-handlers
+   registers the builder here and it runs the first time Tetrads is asked for. */
+let buildTetrads = null;
+let tetradsBuilt = false;
+export function setTetradBuilder(fn) { buildTetrads = fn; }
+
 /** Repaint on the next frame. Everything that changes the picture calls this. */
 export function invalidate({ rebuild = false } = {}) {
     if (rebuild) invalidate2D();
@@ -176,6 +184,27 @@ function gesture(kind, hit) {
  * ------------------------------------------------------------------ */
 
 /**
+ * Put the panel into one mode or the other.
+ *
+ * Split out of switchMode because it has to happen at startup as well, where
+ * there is no switch: the app opens in Triads, so the tetrahedron's controls
+ * have to be already gone by the first paint rather than removed a moment
+ * after it. The markup ships in the same state, so nothing flickers either.
+ */
+export function applyModeClasses(mode) {
+    document.body.dataset.mode = mode;
+    for (const el of document.querySelectorAll('[data-mode]')) {
+        el.classList.toggle('mode-off', el.dataset.mode !== mode);
+    }
+    for (const b of document.querySelectorAll('#mode-seg button')) {
+        b.classList.toggle('on', b.dataset.v === mode);
+    }
+    for (const h of document.querySelectorAll('.drawer h1 .mode-name')) {
+        h.textContent = mode === 'triads' ? 'Triads' : 'Tetrads';
+    }
+}
+
+/**
  * Show one app or the other.
  *
  * Everything that sounds is let go on the way across. The two modes address
@@ -190,16 +219,7 @@ export async function switchMode(mode) {
     setCursorLive(false);
     setAppMode(mode);
 
-    document.body.dataset.mode = mode;
-    for (const el of document.querySelectorAll('[data-mode]')) {
-        el.classList.toggle('mode-off', el.dataset.mode !== mode);
-    }
-    for (const b of document.querySelectorAll('#mode-seg button')) {
-        b.classList.toggle('on', b.dataset.v === mode);
-    }
-    for (const h of document.querySelectorAll('.drawer h1 .mode-name')) {
-        h.textContent = mode === 'triads' ? 'Triads' : 'Tetrads';
-    }
+    applyModeClasses(mode);
 
     layout();
     if (mode === 'triads') {
@@ -213,12 +233,33 @@ export async function switchMode(mode) {
            schedule one. */
         if (triadModel !== 'blank') await generateSurface(triadModel);
     } else {
-        if (layoutOnEntry !== null && layoutOnEntry !== currentLayoutMode) {
+        /* First visit builds it. After that a colormap chosen while it was
+           hidden is applied on the way back — the tetrahedron bakes its
+           colours into its sprites, so that is a rebuild rather than a
+           repaint, and doing it here rather than on every switch is what
+           keeps going back and forth cheap. */
+        if (!tetradsBuilt) {
+            tetradsBuilt = true;
+            await buildTetrads?.();
+        } else if (layoutOnEntry !== null && layoutOnEntry !== currentLayoutMode) {
             await setLayoutMode(currentLayoutMode);
         }
         layoutOnEntry = null;
     }
     dirty = true;
+}
+
+/**
+ * Everything the triangle needs on the way up.
+ *
+ * The set first and then the model, in that order and not in parallel: the
+ * model is drawn over the lattice, and both are Pyodide on the page's own
+ * thread, so they could not overlap anyway. Whichever model the panel opens
+ * with is the one that gets built — there is no press to wait for.
+ */
+export async function bootTriads() {
+    await refreshSet();
+    await generateSurface(triadModel);
 }
 
 /**

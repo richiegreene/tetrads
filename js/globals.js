@@ -9,7 +9,9 @@ export let currentLayoutDisplay = 'points'; // Global variable to store current 
 export let isShiftHeld = false; // To track if Shift key is currently held down
 export let isClickPlayModeActive = false; // To track if play mode is active via button click
 export let currentlyHovered = null; // To track the object the mouse is over
-export let currentLayoutMode = 0; // 0: Plasma, 1: Viridis, 2: Greyscale Black, 3: Greyscale White
+/* Which colour layout is on. Counted in chip order — see colormaps() in
+   color-mapping.js, which is the dark column then the bright one. 2 is Magma. */
+export let currentLayoutMode = 2;
 export let playButton; // Declare playButton globally
 export let pivotButtons; // Declare pivotButtons globally
 export let currentPivotVoiceIndex = 0; // 0: Bass, 1: Tenor, 2: Alto, 3: Soprano (default Bass)

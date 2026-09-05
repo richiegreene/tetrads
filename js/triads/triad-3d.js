@@ -33,8 +33,8 @@ import {
 } from './triad-state.js';
 import { currentTriads, currentField, complexityRange } from './triad-surface.js';
 import { currentLayoutMode } from '../globals.js';
-import { colormapFn, colormap, colormapMaterial, onLight, contourSegments } from './triad-2d.js';
-import { lighting } from '../calculations/color-mapping.js';
+import { colormapFn, colormap, colormapMaterial, onLight, groundColor, contourSegments } from './triad-2d.js';
+import { lighting, layoutSignature } from '../calculations/color-mapping.js';
 import { rotationSpeed, autoRotate, autoRotateDir, keyState } from '../globals.js';
 
 /** The triangle is drawn one unit on a side, centred on the origin. */
@@ -247,14 +247,14 @@ export function rebuild(o, force = false) {
         field ? [field.w, field.h, field.min, field.max] : null,
         triadRelief, triadFill, triadLines, triadContours, triadDots, triadLabels,
         o.equaveRatio, o.baseSize, o.scalingFactor, o.enableSize, o.enableColor,
-        currentLayoutMode, triadGloss, currentTriads().length,
+        layoutSignature(currentLayoutMode), triadGloss, currentTriads().length,
     ]);
     if (!force && key === builtKey) return;
     const reliefChanged = builtRelief !== triadRelief;
     builtKey = key;
     builtRelief = triadRelief;
 
-    scene.background = new THREE.Color(onLight() ? 0xffffff : 0x000000);
+    scene.background = new THREE.Color(groundColor());
     marker.material.color.set(onLight() ? 0x111111 : 0xffffff);
 
     for (const item of [surface, lattice, labels, lines]) {
