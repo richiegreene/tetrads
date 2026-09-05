@@ -7,23 +7,24 @@ import {
     camera
 } from '../globals.js';
 import { transformToRegularTetrahedron, makeTextSprite, makePointSprite } from '../components/three-visualizer.js';
-import { plasmaColormap, viridisColormap, greyscaleColormap, greyscaleBlackColormap } from './color-mapping.js';
+import { COLORMAPS, colormapAt } from './color-mapping.js';
 
 /**
- * The four colour layouts, in the order the mode index counts them.
+ * The ground each colour layout is drawn on, in the order the mode index
+ * counts them.
  *
- * A layout is a ramp AND the ground it is drawn on, which is why the last two
- * are two layouts rather than one inverted: Greyscale on black runs dark to
- * light so the simplest tetrads glow, and on white it runs the other way so
- * they go to ink. The panel's chips are painted from this table (see
- * COLORMAPS in ui-handlers.js), so a chip cannot come to advertise a ramp the
- * scene does not use.
+ * Derived from the one table rather than written out beside it — see COLORMAPS
+ * in color-mapping.js, which is also what the panel's chips are painted from
+ * and what the triangle shades itself with. A layout is a ramp AND its ground,
+ * which is why Black and White are two layouts rather than one inverted:
+ * greyscale on black runs dark to light so the simplest chords glow, and on
+ * white it runs the other way so they go to ink.
  */
-export const LAYOUT_GROUNDS = [0x000000, 0x000000, 0x000000, 0xffffff];
+export const LAYOUT_GROUNDS = COLORMAPS.map((m) => m.ground);
 
 /** Step to the next layout — what ⇧⌘L has always done. */
 export async function cycleLayoutMode() {
-    await setLayoutMode((currentLayoutMode + 1) % 4);
+    await setLayoutMode((currentLayoutMode + 1) % COLORMAPS.length);
 }
 
 /**
@@ -35,7 +36,8 @@ export async function cycleLayoutMode() {
  * re-runs the update rather than just recolouring what is on screen.
  */
 export async function setLayoutMode(index) {
-    setCurrentLayoutMode(((index % 4) + 4) % 4);
+    const n = COLORMAPS.length;
+    setCurrentLayoutMode(((index % n) + n) % n);
     scene.background = new THREE.Color(LAYOUT_GROUNDS[currentLayoutMode]);
 
     // We need to re-run updateTetrahedron to apply new colors
@@ -182,7 +184,11 @@ export async function updateTetrahedron(limit_type, limit_value, max_exponent, v
         let spriteTextColor = { r:255, g:255, b:255, a:1.0 };
         let spritePointColor = new THREE.Color(1, 1, 1);
         let spritePointOpacity = 0.7;
-        if (currentLayoutMode === 3) { // Greyscale White
+        /* On a light ground a translucent point washes out, so it is given
+           more body. Asked of the layout rather than of its index — there are
+           two light layouts now, and there may be more. */
+        const onLightGround = LAYOUT_GROUNDS[currentLayoutMode] === 0xffffff;
+        if (onLightGround) {
             spritePointOpacity = 0.9;
         }
 
@@ -191,26 +197,15 @@ export async function updateTetrahedron(limit_type, limit_value, max_exponent, v
             let scaledComplexity = invertedComplexity * colorScalingFactor;
             scaledComplexity = Math.min(1, Math.max(0, scaledComplexity));
             
-            let mappedColor;
-            switch (currentLayoutMode) {
-                case 0: // Plasma
-                    mappedColor = plasmaColormap(scaledComplexity);
-                    break;
-                case 1: // Viridis
-                    mappedColor = viridisColormap(scaledComplexity);
-                    break;
-                case 2: // Greyscale Black
-                    mappedColor = greyscaleBlackColormap(scaledComplexity);
-                    break;
-                case 3: // Greyscale White
-                    mappedColor = greyscaleColormap(scaledComplexity);
-                    break;
-            }
+            /* One lookup rather than a switch that had to be extended every
+               time a colour was added — and that silently left the sprites
+               black for any index it had no case for. */
+            const mappedColor = colormapAt(currentLayoutMode).ramp(scaledComplexity);
             displayColor.setRGB(mappedColor.r, mappedColor.g, mappedColor.b);
             spriteTextColor = { r: mappedColor.r * 255, g: mappedColor.g * 255, b: mappedColor.b * 255, a:1.0 };
             spritePointColor.setRGB(mappedColor.r, mappedColor.g, mappedColor.b);
         } else {
-            if (currentLayoutMode === 3) { // Greyscale White
+            if (onLightGround) {
                 displayColor.setRGB(0, 0, 0);
                 spriteTextColor = { r: 0, g: 0, b: 0, a: 1.0 };
                 spritePointColor.setRGB(0, 0, 0);

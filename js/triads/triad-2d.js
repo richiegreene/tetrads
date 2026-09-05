@@ -24,21 +24,20 @@ import {
 } from './triad-geometry.js';
 import {
     triadFill, triadLines, triadContours, triadDots, triadLabels, triadSnap,
-    cursor,
+    triadRelief, cursor,
 } from './triad-state.js';
 import { currentTriads, currentField, complexityRange } from './triad-surface.js';
 import { currentLayoutMode } from '../globals.js';
-import { LAYOUT_GROUNDS } from '../calculations/tetrahedron-updater.js';
-import {
-    plasmaColormap, viridisColormap, greyscaleColormap, greyscaleBlackColormap,
-} from '../calculations/color-mapping.js';
+import { colormapAt } from '../calculations/color-mapping.js';
 
-const MAPS = [plasmaColormap, viridisColormap, greyscaleBlackColormap, greyscaleColormap];
-
-/** The colormap the whole app is currently set to. */
-export function colormapFn() { return MAPS[currentLayoutMode] || MAPS[0]; }
+/** The colour layout the whole app is currently set to. */
+export function colormap() { return colormapAt(currentLayoutMode); }
+/** Its ramp — what dots, contours and gradient shading are coloured by. */
+export function colormapFn() { return colormap().ramp; }
 /** Whether that layout is drawn on white, which every other colour follows. */
-export function onLight() { return LAYOUT_GROUNDS[currentLayoutMode] === 0xffffff; }
+export function onLight() { return colormap().ground === 0xffffff; }
+/** Its material, if it is a lit layout rather than a value-coloured one. */
+export function colormapMaterial() { return colormap().material; }
 
 let canvas = null;
 let ctx = null;
@@ -90,7 +89,7 @@ export function resize() {
  *  The shaded ground
  * ------------------------------------------------------------------ */
 function buildShade(field) {
-    const key = `${field.w}x${field.h}|${currentLayoutMode}|${field.min}|${field.max}`;
+    const key = `${field.w}x${field.h}|${currentLayoutMode}|${triadRelief}|${field.min}|${field.max}`;
     if (key === shadeKey && shade) return shade;
 
     const off = document.createElement('canvas');
@@ -98,8 +97,20 @@ function buildShade(field) {
     off.height = field.h;
     const octx = off.getContext('2d');
     const img = octx.createImageData(field.w, field.h);
-    const map = colormapFn();
 
+    const material = colormapMaterial();
+    if (material) paintHillshade(field, img, material);
+    else paintRamp(field, img);
+
+    octx.putImageData(img, 0, 0);
+    shade = off;
+    shadeKey = key;
+    return shade;
+}
+
+/** Value becomes hue: the ordinary reading, and what most layouts do. */
+function paintRamp(field, img) {
+    const map = colormapFn();
     for (let y = 0; y < field.h; y++) {
         // Row 0 of the field is the baseline; row 0 of an image is the top.
         const src = (field.h - 1 - y) * field.w;
@@ -114,10 +125,93 @@ function buildShade(field) {
             img.data[o + 3] = 255;
         }
     }
-    octx.putImageData(img, 0, 0);
-    shade = off;
-    shadeKey = key;
-    return shade;
+}
+
+/* The light, in the flat pane. Up and to the left, which is the convention
+   every relief map is read by — reverse it and the eye turns every summit
+   into a pit. Kept in step with the key light in the lifted pane, so the two
+   panes are the same surface under the same lamp. */
+const LIGHT = (() => {
+    const v = [-0.55, 0.62, 0.56];
+    const n = Math.hypot(v[0], v[1], v[2]);
+    return [v[0] / n, v[1] / n, v[2] / n];
+})();
+
+/**
+ * The field as a lit surface seen from directly above.
+ *
+ * A material layout has one colour, so shading it by value would give a flat
+ * plate. Instead the field's own slope is used: the gradient at each cell is a
+ * surface normal, the normal is lit by the same lamp the 3D pane uses, and
+ * what you get is the relief — the identical information, carried by light
+ * rather than by hue. A ridge a ramp would flatten into one band of colour
+ * shows up as a ridge, which is the whole reason for the layout.
+ *
+ * Relief scales the gradient, so the Display drawer's one control governs how
+ * pronounced the surface is in BOTH panes.
+ */
+function paintHillshade(field, img, material) {
+    const body = {
+        r: ((material.color >> 16) & 255) / 255,
+        g: ((material.color >> 8) & 255) / 255,
+        b: (material.color & 255) / 255,
+    };
+    const spec = {
+        r: ((material.specular >> 16) & 255) / 255,
+        g: ((material.specular >> 8) & 255) / 255,
+        b: (material.specular & 255) / 255,
+    };
+    const ambient = material.ambient ?? 0.3;
+    const span = Math.max(1e-9, field.max - field.min);
+    /* The gradient is per-cell, so a coarse grid has bigger steps for the same
+       surface — normalising by the cell width keeps the lighting the same at
+       every resolution. */
+    const scale = (triadRelief * field.w) / 3;
+
+    const at = (x, y) => {
+        const cx = Math.min(field.w - 1, Math.max(0, x));
+        const cy = Math.min(field.h - 1, Math.max(0, y));
+        const v = field.z[cy * field.w + cx];
+        return v === v ? (v - field.min) / span : NaN;
+    };
+
+    for (let y = 0; y < field.h; y++) {
+        const row = field.h - 1 - y;
+        for (let x = 0; x < field.w; x++) {
+            const o = (y * field.w + x) * 4;
+            const c = at(x, row);
+            if (!(c === c)) { img.data[o + 3] = 0; continue; }
+
+            /* Central differences, falling back to the centre where a
+               neighbour is outside the triangle — otherwise every boundary
+               cell would light as a cliff. */
+            const l = at(x - 1, row), r = at(x + 1, row);
+            const d = at(x, row - 1), u = at(x, row + 1);
+            const dx = ((r === r ? r : c) - (l === l ? l : c)) * 0.5 * scale;
+            const dy = ((u === u ? u : c) - (d === d ? d : c)) * 0.5 * scale;
+
+            let nx = -dx, ny = 1, nz = -dy;
+            const nl = Math.hypot(nx, ny, nz);
+            nx /= nl; ny /= nl; nz /= nl;
+
+            const lambert = Math.max(0, nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]);
+            const diffuse = ambient + (1 - ambient) * lambert;
+
+            /* Blinn-Phong, with the eye directly overhead — the half-vector is
+               therefore fixed, which is what makes this cheap enough to run
+               over every cell of the grid. */
+            let hx = LIGHT[0], hy = LIGHT[1] + 1, hz = LIGHT[2];
+            const hl = Math.hypot(hx, hy, hz);
+            hx /= hl; hy /= hl; hz /= hl;
+            const highlight = Math.pow(
+                Math.max(0, nx * hx + ny * hy + nz * hz), material.shininess ?? 30);
+
+            img.data[o] = Math.round(255 * Math.min(1, body.r * diffuse + spec.r * highlight * 0.55));
+            img.data[o + 1] = Math.round(255 * Math.min(1, body.g * diffuse + spec.g * highlight * 0.55));
+            img.data[o + 2] = Math.round(255 * Math.min(1, body.b * diffuse + spec.b * highlight * 0.55));
+            img.data[o + 3] = 255;
+        }
+    }
 }
 
 /* ---------------------------------------------------------------------

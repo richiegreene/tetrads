@@ -30,7 +30,7 @@ import { stopChord, setTimbre, setAdsr } from '../components/audio-engine.js';
 import { updateTetrahedron, setLayoutMode, LAYOUT_GROUNDS } from '../calculations/tetrahedron-updater.js';
 import { exportToSVG, downloadSVG, exportToPNG, exportToCSV } from './data-export.js';
 import { saveTriadSVG, saveTriadPNG, exportTriadCSV } from '../triads/triad-export.js';
-import { plasmaColormap, viridisColormap, greyscaleColormap, greyscaleBlackColormap } from '../calculations/color-mapping.js';
+import { COLORMAPS } from '../calculations/color-mapping.js';
 import { initMidiOutput, sendMpePressure, mpeChannels } from '../midi/midi-output.js';
 import { createTimbrePicker, FILTERED_MIN } from '../synth/timbre.js';
 import { attachAdsrEditor } from '../synth/adsr.js';
@@ -89,22 +89,25 @@ function seg(segId, onPick) {
 /* ---------------------------------------------------------------------
  *  The colour layouts
  *
- *  A layout is a ramp and the ground it is drawn on, in the order
- *  currentLayoutMode counts them. The chips are painted by sampling the very
- *  functions the scene colours itself with, so the swatch is the map rather
- *  than a picture of it — add a colormap and the panel gets it right without
- *  a second table being kept in step.
+ *  The list itself lives in color-mapping.js, beside the ramps — the chips are
+ *  painted by sampling the very functions the scene colours itself with, so a
+ *  swatch is the map rather than a picture of it, and adding a colour is one
+ *  edit rather than three kept in step by hand.
  * ------------------------------------------------------------------ */
-const COLORMAPS = [
-    { name: 'Plasma',   fn: plasmaColormap,
-      title: 'Perceptually uniform, dark blue through magenta to yellow.' },
-    { name: 'Viridis',  fn: viridisColormap,
-      title: 'Perceptually uniform, deep violet through green to yellow.' },
-    { name: 'Black',    fn: greyscaleBlackColormap,
-      title: 'Greyscale on a black ground: the simplest tetrads come out brightest.' },
-    { name: 'White',    fn: greyscaleColormap,
-      title: 'Greyscale on a white ground: the simplest tetrads come out darkest — the layout to print.' },
-];
+
+/**
+ * A material layout's swatch: the material, lit.
+ *
+ * A ramp swatch would be a lie about a layout whose surface is one colour, so
+ * the chip shows what the surface will actually look like — the body colour
+ * with the key light's highlight where the key light is, which is the same
+ * top-left as the scene's own.
+ */
+function materialCss(mat) {
+    const hex = (c) => '#' + c.toString(16).padStart(6, '0');
+    return `radial-gradient(circle at 30% 26%, ${hex(mat.specular)} 0%, `
+        + `${hex(mat.color)} 46%, rgba(0,0,0,.55) 100%)`;
+}
 
 /** A colormap as a CSS gradient, sampled at enough stops to read as smooth. */
 function rampCss(fn, stops = 12) {
@@ -200,8 +203,50 @@ const sliderToRot = (t) => ROT_MIN * Math.pow(ROT_MAX / ROT_MIN, t / 100);
 /** Radians per frame, said as degrees per second at 60fps — what you see. */
 const rotLabel = (v) => `${Math.round(v * 60 * 180 / Math.PI)}\u00b0/s`;
 
+/* ---------------------------------------------------------------------
+ *  Applying itself
+ *
+ *  There is no Update button and no Generate button: every control applies
+ *  itself. What makes that safe rather than unusable is that the work is
+ *  DEFERRED rather than immediate.
+ *
+ *  Pyodide has no worker to run in — it runs on the page's own thread — so
+ *  regenerating a set is a few hundred milliseconds during which nothing on
+ *  the page moves, including the slider being dragged. Doing that on every
+ *  intermediate value of a drag would make the panel unusable, and doing it on
+ *  every keystroke of "13" would generate the 1-limit on the way.
+ *
+ *  So a change does not run the work, it SCHEDULES it: the timer restarts on
+ *  every change and the work happens once, a beat after you stop. Two kinds
+ *  are tracked separately because they cost differently and are triggered by
+ *  different controls — the SET (which chords exist) and the MODEL (the
+ *  surface under the triangle) — and a request for both runs both, in that
+ *  order, since the model is drawn over whatever the set is.
+ * ------------------------------------------------------------------ */
+
+/** How long to wait for the hand to stop. Long enough to cover a drag's
+ *  frame-by-frame stream, short enough that a deliberate change feels applied
+ *  rather than pending. */
+const SETTLE_MS = 260;
+
+let settleTimer = 0;
+let pendingSet = false;
+let pendingModel = false;
+let running = false;
+let applyNow = null;   // filled in below, once the drawers can be read
+
+/**
+ * Ask for work, and let it happen once the panel goes quiet.
+ * @param {'set'|'model'|'both'} kind
+ */
+function scheduleApply(kind) {
+    if (kind === 'set' || kind === 'both') pendingSet = true;
+    if (kind === 'model' || kind === 'both') pendingModel = true;
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => { applyNow?.(); }, SETTLE_MS);
+}
+
 export function setupUIEventListeners() {
-    const updateButton = $('updateButton');
 
     /* ---------------- the rail ----------------
      * Pressing the mode you are already in shuts the drawer and gives the
@@ -238,11 +283,30 @@ export function setupUIEventListeners() {
         primeLimitOptions.style.display = event.target.value === 'Prime' ? 'block' : 'none';
     });
 
+    /* Everything that decides WHICH CHORDS EXIST. The equave is in the list
+       twice over: it changes the set, and it changes what the triangle's
+       corners mean — so a surface computed for the old one is not stale
+       styling but a wrong diagram, and it is rebuilt rather than kept. */
+    for (const id of ['limitType', 'complexityMethod', 'hideUnisonVoices', 'omitOctaves']) {
+        $(id).addEventListener('change', () => scheduleApply('set'));
+    }
+    for (const id of ['limitValue', 'maxExponent']) {
+        $(id).addEventListener('input', () => scheduleApply('set'));
+    }
+    $('equaveRatio').addEventListener('input', () => scheduleApply('both'));
+
     /* ---------------- Display ---------------- */
     const layoutDisplay = $('layoutDisplay');
-    seg('layout-seg', (v) => { layoutDisplay.value = v; updateButton.click(); });
+    seg('layout-seg', (v) => { layoutDisplay.value = v; scheduleApply('set'); });
 
-    toggleSeg('channel-seg', () => updateButton.click());
+    /* In Tetrads the colours and sizes are baked into the sprites, so these
+       are a rebuild; in Triads they are read at paint time, so they are only a
+       repaint. Both are asked for — the scheduler drops the one that does not
+       apply to the mode you are in. */
+    toggleSeg('channel-seg', () => {
+        if (appMode === 'triads') invalidateTriads({ rebuild: true });
+        else scheduleApply('set');
+    });
 
     /* ---------------- the colormap chips ---------------- */
     const mapsEl = $('colormap-seg');
@@ -250,12 +314,35 @@ export function setupUIEventListeners() {
         const b = document.createElement('button');
         b.className = 'map' + (i === currentLayoutMode ? ' on' : '');
         b.dataset.v = String(i);
-        b.dataset.ground = LAYOUT_GROUNDS[i] === 0xffffff ? 'light' : 'dark';
+        b.dataset.ground = m.ground === 0xffffff ? 'light' : 'dark';
+        /* A material layout is marked, because its chip cannot show what makes
+           it different: the ramp is only what its dots and contours are
+           coloured by, and the surface itself is that one colour under a light. */
+        if (m.material) b.dataset.kind = 'material';
         b.title = m.title;
         b.innerHTML = `<span class="ramp"></span>${m.name}`;
-        b.querySelector('.ramp').style.background = rampCss(m.fn);
+        b.querySelector('.ramp').style.background = m.material
+            ? materialCss(m.material)
+            : rampCss(m.ramp);
         mapsEl.append(b);
     });
+
+    /**
+     * Day mode, when the view is in day mode.
+     *
+     * Xenachord Designer's own arrangement, and its own tokens: when the
+     * viewport goes light the rail and the drawer go with it, because a dark
+     * panel against a white view is a bezel with a lamp behind it. The whole
+     * chrome reads off the same custom properties, so overriding them on
+     * `body.bright` recolours the subtree without a second stylesheet.
+     *
+     * Which layouts are light is asked of the layout rather than hardcoded —
+     * White and Porcelain are both drawn on white, and there may be more.
+     */
+    const applyBrightMode = (index) => {
+        document.body.classList.toggle('bright', COLORMAPS[index]?.ground === 0xffffff);
+    };
+    applyBrightMode(currentLayoutMode);
 
     /**
      * Light one chip and take the scene to it. The seg and ⇧⌘L share this.
@@ -270,6 +357,7 @@ export function setupUIEventListeners() {
         for (const b of mapsEl.querySelectorAll('button')) {
             b.classList.toggle('on', b.dataset.v === String(index));
         }
+        applyBrightMode(index);
         if (appMode === 'triads') {
             setCurrentLayoutMode(index);
             invalidateTriads({ rebuild: true });
@@ -280,7 +368,10 @@ export function setupUIEventListeners() {
     seg('colormap-seg', (v) => applyColormap(parseInt(v)));
 
     for (const id of ['baseSize', 'scalingFactor']) {
-        $(id).addEventListener('input', () => updateButton.click());
+        $(id).addEventListener('input', () => {
+            if (appMode === 'triads') invalidateTriads({ rebuild: true });
+            else scheduleApply('set');
+        });
     }
 
     /* ---------------------------------------------------------------------
@@ -306,26 +397,27 @@ export function setupUIEventListeners() {
         const needsGrid = model !== 'blank';
         resRow.style.display = needsGrid ? 'flex' : 'none';
         resInput.style.display = needsGrid ? 'block' : 'none';
-        $('triad-generate').disabled = false;
     };
     seg('triad-model-seg', (v) => {
         setTriadModel(v);
         showModelParams(v);
-        if (v === 'blank') generateSurface('blank');
+        scheduleApply('model');
     });
     showModelParams('blank');
 
-    $('triad-generate').addEventListener('click', () => generateSurface(triadModel));
+    /* The model's own numbers. Each one rebuilds the field a beat after the
+       hand comes off it — a drag sends a value a frame, and the settle timer
+       is what turns that stream into one computation at the end of it. */
+    const modelPress = (id, valueId, apply, format) =>
+        press(id, valueId, (v) => { apply(v); scheduleApply('model'); }, format);
 
-    /* The model's own numbers. They change what the NEXT generate produces,
-       so none of them redraws anything on its own. */
-    press('heSpread', 'he-spread-v', (v) => { heParams.spread = v; }, (v) => `${v} ¢`);
-    press('heNLimit', 'he-n-v', (v) => { heParams.nLimit = v; }, (v) => `${v}`);
-    press('heAlpha', 'he-alpha-v', (v) => { heParams.alpha = v; }, (v) => v.toFixed(1));
-    press('smPartials', 'sm-partials-v', (v) => { smParams.partials = v; }, (v) => `${v}`);
-    press('smStep', 'sm-step-v', (v) => { smParams.step = v; }, (v) => v.toFixed(3));
-    press('smRamp', 'sm-ramp-v', (v) => { smParams.ramp = v; }, (v) => v.toFixed(1));
-    press('triadResolution', 'triad-res-v', (v) => {
+    modelPress('heSpread', 'he-spread-v', (v) => { heParams.spread = v; }, (v) => `${v} ¢`);
+    modelPress('heNLimit', 'he-n-v', (v) => { heParams.nLimit = v; }, (v) => `${v}`);
+    modelPress('heAlpha', 'he-alpha-v', (v) => { heParams.alpha = v; }, (v) => v.toFixed(1));
+    modelPress('smPartials', 'sm-partials-v', (v) => { smParams.partials = v; }, (v) => `${v}`);
+    modelPress('smStep', 'sm-step-v', (v) => { smParams.step = v; }, (v) => v.toFixed(3));
+    modelPress('smRamp', 'sm-ramp-v', (v) => { smParams.ramp = v; }, (v) => v.toFixed(1));
+    modelPress('triadResolution', 'triad-res-v', (v) => {
         heParams.resolution = v; smParams.resolution = v;
     }, (v) => `${v}`);
 
@@ -509,7 +601,13 @@ export function setupUIEventListeners() {
             /* Also recorded in globals: Triads' Sethares surface is computed
                from the partials of whatever wave is currently loaded, so the
                model has to be able to ask. */
-            onInput: (v) => { S.timbre = v; setTimbre(v); setCurrentTimbre(v); },
+            onInput: (v) => {
+                S.timbre = v; setTimbre(v); setCurrentTimbre(v);
+                /* Sethares is a statement about a spectrum, so the surface is
+                   out of date the moment the wave changes. Nothing happens
+                   while any other model is up, or none. */
+                if (appMode === 'triads' && triadModel === 'sethares') scheduleApply('model');
+            },
             onChange: save,
         },
     );
@@ -574,52 +672,98 @@ export function setupUIEventListeners() {
         });
     }
 
-    updateButton.addEventListener('click', async () => {
-        /* One press, two sets. Both modes are built from the same limit,
-           equave and complexity measure, so Update means the same thing in
-           each — regenerate what is on screen from what the drawers say. */
-        if (appMode === 'triads') { await refreshSet(); return; }
+    /* ---------------------------------------------------------------------
+     *  The runner
+     *
+     *  What Update and Generate Model used to do, on their own initiative.
+     *  Both modes are built from the same limit, equave and complexity
+     *  measure, so this means the same thing in each: bring what is on screen
+     *  up to date with what the drawers say.
+     * ------------------------------------------------------------------ */
 
-        const newLimitType = $('limitType').value;
-        const newLimitValueInput = $('limitValue').value;
-        let newLimitValue = newLimitValueInput;
-        let newVirtualFundamentalFilter = null;
+    const showStatus = (text, busy = false) => {
+        const el = $('panel-status');
+        if (!el) return;
+        el.textContent = text;
+        el.classList.toggle('busy', busy);
+    };
 
-        if (newLimitValueInput.includes('/')) {
-            const parts = newLimitValueInput.split('/');
-            newLimitValue = parts[0].trim();
+    /** Rebuild the tetrahedron from the panel. */
+    async function applyTetrads() {
+        const raw = $('limitValue').value;
+        let limitValue = raw;
+        let virtualFundamentalFilter = null;
+
+        if (raw.includes('/')) {
+            const parts = raw.split('/');
+            limitValue = parts[0].trim();
             const filterStr = parts[1].trim();
-
-            newVirtualFundamentalFilter = [];
+            virtualFundamentalFilter = [];
             if (filterStr.includes('...')) {
-                const rangeParts = filterStr.split('...');
-                const start = parseInt(rangeParts[0]);
-                const end = parseInt(rangeParts[1]);
-                if (!isNaN(start) && !isNaN(end)) {
-                    for (let i = start; i <= end; i++) newVirtualFundamentalFilter.push(i);
+                const [a, b] = filterStr.split('...');
+                const start = parseInt(a), stop = parseInt(b);
+                if (!isNaN(start) && !isNaN(stop)) {
+                    for (let i = start; i <= stop; i++) virtualFundamentalFilter.push(i);
                 }
             } else {
-                newVirtualFundamentalFilter = filterStr.split('.').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+                virtualFundamentalFilter = filterStr.split('.')
+                    .map((n) => parseInt(n.trim())).filter((n) => !isNaN(n));
             }
         }
 
-        const newMaxExponent = $('maxExponent').value;
-        const newEquaveRatio = parseFloat($('equaveRatio').value);
-        const newComplexityMethod = $('complexityMethod').value;
-        const newHideUnisonVoices = $('hideUnisonVoices').checked;
-        const newOmitOctaves = $('omitOctaves').checked;
-        const newBaseSize = parseFloat($('baseSize').value);
-        const newScalingFactor = parseFloat($('scalingFactor').value);
-        const newEnableSize = $('enableSize').checked;
-        const newEnableColor = $('enableColor').checked;
-        const newLayoutDisplay = $('layoutDisplay').value;
+        /* A half-typed limit is not a limit. Without this, clearing the field
+           to retype it would generate the empty set on the way through — which
+           was invisible while a press was required and is not now. */
+        if (!(parseFloat(limitValue) >= 1)) return false;
+        const equaveRatio = parseFloat($('equaveRatio').value);
+        if (!(equaveRatio > 1)) return false;
 
         await updateTetrahedron(
-            newLimitType, newLimitValue, newMaxExponent, newVirtualFundamentalFilter, newEquaveRatio, newComplexityMethod,
-            newHideUnisonVoices, newOmitOctaves, newBaseSize, newScalingFactor,
-            newEnableSize, newEnableColor, newLayoutDisplay
+            $('limitType').value, limitValue, $('maxExponent').value,
+            virtualFundamentalFilter, equaveRatio, $('complexityMethod').value,
+            $('hideUnisonVoices').checked, $('omitOctaves').checked,
+            parseFloat($('baseSize').value), parseFloat($('scalingFactor').value),
+            $('enableSize').checked, $('enableColor').checked, $('layoutDisplay').value,
         );
-    });
+        return true;
+    }
+
+    /**
+     * Run whatever has been asked for, then run anything asked for while it
+     * was running.
+     *
+     * The re-entrancy guard matters more than it looks: the work is not
+     * interruptible, so a change made during it cannot be serviced until it
+     * ends — and dropping that change would leave the picture disagreeing with
+     * the panel, which is exactly the failure a self-applying panel must not
+     * have. So it is remembered and the loop goes round again.
+     */
+    applyNow = async () => {
+        clearTimeout(settleTimer);
+        if (running) return;
+        running = true;
+        try {
+            while (pendingSet || pendingModel) {
+                const wantSet = pendingSet, wantModel = pendingModel;
+                pendingSet = pendingModel = false;
+
+                if (wantSet) {
+                    showStatus('working…', true);
+                    /* Two frames, so the status is actually on screen before
+                       the thread is taken away to do the work. */
+                    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+                    if (appMode === 'triads') await refreshSet();
+                    else await applyTetrads();
+                }
+                if (wantModel && appMode === 'triads') {
+                    await generateSurface(triadModel);
+                }
+                if (appMode !== 'triads') showStatus('tetrads');
+            }
+        } finally {
+            running = false;
+        }
+    };
 
     /* ---------------- keyboard ---------------- */
 
@@ -639,9 +783,14 @@ export function setupUIEventListeners() {
 
     document.addEventListener('keydown', (event) => {
         const tagName = event.target.tagName;
-        if (event.key === 'Enter' && tagName !== 'INPUT' && tagName !== 'TEXTAREA') {
+        /* Nothing needs pressing any more, but a settle timer is still a
+           short wait — so Enter means "don't wait", which is the nearest
+           surviving sense of what it used to do. */
+        if (event.key === 'Enter') {
             event.preventDefault();
-            updateButton.click();
+            if (tagName === 'INPUT') event.target.blur();
+            scheduleApply('set');
+            applyNow?.();
         }
     });
 

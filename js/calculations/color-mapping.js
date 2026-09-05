@@ -85,3 +85,122 @@ export function plasmaColormap(value) {
 
     return { r: r, g: g, b: b };
 }
+
+/* =====================================================================
+ *  THE COLOUR LAYOUTS
+ * =====================================================================
+ *
+ * A layout is a ramp, the ground that ramp is drawn on, and — for some of
+ * them — a material. Everything that colours anything reads this one table:
+ * the panel's chips are painted by sampling it, the tetrahedron's sprites are
+ * baked from it, and the triangle's shading, contours, dots and surface all
+ * come out of it. It used to be three parallel lists (a switch in the updater,
+ * a table in the panel, and LAYOUT_GROUNDS) that had to be kept in the same
+ * order by hand; adding a colour to one of them and not the others was a chip
+ * that advertised a ramp the scene did not use.
+ *
+ * GRADIENT LAYOUTS vs MATERIAL LAYOUTS.  Most of these are ramps: value
+ * becomes hue, and the 3D surface is coloured per-vertex so its height and its
+ * colour say the same thing twice. That is legible, and it is also flat —
+ * every facet is lit identically, so the shape reads as a contour map that
+ * happens to be tilted.
+ *
+ * A material layout does the opposite. The surface is ONE colour, and all of
+ * the modelling comes from light: an angled key, a soft fill, and a specular
+ * highlight that slides across the peaks as the shape turns. Height stops
+ * being redundant with colour and starts being the only thing carrying the
+ * model, which is what makes a shallow ridge you would miss in a ramp visible
+ * as a ridge. The flat pane renders these as hillshading — the same light on
+ * the same surface, seen from directly above — so the two panes stay two views
+ * of one thing rather than two different pictures.
+ *
+ * A material still carries a ramp, because the tetrahedron is sprites with no
+ * surface to light, and because the dots and contours on the triangle have to
+ * be coloured by something.
+ * ------------------------------------------------------------------ */
+
+/** A ramp through a list of hex stops, evenly spaced. */
+function rampFromStops(hexes) {
+    const stops = hexes.map((h) => ({
+        r: ((h >> 16) & 255) / 255,
+        g: ((h >> 8) & 255) / 255,
+        b: (h & 255) / 255,
+    }));
+    return (value) => {
+        const t = Math.min(1, Math.max(0, value)) * (stops.length - 1);
+        const i = Math.min(stops.length - 2, Math.floor(t));
+        const f = t - i;
+        const a = stops[i], b = stops[i + 1];
+        return { r: a.r + f * (b.r - a.r), g: a.g + f * (b.g - a.g), b: a.b + f * (b.b - a.b) };
+    };
+}
+
+const magmaRamp = rampFromStops([
+    0x000004, 0x1c1044, 0x4f127b, 0x812581, 0xb5367a, 0xe55064, 0xfb8761, 0xfec287, 0xfcfdbf,
+]);
+
+/* Isoharmonics' own gradient, stop for stop — the blue the triangle has always
+   been drawn in there, so a harmonic entropy map made here can sit beside one
+   made in that app and be the same picture. */
+const blueRamp = rampFromStops([
+    0x23262f, 0x1e1861, 0x1a0ebe, 0x0437f2, 0x7895fc, 0xa7c6ed, 0xd0e1f9, 0xf0f4ff, 0xffffff,
+]);
+
+const bronzeRamp = rampFromStops([
+    0x1a1208, 0x3d2a12, 0x6b4a1e, 0x9c7132, 0xc79a4e, 0xe4bd77, 0xf6dda8,
+]);
+
+const porcelainRamp = rampFromStops([
+    0xf4f2ee, 0xd8d4cc, 0xb0aaa0, 0x807a72, 0x504b46, 0x2a2724,
+]);
+
+/**
+ * @typedef {object} Colormap
+ * @property {string} name        what the chip says
+ * @property {string} title       what the chip's tooltip says
+ * @property {(t:number)=>{r,g,b}} ramp
+ * @property {number} ground      the background this layout is drawn on
+ * @property {?object} material   present iff the 3D surface is lit rather than
+ *                                value-coloured: `{ color, specular, shininess }`
+ */
+export const COLORMAPS = [
+    {
+        name: 'Plasma', ramp: plasmaColormap, ground: 0x000000, material: null,
+        title: 'Perceptually uniform, dark blue through magenta to yellow.',
+    },
+    {
+        name: 'Viridis', ramp: viridisColormap, ground: 0x000000, material: null,
+        title: 'Perceptually uniform, deep violet through green to yellow.',
+    },
+    {
+        name: 'Magma', ramp: magmaRamp, ground: 0x000000, material: null,
+        title: 'Perceptually uniform, near-black through crimson to cream — the darkest of the ramps, so isolated peaks carry.',
+    },
+    {
+        name: 'Blue', ramp: blueRamp, ground: 0x000000, material: null,
+        title: "Isoharmonics' own gradient, stop for stop: slate through cobalt to white.",
+    },
+    {
+        name: 'Black', ramp: greyscaleBlackColormap, ground: 0x000000, material: null,
+        title: 'Greyscale on a black ground: the simplest chords come out brightest.',
+    },
+    {
+        name: 'White', ramp: greyscaleColormap, ground: 0xffffff, material: null,
+        title: 'Greyscale on a white ground: the simplest chords come out darkest — the layout to print.',
+    },
+    {
+        name: 'Bronze', ramp: bronzeRamp, ground: 0x000000,
+        material: { color: 0xb07d3a, specular: 0xffe6b0, shininess: 42, ambient: 0.30 },
+        title: 'A lit surface rather than a coloured one: one bronze, modelled entirely by an angled key light and a moving highlight. Height alone carries the model.',
+    },
+    {
+        name: 'Porcelain', ramp: porcelainRamp, ground: 0xffffff,
+        material: { color: 0xe8e4dc, specular: 0xffffff, shininess: 26, ambient: 0.46 },
+        title: 'The same lighting on a pale glaze over a white ground — the material layout to print.',
+    },
+];
+
+/** The layout currently counted by `currentLayoutMode`. */
+export function colormapAt(index) {
+    return COLORMAPS[((index % COLORMAPS.length) + COLORMAPS.length) % COLORMAPS.length];
+}

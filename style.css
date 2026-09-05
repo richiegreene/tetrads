@@ -17,6 +17,37 @@
   --scope-bg:#12161c;
 }
 
+/* ---------- day mode ----------
+   Xenachord Designer's own arrangement, token for token: when the VIEW is
+   drawn on white, the rail and the drawer go light with it. A dark panel
+   against a white viewport is a bezel with a lamp behind it — the eye adapts
+   to the larger surface, and the panel then reads as a hole.
+
+   Everything in the chrome reads off these custom properties, so overriding
+   them in scope recolours the whole subtree without a second stylesheet. The
+   class is put on by applyBrightMode in ui-handlers.js, which asks the colour
+   layout what ground it is drawn on rather than testing for a particular one:
+   White and Porcelain are both light, and there may be more. */
+body.bright #panel, body.bright #loading-overlay{
+  --bg:#e9e9ec; --panel:#f2f2f4; --panel2:#e4e5e9; --panel-bright:#d8d9de;
+  --line:#c9cad0; --text:#1b1c20; --dim:#5c5d66; --accent:#1f6feb;
+  --scope-bg:#dcdde2;
+}
+/* The two lit states are drawn against a light panel now, so the dark-mode
+   fills that carried them would read as ink blots. */
+body.bright #playButton.play-button-active,
+body.bright button.latched,
+body.bright button.primary{background:#dbe7f7;border-color:#9dbde6;color:#12325e}
+body.bright button.primary:hover{border-color:var(--accent);color:#0b2a52}
+body.bright .seg button.on{background:#fff}
+body.bright input[type=range]{background:#c9cad0}
+body.bright input[type=range]::-webkit-slider-runnable-track{background:#c9cad0}
+body.bright input[type=range]::-moz-range-track{background:#c9cad0}
+/* The readout floats over the VIEW rather than living in the panel, so it
+   follows the view's ground rather than the panel's. */
+body.bright #notation-display{background:rgba(255,255,255,.92);
+  border-color:#c9cad0;color:#1b1c20}
+
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
   font:13px/1.45 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
@@ -94,11 +125,17 @@ body[data-mode="triads"] .panel-foot{grid-template-columns:1fr}
 #triad-canvas{width:100%;height:100%;cursor:crosshair}
 #triad-3d-pane{cursor:crosshair}
 
-/* The generator's own line, under its press: how many triads are in the set,
-   which model is up and what it cost. The one place in the panel that reports
-   rather than sets, so it is dimmed and italic. */
-#triad-status{font-style:italic;min-height:14px}
-#triad-status.busy{color:var(--warn);font-style:normal}
+/* ---------- the foot's readout ----------
+   What took Update's place. The one thing in the panel that reports rather
+   than sets, so it is dimmed and italic and never looks pressable — and it
+   goes amber while the page is actually busy, which is the only moment a
+   self-applying panel owes the user an explanation. */
+#panel-status{display:flex;align-items:center;justify-content:flex-end;
+  color:var(--dim);font-size:11px;font-style:italic;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#panel-status.busy{color:var(--warn);font-style:normal}
+/* Alone in the foot when Play is gone, it reads better from the left. */
+body[data-mode="triads"] #panel-status{justify-content:flex-start}
 
 #loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);
   display:flex;justify-content:center;align-items:center;
@@ -171,6 +208,12 @@ button.latched{background:#24405c;border-color:var(--accent);color:#cfe6ff}
 /* Drawn on white in the scene, so drawn on white here. */
 .map[data-ground="light"]{background:#e9e9ec;color:#5c5d66;border-color:#c9cad0}
 .map[data-ground="light"]:hover,.map[data-ground="light"].on{color:#1b1c20}
+/* A material layout's swatch is a lit body rather than a ramp, so it is drawn
+   as one: rounder, and with a little depth under it. The chip has to show what
+   the surface will look like, and a strip of gradient would be a picture of
+   the ramp its dots are coloured by instead. */
+.map[data-kind="material"] .ramp{height:19px;border-radius:10px;
+  box-shadow:inset 0 -1px 2px rgba(0,0,0,.35)}
 
 /* ---------- checkbox rows ---------- */
 .vis{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;

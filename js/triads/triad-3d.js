@@ -32,8 +32,9 @@ import {
     triadContours, cursor,
 } from './triad-state.js';
 import { currentTriads, currentField, complexityRange } from './triad-surface.js';
-import { colormapFn, onLight, contourSegments } from './triad-2d.js';
-import { rotationSpeed, autoRotate, autoRotateDir } from '../globals.js';
+import { currentLayoutMode } from '../globals.js';
+import { colormapFn, colormapMaterial, onLight, contourSegments } from './triad-2d.js';
+import { rotationSpeed, autoRotate, autoRotateDir, keyState } from '../globals.js';
 
 /** The triangle is drawn one unit on a side, centred on the origin. */
 const SIDE = 3.0;
@@ -45,11 +46,18 @@ let camera = null;
 let controls = null;
 let onGesture = null;
 
+/* Everything that belongs to the triangle lives under one group, and it is
+   that group the arrow keys turn — the way the tetrahedron turns its whole
+   scene. Rotating the parts individually would work until the cursor bead had
+   to be placed on a surface that had been turned out from under it. */
+let world = null;
 let surface = null;      // the mesh, or the flat plate when there is no field
 let lattice = null;      // the JI dots
 let labels = null;       // the JI labels, as sprites
 let lines = null;        // the contour lines, laid on the surface
 let marker = null;       // the cursor
+let keyLight = null;
+let fillLight = null;
 
 let dragging = false;
 let opts = { equaveRatio: 2, baseSize: 1, scalingFactor: 2, enableSize: true, enableColor: true };
@@ -77,6 +85,8 @@ export function attach3D(el, gestureHandler) {
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
+    world = new THREE.Group();
+    scene.add(world);
 
     camera = new THREE.PerspectiveCamera(45, 1, 0.05, 200);
     /* Only a direction — frameCamera works out how far back it has to be once
@@ -94,20 +104,27 @@ export function attach3D(el, gestureHandler) {
     controls.minDistance = 1.2;
     controls.maxDistance = 24;
 
-    /* A relief needs raking light to read as a relief at all; a flat plate
-       needs none. Both are lit the same way so that switching models does not
-       change what the colours look like. */
-    scene.add(new THREE.AmbientLight(0xffffff, 0.72));
-    const key = new THREE.DirectionalLight(0xffffff, 0.75);
-    key.position.set(2.5, 4, 2);
-    scene.add(key);
+    /* A key from up and to the left — the direction every relief map is read
+       by, and the same one the flat pane hillshades from, so the two panes are
+       the same surface under the same lamp. A soft fill keeps the shadowed
+       faces from going to black. Both hang off the CAMERA rather than the
+       scene, so turning the shape moves the surface under a fixed light
+       instead of carrying the light around with it: that is what makes the
+       specular highlight travel across the peaks as it turns, which is the
+       whole point of a material layout. */
+    fillLight = new THREE.AmbientLight(0xffffff, 0.45);
+    scene.add(fillLight);
+    keyLight = new THREE.DirectionalLight(0xffffff, 0.85);
+    keyLight.position.set(-2.4, 3.4, 2.2);
+    camera.add(keyLight);
+    scene.add(camera);
 
     marker = new THREE.Mesh(
         new THREE.SphereGeometry(0.055, 20, 14),
         new THREE.MeshBasicMaterial({ color: 0xffffff }),
     );
     marker.visible = false;
-    scene.add(marker);
+    world.add(marker);
 
     bindPointer();
     resize();
@@ -119,10 +136,31 @@ export function resize() {
     if (!renderer || !host) return;
     const w = Math.max(1, host.clientWidth);
     const h = Math.max(1, host.clientHeight);
+    /* A hidden pane measures zero. Framing against that would put the camera
+       at an absurd distance and leave it there when the pane came back, so a
+       measurement of nothing is not treated as a measurement. */
+    if (host.clientWidth < 2 || host.clientHeight < 2) return;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     frameCamera();
+}
+
+/**
+ * Frame the surface, now — what the mode calls whenever the pane has just
+ * become visible or has just been given something new to show.
+ *
+ * Deferred by a frame because the usual reason for asking is that the pane's
+ * CSS has this instant changed: `display` has been set but the layout that
+ * gives it a width has not been done yet, and a camera framed against the old
+ * size is exactly the crop this is meant to prevent.
+ */
+export function fitView() {
+    if (!renderer || !host) return;
+    requestAnimationFrame(() => {
+        resize();
+        frameCamera();
+    });
 }
 
 /**
@@ -144,7 +182,8 @@ export function resize() {
  * surface the user has turned stays turned when the pane resizes.
  */
 function frameCamera() {
-    if (!camera || !controls) return;
+    if (!camera || !controls || !host) return;
+    if (host.clientWidth < 2 || host.clientHeight < 2) return;
     const half = SIDE / 2;
     const depth = (SIDE * SQRT3_2) / 2;
     const lift = triadRelief * SIDE;
@@ -207,7 +246,7 @@ export function rebuild(o, force = false) {
         field ? [field.w, field.h, field.min, field.max] : null,
         triadRelief, triadFill, triadLines, triadContours, triadDots, triadLabels,
         o.equaveRatio, o.baseSize, o.scalingFactor, o.enableSize, o.enableColor,
-        colormapFn().name || '', onLight(), currentTriads().length,
+        currentLayoutMode, currentTriads().length,
     ]);
     if (!force && key === builtKey) return;
     const reliefChanged = builtRelief !== triadRelief;
@@ -218,16 +257,24 @@ export function rebuild(o, force = false) {
     marker.material.color.set(onLight() ? 0x111111 : 0xffffff);
 
     for (const item of [surface, lattice, labels, lines]) {
-        if (item) { scene.remove(item); disposeDeep(item); }
+        if (item) { world.remove(item); disposeDeep(item); }
     }
     surface = lattice = labels = lines = null;
 
-    surface = field ? buildSurface(field) : buildPlate();
-    scene.add(surface);
+    /* A material layout is modelled by light rather than by value, so the fill
+       comes down to let the key actually carve the relief; a value-coloured
+       surface wants flat, even light so the colours read as the numbers they
+       are rather than as shading. */
+    const material = colormapMaterial();
+    fillLight.intensity = material ? (material.ambient ?? 0.3) : 0.62;
+    keyLight.intensity = material ? 0.95 : 0.7;
 
-    if (field && triadLines) { lines = buildContourLines(field); if (lines) scene.add(lines); }
-    if (triadDots) { lattice = buildLattice(E, o); if (lattice) scene.add(lattice); }
-    if (triadLabels) { labels = buildLabels(E, o); if (labels) scene.add(labels); }
+    surface = field ? buildSurface(field) : buildPlate();
+    world.add(surface);
+
+    if (field && triadLines) { lines = buildContourLines(field); if (lines) world.add(lines); }
+    if (triadDots) { lattice = buildLattice(E, o); if (lattice) world.add(lattice); }
+    if (triadLabels) { labels = buildLabels(E, o); if (labels) world.add(labels); }
 
     if (reliefChanged) frameCamera();
 }
@@ -255,6 +302,7 @@ function buildSurface(field) {
     const colors = [];
     const index = new Int32Array(w * h).fill(-1);
     const map = colormapFn();
+    const material = colormapMaterial();
     const flat = !triadFill;
 
     let n = 0;
@@ -288,13 +336,28 @@ function buildSurface(field) {
 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    if (!material) geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     geo.setIndex(tris);
     geo.computeVertexNormals();
 
-    return new THREE.Mesh(geo, new THREE.MeshLambertMaterial({
-        vertexColors: true, side: THREE.DoubleSide, flatShading: false,
-    }));
+    /* A material layout gets a Phong surface: one body colour, a specular
+       highlight and a shininess, so every bit of the modelling comes from the
+       light. A value-coloured one gets Lambert with per-vertex colour, where
+       the light is only there to keep the facets from reading as a flat
+       poster and the colour carries the model. */
+    const surfaceMaterial = material
+        ? new THREE.MeshPhongMaterial({
+            color: material.color,
+            specular: material.specular,
+            shininess: material.shininess,
+            side: THREE.DoubleSide,
+            flatShading: false,
+        })
+        : new THREE.MeshLambertMaterial({
+            vertexColors: true, side: THREE.DoubleSide, flatShading: false,
+        });
+
+    return new THREE.Mesh(geo, surfaceMaterial);
 }
 
 /** No model: the triangle itself, so the lattice has something to sit on. */
@@ -304,9 +367,15 @@ function buildPlate() {
     geo.setAttribute('position', new THREE.Float32BufferAttribute(
         [a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z], 3));
     geo.computeVertexNormals();
-    return new THREE.Mesh(geo, new THREE.MeshLambertMaterial({
-        color: onLight() ? 0xf2f3f6 : 0x0b0c10, side: THREE.DoubleSide,
-    }));
+    const material = colormapMaterial();
+    return new THREE.Mesh(geo, material
+        ? new THREE.MeshPhongMaterial({
+            color: material.color, specular: material.specular,
+            shininess: material.shininess, side: THREE.DoubleSide,
+        })
+        : new THREE.MeshLambertMaterial({
+            color: onLight() ? 0xf2f3f6 : 0x0b0c10, side: THREE.DoubleSide,
+        }));
 }
 
 /**
@@ -328,7 +397,10 @@ function buildContourLines(field) {
             const v = sampleField(field, gx, gy);
             const p = place(gx, gy, (v === v ? heightOf(field, v) : 0) + lift);
             pts.push(p.x, p.y, p.z);
-            const c = triadFill
+            /* Over a material surface the lines are the only thing saying
+               what the values ARE, so they keep their ramp instead of being
+               dimmed to a wash the way they are over a coloured field. */
+            const c = (triadFill && !colormapMaterial())
                 ? (onLight() ? { r: 0, g: 0, b: 0 } : { r: 1, g: 1, b: 1 })
                 : map(segs[i + 4]);
             cols.push(c.r, c.g, c.b);
@@ -338,7 +410,8 @@ function buildContourLines(field) {
     geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
     geo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
     return new THREE.LineSegments(geo, new THREE.LineBasicMaterial({
-        vertexColors: true, transparent: true, opacity: triadFill ? 0.35 : 0.95,
+        vertexColors: true, transparent: true,
+        opacity: (triadFill && !colormapMaterial()) ? 0.35 : 0.9,
     }));
 }
 
@@ -471,26 +544,43 @@ export function render() {
     if (!renderer || !scene || !camera) return;
     controls.update();
 
-    /* The same Motion setting the tetrahedron turns on, applied to the object
-       rather than the camera so that the pointer still lands where it looks
-       like it lands while the surface is turning. */
-    if (autoRotate && surface) {
-        const dir = autoRotateDir === 'ArrowRight' ? -1 : 1;
-        const axis = (autoRotateDir === 'ArrowUp' || autoRotateDir === 'ArrowDown') ? 'x' : 'y';
-        const sign = autoRotateDir === 'ArrowDown' ? -1 : dir;
-        for (const item of [surface, lattice, labels, lines, marker]) {
-            if (item) item.rotation[axis] += rotationSpeed * sign;
-        }
+    /* Turned exactly the way the tetrahedron is turned, off the same three
+       settings: the arrow keys nudge it, Rotate Continuously latches it, and
+       [ and ] set the rate — one rate for both, so the Motion readout means
+       the same thing in either mode. While it is latched an arrow steers
+       rather than nudges, which is decided in three-visualizer.js and reaches
+       here as autoRotateDir.
+       
+       The WORLD turns, not the camera: the lights hang off the camera, so a
+       turning object moves under a fixed lamp and the specular highlight
+       travels across the peaks. Turning the camera instead would carry the
+       lamp with it and the surface would look painted. */
+    const turn = autoRotate ? autoRotateDir
+        : keyState.ArrowUp ? 'ArrowUp' : keyState.ArrowDown ? 'ArrowDown'
+        : keyState.ArrowLeft ? 'ArrowLeft' : keyState.ArrowRight ? 'ArrowRight' : null;
+
+    if (world && turn) {
+        if (turn === 'ArrowUp') world.rotation.x -= rotationSpeed;
+        else if (turn === 'ArrowDown') world.rotation.x += rotationSpeed;
+        else if (turn === 'ArrowLeft') world.rotation.y -= rotationSpeed;
+        else world.rotation.y += rotationSpeed;
     }
+
     renderer.render(scene, camera);
 }
 
 /* ---------------------------------------------------------------------
  *  The gesture
  *
- *  Shift is the orbit modifier, so the plain drag belongs to the music. That
- *  is Isoharmonics' arrangement and it is the right way round: the surface is
- *  an instrument first and a diagram second.
+ *  Tetrads' arrangement, so that a modifier means one thing in this app:
+ *  a plain drag TURNS the shape and Shift SOUNDS it, exactly as it does over
+ *  the tetrahedron. Isoharmonics has it the other way round — plain drag
+ *  plays, Shift orbits — which is defensible on its own but would make Shift
+ *  mean "play" in one mode of this app and "don't play" in the other.
+ *
+ *  The flat pane keeps the plain drag for playing, because there is nothing to
+ *  turn there; Shift plays in both, so the habit carries whichever pane the
+ *  pointer is over.
  * ------------------------------------------------------------------ */
 const raycaster = new THREE.Raycaster();
 const ndc = new THREE.Vector2();
@@ -500,9 +590,12 @@ function bindPointer() {
     el.style.touchAction = 'none';
 
     el.addEventListener('pointerdown', (ev) => {
-        if (ev.button !== 0 || ev.shiftKey) return;   // Shift orbits
+        if (ev.button !== 0 || !ev.shiftKey) return;   // a plain drag orbits
         const hit = pick(ev);
         if (!hit) return;
+        /* OrbitControls has already seen this press, so it is not enough to
+           stop listening — it has to be switched off, or the shape turns
+           under the chord being played. */
         controls.enabled = false;
         dragging = true;
         el.setPointerCapture(ev.pointerId);
@@ -521,11 +614,18 @@ function bindPointer() {
         if (!dragging) return;
         dragging = false;
         controls.enabled = true;
-        try { el.releasePointerCapture(ev.pointerId); } catch (e) {}
+        try { if (ev.pointerId !== undefined) el.releasePointerCapture(ev.pointerId); } catch (e) {}
         onGesture?.('up', null);
     };
     el.addEventListener('pointerup', up);
     el.addEventListener('pointercancel', up);
+
+    /* Letting go of Shift while still dragging ends the note. Without this the
+       drag would carry on sounding with the modifier that authorised it gone,
+       and the pointer would be playing and orbiting at the same time. */
+    window.addEventListener('keyup', (ev) => {
+        if (ev.key === 'Shift' && dragging) up({ pointerId: undefined });
+    });
 }
 
 /**
@@ -549,18 +649,21 @@ function pick(ev) {
         if (hits.length) point = hits[0].point.clone();
     }
     if (!point) {
-        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        /* The triangle's own ground plane, carried through whatever rotation
+           the world is currently under — a fixed y=0 plane would be the right
+           answer only while the shape happened to be upright. */
+        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
+            .applyMatrix4(world.matrixWorld);
         const p = new THREE.Vector3();
         if (!raycaster.ray.intersectPlane(plane, p)) return null;
         point = p;
     }
 
-    /* The rotation is on the objects, so a turned surface reports a hit in
-       world space that has to be brought back into the triangle's own frame
-       before it can be read as two intervals. */
-    if (surface && (surface.rotation.x || surface.rotation.y)) {
-        point.applyQuaternion(surface.quaternion.clone().invert());
-    }
+    /* The arrow keys turn the world group, so a hit reported in scene space
+       has to be brought back into the triangle's own frame before it can be
+       read as two intervals — otherwise playing a surface you have rotated
+       would sound a different chord from the one under the pointer. */
+    world.worldToLocal(point);
 
     const E = equaveCents(opts.equaveRatio);
     const { gx, gy } = unplace(point);

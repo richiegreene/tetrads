@@ -79,10 +79,10 @@
            appear or go, marked `data-mode` in the markup below. -->
       <div class="mode-switch">
         <div class="seg" id="mode-seg">
-          <button data-v="tetrads" class="on"
-            title="Four voices in a tetrahedron: every JI tetrad under the limit, placed by its three intervals">Tetrads</button>
           <button data-v="triads"
             title="Three voices in a triangle: the same limit read over two intervals, on a concordance surface you can play">Triads</button>
+          <button data-v="tetrads" class="on"
+            title="Four voices in a tetrahedron: every JI tetrad under the limit, placed by its three intervals">Tetrads</button>
         </div>
       </div>
 
@@ -127,10 +127,11 @@
                there to look at. The limit above says which chords are marked;
                this says what the ground between them is measuring.
 
-               Its own press, because it is the one thing in the app that can
-               take a second — Pyodide runs on the page's own thread, and a
-               model that regenerated on every keystroke would freeze the field
-               it was being typed into. -->
+               Nothing here is applied by a press: the model rebuilds itself a
+               moment after you stop moving things. That moment is the whole
+               trick — Pyodide runs on the page's own thread, so a model that
+               recomputed on every intermediate value of a drag would freeze
+               the slider being dragged. See scheduleApply in ui-handlers.js. -->
           <fieldset data-mode="triads" class="mode-off">
             <legend>Model</legend>
             <div class="seg" id="triad-model-seg">
@@ -192,11 +193,6 @@
               style="display:none"
               title="How many samples across the triangle the model is computed at. Shared by both models so the two are comparable.">
 
-            <div class="btns" style="margin-top:9px">
-              <button class="primary wide" id="triad-generate"
-                title="Compute the field. Held until a setting that would change it moves.">Generate Model</button>
-            </div>
-            <div class="hint" id="triad-status">no model</div>
           </fieldset>
 
           <fieldset>
@@ -543,11 +539,14 @@
         </div>
       </div>
 
-      <!-- ---- the two presses, under every drawer ----
-           Update belongs to Complexity and Display and Play alike — every one
-           of them can change what the next press generates — so it is not put
-           inside any of them. Play is beside it because the two are the pair
-           you alternate between once the panel is set. -->
+      <!-- ---- the foot ----
+           There is no Update here any more, because there is nothing to press:
+           every control in every drawer applies itself once you stop moving
+           it. What took its place is the line that says what came of that —
+           how many chords are in the set, which model is under the triangle,
+           and what it cost. The foot is the right home for it for the reason
+           Update was: it belongs to all four drawers at once, and a readout
+           that vanished with its drawer would have to be gone looking for. -->
       <div class="panel-foot">
         <!-- Tetrads only. In Triads the gesture IS the play mode: the pointer
              goes down on the triangle and three voices come with it, so a
@@ -555,7 +554,7 @@
              something that is already true. -->
         <button id="playButton" data-mode="tetrads"
           title="Sound the tetrad under the pointer (hold ⇧)">Play (<span class="symbol">⇧</span>)</button>
-        <button id="updateButton" class="primary" title="Regenerate the set (↵)">Update (<span class="symbol">↵</span>)</button>
+        <div id="panel-status" title="What the panel has just produced">ready</div>
       </div>
     </div>
   </aside>

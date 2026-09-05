@@ -23,7 +23,10 @@ import {
     triadPivot, setTriadPivot, cursor, setCursor, setCursorLive,
 } from './triad-state.js';
 import { attach2D, draw as draw2D, resize as resize2D, invalidate as invalidate2D } from './triad-2d.js';
-import { attach3D, draw as draw3D, resize as resize3D, render as render3D, rebuild as rebuild3D } from './triad-3d.js';
+import {
+    attach3D, draw as draw3D, resize as resize3D, render as render3D,
+    rebuild as rebuild3D, fitView as fit3D,
+} from './triad-3d.js';
 import {
     generateTriadSet, generateField, currentField, currentTriads, clearField,
     fieldIsStale,
@@ -202,6 +205,7 @@ export async function switchMode(mode) {
         layoutOnEntry = currentLayoutMode;
         await refreshSet();
         rebuild3D(readPanel(), true);
+        fit3D();
     } else {
         if (layoutOnEntry !== null && layoutOnEntry !== currentLayoutMode) {
             await setLayoutMode(currentLayoutMode);
@@ -227,17 +231,18 @@ export async function refreshSet() {
     });
     /* An equave change does not rescale the picture, it changes which chords
        are in it — so a field computed for the old one is not stale styling,
-       it is a wrong diagram, and it goes rather than being redrawn. */
+       it is a wrong diagram. It used to be dropped with a note asking for
+       Generate to be pressed again; there is no Generate now, so it is simply
+       rebuilt. Dropping the surface and leaving the triangle blank would be
+       the panel undoing a setting the user did not touch. */
     if (fieldIsStale(o.equaveRatio)) {
-        /* Pressed rather than set, so the model picker's own handler runs and
-           the parameters on screen go back to matching the model that is
-           actually loaded. */
-        $('triad-model-seg').querySelector('button[data-v="blank"]')?.click();
-        setStatus(`${currentTriads().length} triads · equave changed, regenerate the model`);
-    } else {
-        setStatus(`${currentTriads().length} triads`);
+        clearField();
+        invalidate({ rebuild: true });
+        await generateSurface(triadModel);
+        return;
     }
 
+    setStatus(describeSet());
     invalidate({ rebuild: true });
     rebuild3D(o, true);
 }
@@ -254,9 +259,9 @@ export async function generateSurface(model) {
     setTriadModel(model);
     if (model === 'blank') {
         clearField();
-        setStatus('no model');
         invalidate({ rebuild: true });
         rebuild3D(readPanel(), true);
+        setStatus(describeSet());
         return;
     }
 
@@ -271,17 +276,27 @@ export async function generateSurface(model) {
     if (!res.ok) {
         setStatus(res.error || 'could not generate');
     } else if (res.cached) {
-        setStatus(model === 'he' ? 'harmonic entropy' : 'sethares');
+        setStatus(describeSet());
     } else {
-        const name = model === 'he' ? 'harmonic entropy' : 'sethares';
-        setStatus(`${name} · ${(res.ms / 1000).toFixed(1)}s`);
+        setStatus(`${describeSet()} · ${(res.ms / 1000).toFixed(1)}s`);
     }
     invalidate({ rebuild: true });
     rebuild3D(o, true);
+    fit3D();
+}
+
+/** What the panel has produced, as the foot says it. */
+function describeSet() {
+    const n = currentTriads().length;
+    const model = triadModel === 'he' ? 'harmonic entropy'
+        : triadModel === 'sethares' ? 'sethares' : null;
+    return model && currentField()
+        ? `${n} triads · ${model}`
+        : `${n} triads`;
 }
 
 function setStatus(text, busy = false) {
-    const el = $('triad-status');
+    const el = $('panel-status');
     if (!el) return;
     el.textContent = text;
     el.classList.toggle('busy', busy);
@@ -294,7 +309,13 @@ function setStatus(text, busy = false) {
 export function applyView(view) {
     if (view) setTriadView(view);
     layout();
-    if (triadView !== 'topo') rebuild3D(readPanel(), true);
+    if (triadView !== 'topo') {
+        rebuild3D(readPanel(), true);
+        /* The pane has this instant been given a width it did not have, so the
+           surface is framed against the size it is actually going to be drawn
+           at rather than the zero it was measuring a moment ago. */
+        fit3D();
+    }
     dirty = true;
 }
 
