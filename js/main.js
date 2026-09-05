@@ -13,7 +13,10 @@ import { updateTetrahedron, cycleLayoutMode } from './calculations/tetrahedron-u
 import { setupUIEventListeners } from './utils/ui-handlers.js';
 import { initMidiOutput } from './midi/midi-output.js';
 import { TRIADS_PY } from './triads/triad-python.js';
-import { initTriads, applyModeClasses, bootTriads } from './triads/triad-mode.js';
+import { DYADS_PY } from './dyads/dyad-python.js';
+import { applyModeClasses } from './app-mode.js';
+import { initTriads, bootTriads } from './triads/triad-mode.js';
+import { initDyads } from './dyads/dyad-mode.js';
 
 // --- MAIN PYODIDE INITIALIZATION ---
 async function initPyodide() {
@@ -207,22 +210,35 @@ def weil_norm(ratio):
     return math.log2(max(ratio.numerator, ratio.denominator))
 
 def wilson_norm(ratio):
+    # Wilson height: every prime counted as many times as it actually occurs.
+    #
+    # get_prime_factors returns {prime: exponent}, and summing a dict in Python
+    # sums its KEYS — so this used to discard the exponents entirely and score
+    # 81/64 at 5, exactly as simple as 3/2. Multiplicity is the whole content
+    # of the measure.
     ratio = Fraction(ratio).limit_denominator(10000)
     factors_n = get_prime_factors(ratio.numerator)
     factors_d = get_prime_factors(ratio.denominator)
-    return sum(factors_n) + sum(factors_d)
+    return (sum(p * e for p, e in factors_n.items())
+            + sum(p * e for p, e in factors_d.items()))
 
 def gradus_norm(ratio):
+    # Euler's gradus suavitatis: sum of e*(p-1) over the factorisation, plus 1.
+    # Same correction as wilson_norm above — it counted each distinct prime
+    # once however many times it appeared.
     ratio = Fraction(ratio).limit_denominator(10000)
     factors_n = get_prime_factors(ratio.numerator)
     factors_d = get_prime_factors(ratio.denominator)
-    s = sum(factors_n) + sum(factors_d)
-    n = len(factors_n) + len(factors_d)
-    return s - n + 1
+    return (sum(e * (p - 1) for p, e in factors_n.items())
+            + sum(e * (p - 1) for p, e in factors_d.items()) + 1)
 
 def benedetti_norm(ratio):
+    # Benedetti height is the PRODUCT of the two terms — which is what makes it
+    # the quantity Tenney takes the log of. It used to return their sum, which
+    # made it an exact duplicate of arithmetic_norm below: two entries in the
+    # Complexity menu computing one measure.
     ratio = Fraction(ratio).limit_denominator(10000)
-    return ratio.numerator + ratio.denominator
+    return ratio.numerator * ratio.denominator
 
 def arithmetic_norm(ratio):
     ratio = Fraction(ratio).limit_denominator(10000)
@@ -354,11 +370,14 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
     pyodide.FS.writeFile("python/theory/calculations.py", calculations_py_content, { encoding: "utf8" });
     pyodide.FS.writeFile("python/theory/__init__.py", "", { encoding: "utf8" });
 
-    /* Triads mode's generator, written beside the tetrahedron's and importing
-       the same theory/calculations.py rather than carrying its own copy of the
-       limit tests — so a 13-limit means one thing in this app whether it is
-       being read over three intervals or two. */
+    /* The other two modes' generators, written beside the tetrahedron's and
+       importing the same theory/calculations.py rather than carrying their own
+       copies of the limit tests — so a 13-limit means one thing in this app
+       whether it is being read over three intervals, two, or one. Dyads goes
+       in after Triads because it imports the Plomp-Levelt kernel from it
+       rather than restating it. */
     pyodide.FS.writeFile("python/triads_generator.py", TRIADS_PY, { encoding: "utf8" });
+    pyodide.FS.writeFile("python/dyads_generator.py", DYADS_PY, { encoding: "utf8" });
 
     pyodide.runPython("import sys; sys.path.append('./python')");
     await pyodide.loadPackage("micropip");
@@ -370,9 +389,10 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
     initThreeJS();
     animate();
 
-    /* Both scenes exist from the start; only one of them is asked to draw.
-       See animate(), which stands down while Triads is up, and switchMode,
-       which builds the tetrahedron the first time it is actually wanted. */
+    /* All three stages exist from the start; only one of them is asked to
+       draw. See animate(), which stands down whenever the tetrahedron is not
+       the mode, and switchMode in app-mode.js, which builds each of the other
+       two the first time it is actually wanted. */
     setCurrentLayoutDisplay(document.getElementById('layoutDisplay').value);
     setPlayButton(document.getElementById('playButton'));
     setPivotButtons(document.querySelectorAll('.pivot-button'));
@@ -386,10 +406,16 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
     setupUIEventListeners();
 
     /* The app opens in Triads, so the triangle is what gets generated. The
-       tetrahedron costs several hundred milliseconds of a blocked thread and
-       nobody has asked to see it yet, so it waits until they do. */
-    applyModeClasses('triads');
+       other two cost a blocked thread nobody has asked for yet, so they wait
+       until they are asked: each registers itself here and generates on its
+       first visit. Attaching a pane is free — measuring a canvas and binding
+       a pointer — so that part happens for all of them now. */
+    initDyads();
     initTriads();
+    /* After the two of them have registered, not before: applyModeClasses asks
+       the registry what the mode is called, and a mode that has not said yet
+       would have its own name written into the drawer headings in lower case. */
+    applyModeClasses('triads');
     await bootTriads();
 }
 

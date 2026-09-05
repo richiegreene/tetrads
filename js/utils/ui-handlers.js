@@ -2,17 +2,23 @@
  *  THE PANEL
  * =====================================================================
  *
- * Three drawers behind one rail, in Xenachord Designer's own idiom, and the
+ * Four drawers behind one rail, in Xenachord Designer's own idiom, and the
  * split between them is by what a control is FOR rather than by what it acts
  * on:
  *
- *   Complexity Measures  which tetrads exist at all
+ *   Complexity Measures  which chords exist at all
  *   Display              what is done with the ones that do
  *   Play                 what they sound like
+ *   Export               who else gets them
  *
- * Update and Play sit under all three, in the panel's foot, because every
- * drawer can change what the next press generates and a button that vanished
- * with its drawer would have to be gone looking for.
+ * The same four in all three modes, because all three ask the same questions
+ * of the same set — which is why the mode switch sits ABOVE them rather than
+ * inside one. What is genuinely particular to one mode is marked `data-mode`
+ * in the markup and appears with it; see applyModeClasses in app-mode.js.
+ *
+ * The foot sits under all four, because every drawer can change what the next
+ * generation produces and a readout that vanished with its drawer would have
+ * to be gone looking for.
  * ------------------------------------------------------------------ */
 
 import {
@@ -29,8 +35,10 @@ import {
 } from '../globals.js';
 import { stopChord, setTimbre, setAdsr } from '../components/audio-engine.js';
 import { updateTetrahedron, setLayoutMode, LAYOUT_GROUNDS } from '../calculations/tetrahedron-updater.js';
+import { onWindowResize } from '../components/three-visualizer.js';
 import { exportToSVG, downloadSVG, exportToPNG, exportToCSV } from './data-export.js';
 import { saveTriadSVG, saveTriadPNG, exportTriadCSV } from '../triads/triad-export.js';
+import { saveDyadSVG, saveDyadPNG, exportDyadCSV } from '../dyads/dyad-export.js';
 import {
     colormaps, colormapAt, COLORMAP_COUNT, constantColors, setConstantColor,
     isLightGround, groundCss,
@@ -41,15 +49,28 @@ import { createTimbrePicker, FILTERED_MIN } from '../synth/timbre.js';
 import { attachAdsrEditor } from '../synth/adsr.js';
 import { setCurrentTimbre } from '../globals.js';
 import {
-    appMode, triadModel, triadDots, triadLabels, setTriadModel, setTriadFill, setTriadLines,
+    appMode, registerMode, switchMode, layout as layoutStage, setStatus as showStatus,
+    letStatusPaint,
+} from '../app-mode.js';
+import {
+    triadModel, triadDots, triadLabels, setTriadModel, setTriadFill, setTriadLines,
     setTriadContours, setTriadRelief, setTriadDots, setTriadLabels,
     setTriadSnap, setTriadGlide, setTriadGloss, heParams, smParams,
 } from '../triads/triad-state.js';
 import {
-    switchMode, refreshSet, generateSurface, applyView, applyPivot,
-    invalidate as invalidateTriads, resetReference, layout as layoutStage,
-    setTetradBuilder,
+    refreshSet, generateSurface, applyView, applyPivot,
+    invalidate as invalidateTriads, resetReference,
 } from '../triads/triad-mode.js';
+import {
+    dyadModel, dyadDots, dyadLabels, setDyadModel, setDyadFill, setDyadLine,
+    setDyadRatings, setDyadDots, setDyadLabels, setDyadSnap, setDyadGlide,
+    setDyadPivot, setDyadSpan, setDyadResolution, dheParams, dsmParams, dtnParams,
+} from '../dyads/dyad-state.js';
+import {
+    refreshSet as refreshDyadSet, generateModel as generateDyadModel,
+    invalidate as invalidateDyads, restate as restateDyads,
+    applyPivot as applyDyadPivot, resetReference as resetDyadReference,
+} from '../dyads/dyad-mode.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -299,16 +320,17 @@ export function setupUIEventListeners() {
      * controls of the mode you are not in, retitling the drawers, laying the
      * stage out — and lets go of anything that is sounding on the way across,
      * because both modes address the same synth voices by the same ids. */
-    /* Complexity channels size and colour a triad's dots as much as a
-       tetrad's points, but with the lattice itself invisible — neither Dots
-       nor Labels on — there is nothing left for them or for Omit to act on,
-       so both go dark together. */
+    /* Complexity channels size and colour a triad's dots and a dyad's marks
+       as much as a tetrad's points, but with the lattice itself invisible —
+       neither Dots nor Labels on — there is nothing left for them or for Omit
+       to act on, so they go dark together. */
     const channelFieldset = $('channel-fieldset');
     const omitFieldset = $('omit-fieldset');
     const limitFieldset = $('limit-fieldset');
     const complexityFieldset = $('complexity-fieldset');
     const updateChannelVisibility = () => {
-        const latticeEmpty = appMode === 'triads' && !triadDots && !triadLabels;
+        const latticeEmpty = (appMode === 'triads' && !triadDots && !triadLabels)
+                          || (appMode === 'dyads' && !dyadDots && !dyadLabels);
         channelFieldset.classList.toggle('mode-off', latticeEmpty);
         omitFieldset.classList.toggle('mode-off', latticeEmpty);
         limitFieldset.classList.toggle('mode-off', latticeEmpty);
@@ -316,16 +338,21 @@ export function setupUIEventListeners() {
     };
 
     /* Limit, Complexity, Complexity channels and Omit all decide what the
-       lattice is and shows, so in Triads they live inside the Lattice
-       fieldset rather than as siblings of it. Moved rather than duplicated:
-       each is the one control the rest of the app already reads by id, and
-       Tetrads gets it back, in its old place, the moment the mode does. */
-    const latticeFieldset = $('triad-lattice-fieldset');
+       lattice is and shows, so in the two gestural modes they live inside that
+       mode's Lattice fieldset rather than as siblings of it. Moved rather than
+       duplicated: each is the one control the rest of the app already reads by
+       id, and Tetrads gets them back, in their old places, the moment the mode
+       does. */
+    const latticeHosts = {
+        triads: $('triad-lattice-fieldset'),
+        dyads: $('dyad-lattice-fieldset'),
+    };
     const latticeGroup = [limitFieldset, complexityFieldset, channelFieldset, omitFieldset];
     const latticeHomes = latticeGroup.map((el) => [el, el.parentNode, el.nextSibling]);
     const placeLatticeGroup = (mode) => {
-        if (mode === 'triads') {
-            for (const el of latticeGroup) latticeFieldset.appendChild(el);
+        const host = latticeHosts[mode];
+        if (host) {
+            for (const el of latticeGroup) host.appendChild(el);
         } else {
             for (const [el, parent, next] of latticeHomes) parent.insertBefore(el, next);
         }
@@ -363,14 +390,23 @@ export function setupUIEventListeners() {
     const layoutDisplay = $('layoutDisplay');
     seg('layout-seg', (v) => { layoutDisplay.value = v; scheduleApply('set'); });
 
-    /* In Tetrads the colours and sizes are baked into the sprites, so these
-       are a rebuild; in Triads they are read at paint time, so they are only a
-       repaint. Both are asked for — the scheduler drops the one that does not
-       apply to the mode you are in. */
-    toggleSeg('channel-seg', () => {
-        if (appMode === 'triads') invalidateTriads({ rebuild: true });
+    /**
+     * A shared display control has moved.
+     *
+     * In Tetrads the colours and sizes are baked into the sprites, so this is
+     * a regeneration; in Triads and Dyads they are read at paint time, so the
+     * same press is only a repaint. That difference is the whole argument for
+     * keeping the fields as numbers rather than asking a plotting library for
+     * a picture, and it is stated once here rather than at each of the four
+     * places that need it.
+     */
+    const restyle = ({ rebuild = false } = {}) => {
+        if (appMode === 'triads') invalidateTriads({ rebuild });
+        else if (appMode === 'dyads') invalidateDyads();
         else scheduleApply('set');
-    });
+    };
+
+    toggleSeg('channel-seg', () => restyle({ rebuild: true }));
 
     /* ---------------- the colormap chips ----------------
      * Painted by sampling the very functions the scene colours itself with, so
@@ -447,21 +483,21 @@ export function setupUIEventListeners() {
      * Light one chip and take the scene to it. The seg and ⇧⌘L share this.
      *
      * The tetrahedron bakes its colours into sprites at build time, so a new
-     * ramp means regenerating the set. The triangle keeps its field as
-     * numbers and is only shaded at paint time, so the same press there is a
-     * repaint — which is the point of not asking a plotting library for a
-     * picture in the first place.
+     * ramp means regenerating the set. The triangle keeps its field as numbers
+     * and the plot keeps its curve as numbers, so the same press in either of
+     * those is a repaint — which is the point of not asking a plotting library
+     * for a picture in the first place.
      */
     const applyColormap = (index) => {
         for (const b of mapsEl.querySelectorAll('button')) {
             b.classList.toggle('on', b.dataset.v === String(index));
         }
         applyBrightMode(index);
-        if (appMode === 'triads') {
-            setCurrentLayoutMode(index);
-            invalidateTriads({ rebuild: true });
-        } else {
+        if (appMode === 'tetrads') {
             setLayoutMode(index);
+        } else {
+            setCurrentLayoutMode(index);
+            restyle({ rebuild: true });
         }
     };
     paintChips();
@@ -469,10 +505,7 @@ export function setupUIEventListeners() {
     seg('colormap-seg', (v) => applyColormap(parseInt(v)));
 
     for (const id of ['baseSize', 'scalingFactor']) {
-        $(id).addEventListener('input', () => {
-            if (appMode === 'triads') invalidateTriads({ rebuild: true });
-            else scheduleApply('set');
-        });
+        $(id).addEventListener('input', () => restyle({ rebuild: true }));
     }
 
     /* ---------------------------------------------------------------------
@@ -583,6 +616,114 @@ export function setupUIEventListeners() {
     triadPivotSeg.addEventListener('click', (ev) => {
         const btn = ev.target.closest('button');
         if (btn && triadPivotSeg.contains(btn)) pickTriadPivot(parseInt(btn.dataset.v));
+    });
+
+    /* ---------------------------------------------------------------------
+     *  Dyads
+     *
+     *  Everything below only exists while the plot is up. The same two rules
+     *  keep it honest as in Triads: nothing here writes a setting another mode
+     *  also reads, and nothing here recomputes except through the settle timer.
+     *
+     *  The second rule matters less than it does over there — a curve is a line
+     *  and costs tens of milliseconds where a surface is a grid and costs a
+     *  second and a half — but a panel where one slider applies instantly and
+     *  the next waits a beat is a panel that feels broken in a way nobody can
+     *  point at. So the plot waits too.
+     * ------------------------------------------------------------------ */
+
+    /* ---- which measure is the curve ----
+     * Choosing one shows that model's parameters and builds it, a beat later.
+     * Which one is selected at startup is read off the markup rather than
+     * duplicated here, so the panel and the state cannot open disagreeing. */
+    const dyadModelParams = { he: $('dhe-params'), sethares: $('dsm-params'), tenney: $('dtn-params') };
+    const dyadResRow = $('dyad-res-row'), dyadResInput = $('dyadResolution');
+    const showDyadModelParams = (model) => {
+        for (const [name, el] of Object.entries(dyadModelParams)) {
+            el.classList.toggle('mode-off', name !== model);
+        }
+        /* Resolution is how finely a CURVE is sampled and Fill and Line are
+           how one is drawn, so both mean nothing when the measure has values
+           only at the ratios and there is no curve to draw. They go together,
+           in the two drawers they respectively live in. */
+        const needsCurve = model !== 'discrete';
+        dyadResRow.style.display = needsCurve ? 'flex' : 'none';
+        dyadResInput.style.display = needsCurve ? 'block' : 'none';
+        $('dyad-curve-fieldset').classList.toggle('no-curve', !needsCurve);
+    };
+    seg('dyad-model-seg', (v) => {
+        setDyadModel(v);
+        showDyadModelParams(v);
+        scheduleApply('model');
+    });
+    const bootDyadModel = $('dyad-model-seg').querySelector('button.on')?.dataset.v || 'discrete';
+    setDyadModel(bootDyadModel);
+    showDyadModelParams(bootDyadModel);
+
+    /* The models' own numbers, each rebuilding the curve a beat after the hand
+       comes off it. */
+    const dyadModelPress = (id, valueId, apply, format) =>
+        press(id, valueId, (v) => { apply(v); scheduleApply('model'); }, format);
+
+    dyadModelPress('dheSpread', 'dhe-spread-v', (v) => { dheParams.spread = v; }, (v) => `${v} ¢`);
+    dyadModelPress('dheNLimit', 'dhe-n-v', (v) => { dheParams.nLimit = v; }, (v) => `${v}`);
+    dyadModelPress('dheAlpha', 'dhe-alpha-v', (v) => { dheParams.alpha = v; }, (v) => v.toFixed(1));
+    dyadModelPress('dsmPartials', 'dsm-partials-v', (v) => { dsmParams.partials = v; }, (v) => `${v}`);
+    dyadModelPress('dsmRamp', 'dsm-ramp-v', (v) => { dsmParams.ramp = v; }, (v) => v.toFixed(1));
+    dyadModelPress('dtnSoftness', 'dtn-soft-v', (v) => { dtnParams.softness = v; }, (v) => `${v} ¢`);
+    dyadModelPress('dtnDepth', 'dtn-depth-v', (v) => { dtnParams.depth = v; }, (v) => `${v}`);
+    dyadModelPress('dyadResolution', 'dyad-res-v', (v) => setDyadResolution(v), (v) => `${v}`);
+
+    /* The span is in the Complexity drawer rather than in Display for the
+       reason the limit is: it does not rescale the picture, it decides which
+       intervals are in it — and it is the one axis setting the plot owns, the
+       equave itself belonging to all three modes at once. */
+    press('dyadSpan', 'dyad-span-v',
+        (v) => { setDyadSpan(v); scheduleApply('both'); },
+        (v) => (v === 1 ? '1 equave' : `${v} equaves`));
+
+    /* ---- how the curve is drawn ----
+     * Fill and Line change the picture and nothing else, so they redraw at
+     * once. Ratings is the one display switch here that changes what the
+     * vertical axis IS — see dyad-2d.js — so the foot has to say the fit
+     * again afterwards even though nothing was recomputed. */
+    flagSeg('dyad-curve-seg', {
+        dyadFill: (on) => { setDyadFill(on); invalidateDyads(); },
+        dyadLine: (on) => { setDyadLine(on); invalidateDyads(); },
+    });
+    flagSeg('dyad-data-seg', {
+        dyadRatings: (on) => { setDyadRatings(on); invalidateDyads(); restateDyads(); },
+    });
+    flagSeg('dyad-lattice-seg', {
+        dyadDots: (on) => { setDyadDots(on); invalidateDyads(); updateChannelVisibility(); },
+        dyadLabels: (on) => { setDyadLabels(on); invalidateDyads(); updateChannelVisibility(); },
+    });
+
+    press('dyadSnap', 'dyad-snap-v',
+        (v) => { setDyadSnap(v); },
+        (v) => (v > 0 ? `${Math.round(v)} px` : 'off'));
+
+    press('dyadGlide', 'dyad-glide-v',
+        (v) => setDyadGlide(v / 1000),
+        (v) => (v >= 1000 ? `${(v / 1000).toFixed(2)} s` : `${Math.round(v)} ms`));
+
+    /* ---- the pivot, over two voices ----
+     * The same press the other two modes get, one row shorter. S and T are
+     * both the labels and the keys, and switching while a dyad is sounding is
+     * silent: the incoming pivot inherits the pitch that voice already has. */
+    const DYAD_PARTS = { S: 1, T: 0 };
+    const dyadPivotSeg = $('dyad-pivot-seg');
+
+    const pickDyadPivot = (index) => {
+        for (const b of dyadPivotSeg.querySelectorAll('button')) {
+            b.classList.toggle('on', b.dataset.v === String(index));
+        }
+        applyDyadPivot(index);
+    };
+
+    dyadPivotSeg.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('button');
+        if (btn && dyadPivotSeg.contains(btn)) pickDyadPivot(parseInt(btn.dataset.v));
     });
 
     /* ---------------- Motion ----------------
@@ -725,10 +866,11 @@ export function setupUIEventListeners() {
                model has to be able to ask. */
             onInput: (v) => {
                 S.timbre = v; setTimbre(v); setCurrentTimbre(v);
-                /* Sethares is a statement about a spectrum, so the surface is
-                   out of date the moment the wave changes. Nothing happens
-                   while any other model is up, or none. */
-                if (appMode === 'triads' && triadModel === 'sethares') scheduleApply('model');
+                /* Sethares is a statement about a spectrum, so the surface —
+                   and the curve — are out of date the moment the wave changes.
+                   Nothing happens while any other model is up, or none. */
+                if ((appMode === 'triads' && triadModel === 'sethares')
+                 || (appMode === 'dyads' && dyadModel === 'sethares')) scheduleApply('model');
             },
             onChange: save,
         },
@@ -766,14 +908,18 @@ export function setupUIEventListeners() {
      * The same three exports the key commands have always run — the buttons
      * and the shortcuts call one function each, so neither can drift. */
     /* One press per format, and the mode decides what it means — a picture of
-       the tetrahedron or a picture of the triangle, the tetrads or the triads.
-       The three key commands below go through these same three functions, so
-       a shortcut and a button cannot come to save different things. */
-    const saveSVG = () => (appMode === 'triads'
-        ? saveTriadSVG() : downloadSVG(exportToSVG(), 'tetrads-export.svg'));
-    const savePNG = () => (appMode === 'triads'
-        ? saveTriadPNG() : exportToPNG('tetrads-export.png'));
-    const saveCSV = () => (appMode === 'triads' ? exportTriadCSV() : exportToCSV());
+       the tetrahedron, of the triangle or of the plot, and the chords behind
+       whichever it is. The three key commands below go through these same
+       three functions, so a shortcut and a button cannot come to save
+       different things. */
+    const perMode = (dyads, triads, tetrads) => () => (
+        appMode === 'dyads' ? dyads() : appMode === 'triads' ? triads() : tetrads());
+
+    const saveSVG = perMode(saveDyadSVG, saveTriadSVG,
+        () => downloadSVG(exportToSVG(), 'tetrads-export.svg'));
+    const savePNG = perMode(saveDyadPNG, saveTriadPNG,
+        () => exportToPNG('tetrads-export.png'));
+    const saveCSV = perMode(exportDyadCSV, exportTriadCSV, exportToCSV);
 
     $('dl-svg').addEventListener('click', saveSVG);
     $('dl-png').addEventListener('click', savePNG);
@@ -798,17 +944,11 @@ export function setupUIEventListeners() {
      *  The runner
      *
      *  What Update and Generate Model used to do, on their own initiative.
-     *  Both modes are built from the same limit, equave and complexity
+     *  All three modes are built from the same limit, equave and complexity
      *  measure, so this means the same thing in each: bring what is on screen
-     *  up to date with what the drawers say.
+     *  up to date with what the drawers say. Which mode is up decides only
+     *  which generator is asked.
      * ------------------------------------------------------------------ */
-
-    const showStatus = (text, busy = false) => {
-        const el = $('panel-status');
-        if (!el) return;
-        el.textContent = text;
-        el.classList.toggle('busy', busy);
-    };
 
     /** Rebuild the tetrahedron from the panel. */
     async function applyTetrads(force = false) {
@@ -886,47 +1026,83 @@ export function setupUIEventListeners() {
                     showStatus('working…', true);
                     /* Two frames, so the status is actually on screen before
                        the thread is taken away to do the work. */
-                    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-                    const done = appMode === 'triads'
-                        ? await refreshSet(force)
+                    await letStatusPaint();
+                    const done = appMode === 'dyads' ? await refreshDyadSet(force)
+                        : appMode === 'triads' ? await refreshSet(force)
                         : await applyTetrads(force);
                     /* A refusal has already said why in the foot, so the
                        generic line below must not overwrite it. */
                     if (done === false) { showStatus($('panel-status').textContent); continue; }
                 }
-                if (wantModel && appMode === 'triads') {
-                    await generateSurface(triadModel);
+                if (wantModel) {
+                    if (appMode === 'triads') await generateSurface(triadModel);
+                    else if (appMode === 'dyads') await generateDyadModel(dyadModel);
                 }
-                if (appMode !== 'triads') showStatus('tetrads');
+                if (appMode === 'tetrads') showStatus('tetrads');
             }
         } finally {
             running = false;
         }
     };
 
-    /* The tetrahedron, when it is first asked for. See switchMode: the app
-       opens in Triads and never generates a set nobody has looked at. */
-    setTetradBuilder(async () => {
-        showStatus('working…', true);
-        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await applyTetrads(true);
-        showStatus('tetrads');
+    /* ---------------- the tetrahedron, as a mode ----------------
+     * Registered here rather than in a module of its own because this is where
+     * applyTetrads lives, and its enter hook is that plus two pieces of
+     * bookkeeping that only the tetrahedron needs:
+     *
+     *   IT IS NOT BUILT AT STARTUP. The app opens in Triads, and generating a
+     *   set nobody has asked to see is several hundred milliseconds of a
+     *   blocked thread on the way to a picture of something else. The first
+     *   visit builds it.
+     *
+     *   A COLORMAP CHOSEN WHILE IT WAS HIDDEN has to be applied properly on
+     *   the way back. The other two modes shade at paint time, so a ramp
+     *   change there is a repaint; the tetrahedron bakes its colours into its
+     *   sprites and takes its ground from the layout, so it is a rebuild.
+     *   Recorded on the way OUT rather than on the way in, so it does not
+     *   matter which of the other two modes you went to.
+     */
+    let tetradsBuilt = false;
+    let layoutOnLeaving = null;
+
+    registerMode('tetrads', {
+        title: 'Tetrads',
+        view: () => 'tetra',
+        resize: onWindowResize,
+        leave: () => { layoutOnLeaving = currentLayoutMode; },
+        enter: async () => {
+            if (!tetradsBuilt) {
+                tetradsBuilt = true;
+                showStatus('working…', true);
+                await letStatusPaint();
+                await applyTetrads(true);
+            } else if (layoutOnLeaving !== null && layoutOnLeaving !== currentLayoutMode) {
+                await setLayoutMode(currentLayoutMode);
+            }
+            layoutOnLeaving = null;
+            showStatus('tetrads');
+        },
     });
 
     /* ---------------- keyboard ---------------- */
 
-    /* S, A and T hold a voice, exactly as S/A/T/B do in Tetrads — where the
+    /* The initials hold a voice, exactly as S/A/T/B do in Tetrads — where the
      * tetrahedron's own key handler owns them (see three-visualizer.js, which
-     * stands down in this mode). A press while a field is focused is a letter
-     * being typed into it, not a pivot. */
+     * stands down in the other two modes). Three parts in the triangle and two
+     * on the plot, from the same run of letters, so the key that holds the top
+     * voice is S wherever you are. A press while a field is focused is a
+     * letter being typed into it, not a pivot. */
     document.addEventListener('keydown', (event) => {
-        if (appMode !== 'triads' || event.metaKey || event.ctrlKey || event.altKey) return;
+        if (event.metaKey || event.ctrlKey || event.altKey) return;
+        if (appMode !== 'triads' && appMode !== 'dyads') return;
         const tag = event.target.tagName;
         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-        const index = TRIAD_PARTS[event.key.toUpperCase()];
+        const parts = appMode === 'triads' ? TRIAD_PARTS : DYAD_PARTS;
+        const index = parts[event.key.toUpperCase()];
         if (index === undefined) return;
         event.preventDefault();
-        pickTriadPivot(index);
+        if (appMode === 'triads') pickTriadPivot(index);
+        else pickDyadPivot(index);
     });
 
     document.addEventListener('keydown', (event) => {
@@ -956,12 +1132,14 @@ export function setupUIEventListeners() {
             event.preventDefault();
             saveCSV();
         }
-        // Spacebar puts the next chord back on the fixed base frequency.
+        // Spacebar puts the next chord back on the fixed base frequency —
+        // whichever mode's pivot is the one currently holding a pitch.
         if (event.key === ' ' && event.target.tagName !== 'INPUT') {
             event.preventDefault();
             setLastPlayedFrequencies([]);
             setLastPlayedRatios([]);
             resetReference();
+            resetDyadReference();
         }
     });
 }

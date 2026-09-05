@@ -14,7 +14,7 @@ import {
     autoRotate, autoRotateDir, setAutoRotateDir
 } from '../globals.js';
 
-import { appMode } from '../triads/triad-state.js';
+import { appMode } from '../app-mode.js';
 import { initAudio, stopChord, playChord } from '../components/audio-engine.js';
 import { sendMpePressure, mpeChannels } from '../midi/midi-output.js';
 import { updateMpePressureSliderUI } from '../utils/ui-handlers.js';

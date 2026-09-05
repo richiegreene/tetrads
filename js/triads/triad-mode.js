@@ -15,11 +15,15 @@
  * ONE LOOP.  Both panes are painted from a single requestAnimationFrame, and
  * only while the mode is up. The tetrahedron's own loop keeps running — it has
  * always owned itself — but it is told to stop rendering while it is hidden,
- * so two WebGL contexts are never both drawing.
+ * so two WebGL contexts are never both drawing. Dyads has no loop at all: see
+ * dyad-mode.js, where nothing moves unless something changed.
  * ------------------------------------------------------------------ */
 
 import {
-    appMode, setAppMode, triadView, setTriadView, triadModel, setTriadModel,
+    appMode, registerMode, layout, setStatus, letStatusPaint,
+} from '../app-mode.js';
+import {
+    triadView, setTriadView, triadModel, setTriadModel,
     triadPivot, setTriadPivot, cursor, setCursor, setCursorLive,
 } from './triad-state.js';
 import { attach2D, draw as draw2D, resize as resize2D, invalidate as invalidate2D } from './triad-2d.js';
@@ -35,11 +39,9 @@ import {
     triadNoteOn, triadMove, triadNoteOff, triadAllOff, rebindPivot,
     resetPivotFreq, spellTriad,
 } from './triad-audio.js';
-import { currentTimbre, currentLayoutMode } from '../globals.js';
+import { currentTimbre } from '../globals.js';
+import { readPanel } from '../utils/read-panel.js';
 import { estimateWork, sayWork, WORK_BUDGET } from '../calculations/work-estimate.js';
-import { setLayoutMode } from '../calculations/tetrahedron-updater.js';
-import { onWindowResize } from '../components/three-visualizer.js';
-import { stopChord } from '../components/audio-engine.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -48,72 +50,17 @@ let pane3d = null;
 let loop = 0;
 let dirty = true;
 
-/* Which colour layout was on when Triads was entered. The triangle shades
-   itself at paint time, so a colormap change there is only a repaint — but
-   the tetrahedron bakes its colours into sprites AND takes its ground from
-   the layout, so one chosen while it was hidden has to be applied to it
-   properly on the way back. Otherwise Tetrads returns with the White ramp
-   drawn on a black ground. */
-let layoutOnEntry = null;
-
-/* The tetrahedron is not built at startup — the app opens in Triads, and
-   generating a set nobody has asked to see is several hundred milliseconds of
-   a blocked thread on the way to a picture of something else. ui-handlers
-   registers the builder here and it runs the first time Tetrads is asked for. */
-let buildTetrads = null;
-let tetradsBuilt = false;
-export function setTetradBuilder(fn) { buildTetrads = fn; }
-
 /** Repaint on the next frame. Everything that changes the picture calls this. */
 export function invalidate({ rebuild = false } = {}) {
     if (rebuild) invalidate2D();
     dirty = true;
 }
 
-/* ---------------------------------------------------------------------
- *  Reading the panel
- *
- *  The limit, the equave, the complexity measure and the two display channels
- *  are the same inputs the tetrahedron is built from — read here rather than
- *  mirrored, so there is no second copy to fall out of step.
- * ------------------------------------------------------------------ */
-export function readPanel() {
-    const raw = $('limitValue').value;
-    let limitValue = raw;
-    let virtualFundamentalFilter = null;
-
-    if (raw.includes('/')) {
-        const [head, tail] = raw.split('/');
-        limitValue = head.trim();
-        const filter = tail.trim();
-        virtualFundamentalFilter = [];
-        if (filter.includes('...')) {
-            const [a, b] = filter.split('...');
-            const start = parseInt(a), end = parseInt(b);
-            if (!isNaN(start) && !isNaN(end)) {
-                for (let i = start; i <= end; i++) virtualFundamentalFilter.push(i);
-            }
-        } else {
-            virtualFundamentalFilter = filter.split('.')
-                .map((n) => parseInt(n.trim())).filter((n) => !isNaN(n));
-        }
-    }
-
-    return {
-        limitType: $('limitType').value,
-        limitValue,
-        maxExponent: $('maxExponent').value,
-        virtualFundamentalFilter,
-        equaveRatio: parseFloat($('equaveRatio').value) || 2,
-        complexityMethod: $('complexityMethod').value,
-        hideUnisonVoices: $('hideUnisonVoices').checked,
-        omitOctaves: $('omitOctaves').checked,
-        baseSize: parseFloat($('baseSize').value),
-        scalingFactor: parseFloat($('scalingFactor').value),
-        enableSize: $('enableSize').checked,
-        enableColor: $('enableColor').checked,
-    };
-}
+/* The limit, the equave, the complexity measure and the two display channels
+   are read from the same place all three modes read them; see read-panel.js.
+   Re-exported because the exporter reaches for it here, where it used to
+   live. */
+export { readPanel };
 
 /* ---------------------------------------------------------------------
  *  Setting up
@@ -122,21 +69,21 @@ export function initTriads() {
     pane2d = attach2D($('triad-canvas'), gesture);
     pane3d = attach3D($('triad-3d-pane'), gesture);
 
+    registerMode('triads', {
+        title: 'Triads',
+        /* Which of the two panes are up is this mode's own setting, so the
+           stage is told by the mode rather than the mode by the stage. */
+        view: () => triadView,
+        resize: () => { resize2D(); resize3D(); dirty = true; },
+        enter: enterTriads,
+        leave: () => { triadAllOff(); setCursorLive(false); },
+    });
+
     applyView();
     new ResizeObserver(() => { layout(); }).observe($('stage'));
     window.addEventListener('resize', layout);
 
     if (!loop) loop = requestAnimationFrame(frame);
-}
-
-/** Lay the panes out for the current view and tell both what size they are. */
-export function layout() {
-    const stage = $('stage');
-    if (stage) stage.dataset.view = appMode === 'triads' ? triadView : 'tetra';
-    resize2D();
-    resize3D();
-    onWindowResize();
-    dirty = true;
 }
 
 function frame() {
@@ -180,74 +127,13 @@ function gesture(kind, hit) {
 }
 
 /* ---------------------------------------------------------------------
- *  Switching modes
+ *  Coming and going
+ *
+ *  What used to be switchMode here. With a third mode the switch stopped
+ *  being "the other one" and moved to app-mode.js, which knows only what
+ *  every mode has in common; this is what THIS mode does when it is the one
+ *  being asked for.
  * ------------------------------------------------------------------ */
-
-/**
- * Put the panel into one mode or the other.
- *
- * Split out of switchMode because it has to happen at startup as well, where
- * there is no switch: the app opens in Triads, so the tetrahedron's controls
- * have to be already gone by the first paint rather than removed a moment
- * after it. The markup ships in the same state, so nothing flickers either.
- */
-export function applyModeClasses(mode) {
-    document.body.dataset.mode = mode;
-    for (const el of document.querySelectorAll('[data-mode]')) {
-        el.classList.toggle('mode-off', el.dataset.mode !== mode);
-    }
-    for (const b of document.querySelectorAll('#mode-seg button')) {
-        b.classList.toggle('on', b.dataset.v === mode);
-    }
-    for (const h of document.querySelectorAll('.drawer h1 .mode-name')) {
-        h.textContent = mode === 'triads' ? 'Triads' : 'Tetrads';
-    }
-}
-
-/**
- * Show one app or the other.
- *
- * Everything that sounds is let go on the way across. The two modes address
- * the same synth voices by the same ids — a tetrad's bass and a triad's bass
- * are voice 0 — so a mode change while something is held would leave a note
- * down with nothing left able to lift it.
- */
-export async function switchMode(mode) {
-    if (mode === appMode) return;
-    stopChord();
-    triadAllOff();
-    setCursorLive(false);
-    setAppMode(mode);
-
-    applyModeClasses(mode);
-
-    layout();
-    if (mode === 'triads') {
-        layoutOnEntry = currentLayoutMode;
-        await refreshSet();
-        rebuild3D(readPanel(), true);
-        fit3D();
-        /* refreshSet only rebuilds the JI dots; a field model still needs its
-           own pass. Without this, a non-Blank model selected before the first
-           visit to Triads sits unbuilt until some other control happens to
-           schedule one. */
-        if (triadModel !== 'blank') await generateSurface(triadModel);
-    } else {
-        /* First visit builds it. After that a colormap chosen while it was
-           hidden is applied on the way back — the tetrahedron bakes its
-           colours into its sprites, so that is a rebuild rather than a
-           repaint, and doing it here rather than on every switch is what
-           keeps going back and forth cheap. */
-        if (!tetradsBuilt) {
-            tetradsBuilt = true;
-            await buildTetrads?.();
-        } else if (layoutOnEntry !== null && layoutOnEntry !== currentLayoutMode) {
-            await setLayoutMode(currentLayoutMode);
-        }
-        layoutOnEntry = null;
-    }
-    dirty = true;
-}
 
 /**
  * Everything the triangle needs on the way up.
@@ -259,7 +145,26 @@ export async function switchMode(mode) {
  */
 export async function bootTriads() {
     await refreshSet();
+    rebuild3D(readPanel(), true);
+    fit3D();
     await generateSurface(triadModel);
+}
+
+/**
+ * The same, on every later arrival.
+ *
+ * The set is rebuilt because the limit may have moved while another mode was
+ * up, and the lifted pane is refitted because it may have had no width at all
+ * to measure itself against until this instant. refreshSet only rebuilds the
+ * JI dots; a field model still needs its own pass, or one selected before the
+ * first visit sits unbuilt until some other control happens to schedule one.
+ */
+async function enterTriads() {
+    await refreshSet();
+    rebuild3D(readPanel(), true);
+    fit3D();
+    if (triadModel !== 'blank') await generateSurface(triadModel);
+    dirty = true;
 }
 
 /**
@@ -330,9 +235,7 @@ export async function generateSurface(model) {
 
     const o = readPanel();
     setStatus('generating…', true);
-    /* Two frames before the work starts: one to paint the status, one for the
-       browser to actually show it. Pyodide blocks everything after this. */
-    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    await letStatusPaint();
 
     const res = await generateField(model, { equaveRatio: o.equaveRatio, timbre: currentTimbre });
 
@@ -356,13 +259,6 @@ function describeSet() {
     return model && currentField()
         ? `${n} triads · ${model}`
         : `${n} triads`;
-}
-
-function setStatus(text, busy = false) {
-    const el = $('panel-status');
-    if (!el) return;
-    el.textContent = text;
-    el.classList.toggle('busy', busy);
 }
 
 /* ---------------------------------------------------------------------

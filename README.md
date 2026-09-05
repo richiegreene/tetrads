@@ -1,7 +1,7 @@
 # Tetrads
 ## https://tetrads.richiegreene.com/
 
-Interactive tetrahedron of JI tetrads — and a playable triangle of JI triads — with the ability to scale via harmonic complexity models.  
+Interactive tetrahedron of JI tetrads — a playable triangle of JI triads, and a playable line of JI dyads — with the ability to scale via harmonic complexity models.  
 Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of Sintel's [triangle](https://sintel.website/posts/triangle.html). While drawing inspiration from tetradic [harmonic entropy](https://en.xen.wiki/w/Harmonic_entropy) (4HE) this does not render 3D gaussian (multivariate normal) distributions, which are pivotal when considering HE.
 
 ## Demo
@@ -13,14 +13,80 @@ The panel is a side rail of four modes — Complexity Measures, Display, Play an
 
 One thing is still asked for explicitly. The number of chords grows as the fourth power of the limit — odd-limit 13 is a hundred and twenty thousand tetrads, and a slipped keystroke making that 1113 is a *trillion* — so before generating anything the app works out how big the job would be, and anything past a couple of million is reported rather than run: *"1.0 billion tetrads — press ↵ to generate anyway"*. `↵` also just means *don't wait* for any ordinary change.
 
-## Triads / Tetrads
-Pinned above the drawers is a switch between two apps that ask the same questions of different chords.
+## Dyads / Triads / Tetrads
+Pinned above the drawers is a switch between three apps that ask the same questions of different chords. One voice at a time, and one dimension.
 
 **Tetrads** is the tetrahedron above: four voices, three intervals, one point per chord.
 
-**Triads** is three voices and two intervals, which fit in a triangle — so the chords can be laid over a continuous *concordance surface* and played by dragging across it. Both modes are built from the same Limit, Equave and Complexity Measure, so a 13-limit means one thing in this app, and both are written out by the same notation engines.
+**Triads** is three voices and two intervals, which fit in a triangle — so the chords can be laid over a continuous *concordance surface* and played by dragging across it.
+
+**Dyads** is two voices and one interval, which fits on a line — so the measure itself can be the picture, plotted against the interval in cents and played by dragging along it.
+
+All three are built from the same Limit, Equave and Complexity Measure, so a 13-limit means one thing in this app, and all three are written out by the same notation engines.
 
 The triangle's bottom-left corner is the unison; its bottom-right puts the whole equave in the lower interval, and its apex puts it in the upper one.
+
+## Dyads
+Nine ways of measuring how complex the interval between two notes is, on one axis, against thirty-eight people who were asked.
+
+A dyad has a single degree of freedom, which changes what a picture of it can be. The triangle needs a contour map and a lifted surface side by side because a shaded surface says *where* a concordance is or *how deep* it is but not both; a curve says both in the same mark. So there is one pane, no view switch, and the vertical axis is free to be the thing the mode is actually about.
+
+### Measures
+The **Measure** fieldset chooses what the plot is a picture of. The first option is a different kind of answer from the other three.
+
+* **Ratios** — whichever of the six measures the **Complexity** fieldset is set to: Tenney, Weil, Wilson, Euler, Benedetti, Arithmetic. These are functions of a ratio's two numbers, so they have a value at every just interval and *none between them*. There is no curve; the measure is the height of the lattice itself.
+* **Entropy** — [harmonic entropy](https://en.xen.wiki/w/Harmonic_entropy) along the axis. Every ratio inside the span is stamped at its own cents with weight $1/\sqrt{pq}$, blurred by the ear's uncertainty, and the Rényi entropy of the blur taken. Probabilistic, and knows nothing about timbre.
+* **Sethares** — [sensory dissonance](https://sethares.engr.wisc.edu/consemi.html), every partial of the lower tone against every partial of the upper, from *whatever timbre the Play drawer is currently set to*. Physical, and knows nothing about arithmetic. Only the cross terms are counted: a tone's partials also beat against each other, but that is the same at every interval and including it would flatten the curve without moving a peak.
+* **Tenney** — the Tenney norm *made continuous*. $\log_2(pq)$ is defined only at the ratios, so a parabola is let down from each one and the curve is the lowest surface any of them reaches:
+
+  $$T(x) = \min_{p/q}\;\Big(\tfrac{x - \text{cents}(p/q)}{s}\Big)^{2} + \log_2(pq)$$
+
+  A simple ratio digs a deep well and a complex one a shallow dimple. **Softness** is $s$ — the one number deciding whether the curve is a row of spikes or a smooth landscape.
+
+**Span** is the plot's own axis control: how many equaves wide it is. The Equave belongs to all three modes and is not this one's to change, but a dyad is the one chord that stays perfectly readable past it. At 2 the whole of the published rating data is on screen.
+
+### Measured listeners
+**Display › Ratings** puts thirty-eight measured dyads on the plot, with the standard deviation the listeners produced, from
+
+> Masina, I., Lo Presti, G. & Stanzial, D. "Dyad's consonance and dissonance: combining the compactness and roughness approaches." *Eur. Phys. J. Plus* **137**, 1254 (2022). [doi:10.1140/epjp/s13360-022-03456-2](https://doi.org/10.1140/epjp/s13360-022-03456-2)
+
+This is the one thing in the app that is not derived from anything — it is what people said — and switching it on changes what the vertical axis **is**. The measure stops being drawn in its own arbitrary units and is fitted to the ratings by weighted least squares, weights $1/\sigma^2$, so what is on screen is the measure's *prediction* of a consonance rating against the ratings themselves. The foot then reports $R^2$.
+
+That is the only arrangement in which nine incommensurable measures can be compared rather than merely looked at in turn. Switch between them and watch it move:
+
+| Measure | $R^2$ |
+|---|---|
+| Tenney, continuous | 0.930 |
+| Tenney, at ratios | 0.888 |
+| Wilson | 0.862 |
+| Harmonic entropy | 0.844 |
+| Weil | 0.812 |
+| Euler | 0.797 |
+| Sethares | 0.684 |
+| Arithmetic | 0.579 |
+| Benedetti | 0.285 |
+
+(At the default settings, over all thirty-eight ratings. The four the paper's own comparison reports — Tenney, Wilson, Weil, Euler — reproduce its figures exactly.)
+
+Narrow the Span and the fit is recomputed over only the ratings still in the picture, which is honest rather than convenient: it is a different question with a different answer.
+
+### Display
+* **Curve**: **Fill** shades the area under the curve through the colormap *by height*, so the colour says what the height says; **Line** strokes the curve. Both go away when the measure has no curve to draw.
+* **Lattice**: Dots stems every just interval up to the curve — a stem rather than a bare dot because the mark has to say two things, where the interval is and what the measure makes of it. Labels are placed simplest-first and any that would collide with one already placed is dropped, so 3/2 is never buried under 27/16.
+* **Snap** — how close the pointer must come to a just interval before it lands on it exactly. At 0 the axis is continuous everywhere.
+
+### Playing the line
+Press and drag anywhere in the box — the height is the measure's answer, not an input, so the whole pane is playable rather than only the hairline of the curve. The two voices are struck **once**, on the way down, and every move after that leads those same running voices to the new pitch. **Tracking › Portamento** is how tightly they follow.
+
+The **Pivot** — **S** or **T** — is not a refinement here, it is what the gesture *means*. Hold the lower voice and dragging right takes the upper one up; hold the upper and the same drag takes the lower one down. Same interval, opposite motion, and they do not sound the same. The `s` and `t` keys select it. Space puts the next dyad back on 1/1 = C3.
+
+### Export, in Dyads
+* **.svg** — **no raster at any resolution.** The triangle's exporter has to embed its shading as an image because a continuously shaded scalar field is one polygon per grid cell; a curve has no such problem. The fill is a single linear gradient sampled from the colormap itself, and everything else is a path, a circle or real text.
+* **.png** — rasterised from that SVG at up to 4x.
+* **.csv** — the dyads with their cents and complexity, the current measure's value at each one, and — where anybody has actually been asked — the published mean rating and its standard deviation, side by side.
+
+## Triads
+Three voices, two intervals, and a concordance surface you can drag a chord across.
 
 ### Models
 What the ground between the just triads is measuring. Pick one and it builds itself; move any of its numbers and it rebuilds a moment after your hand comes off.

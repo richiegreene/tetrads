@@ -73,12 +73,17 @@
       <!-- ---- which app you are in ----
            Pinned above the drawers rather than put inside one, because it is
            not a setting of anything below it: it decides what all four drawers
-           are about. Both modes ask the same questions — what is in the set,
-           how it is drawn, how it sounds, what leaves — so the drawers stay
-           put and only the controls that are genuinely particular to one mode
-           appear or go, marked `data-mode` in the markup below. -->
+           are about. All three modes ask the same questions — what is in the
+           set, how it is drawn, how it sounds, what leaves — so the drawers
+           stay put and only the controls that are genuinely particular to one
+           mode appear or go, marked `data-mode` in the markup below. A
+           `data-mode` may name more than one, for a control the modes share.
+
+           Left to right is one voice at a time: two, three, four. -->
       <div class="mode-switch">
         <div class="seg" id="mode-seg">
+          <button data-v="dyads"
+            title="Two voices on a line: the one interval between them, measured four different ways and set against what listeners actually said">Dyads</button>
           <button data-v="triads" class="on"
             title="Three voices in a triangle: the same limit read over two intervals, on a concordance surface you can play">Triads</button>
           <button data-v="tetrads"
@@ -195,6 +200,101 @@
 
           </fieldset>
 
+          <!-- ---- what the curve IS ----
+               Dyads only, and in this drawer for the same reason the triangle's
+               Model is: it decides what there is to look at. A dyad has one
+               interval, so unlike the other two modes it can show a complexity
+               measure directly — the measure IS the picture.
+
+               The six measures in the Complexity fieldset below are defined
+               only AT the ratios, so they can mark the lattice and cannot draw
+               a curve. These three are defined everywhere, and they disagree:
+               one is about probability, one about beating partials, one about
+               arithmetic. Ratings, in the Display drawer, is what settles it. -->
+          <fieldset data-mode="dyads" class="mode-off">
+            <legend>Measure</legend>
+            <div class="seg" id="dyad-model-seg">
+              <button data-v="discrete"
+                title="Whichever of the six measures the Complexity fieldset is set to, drawn as the height of the lattice itself. These are functions of a ratio's two numbers, so they have a value at every just interval and none between them — which is exactly why the other three exist.">Ratios</button>
+              <button data-v="he" class="on"
+                title="Harmonic entropy — how many simple readings of this interval the ear has to choose between">Entropy</button>
+              <button data-v="sethares"
+                title="Sensory dissonance — partial beating against partial, computed from the timbre currently in the Play drawer">Sethares</button>
+              <button data-v="tenney"
+                title="The Tenney norm made continuous: log2(pq) at every ratio with a parabola let down from each, so the space between ratios has a value too">Tenney</button>
+            </div>
+
+            <div id="dhe-params">
+              <div class="pressrow">
+                <label for="dheSpread">Spread</label>
+                <span class="pressval" id="dhe-spread-v">17 ¢</span>
+              </div>
+              <input type="range" id="dheSpread" min="4" max="80" step="1" value="17"
+                title="How wide the ear's uncertainty about a ratio is taken to be. Narrow gives sharp isolated spikes; wide merges neighbours into broad regions of concordance.">
+              <div class="pressrow">
+                <label for="dheNLimit">Series depth</label>
+                <span class="pressval" id="dhe-n-v">160</span>
+              </div>
+              <input type="range" id="dheNLimit" min="20" max="400" step="10" value="160"
+                title="How far up the harmonic series the intervals being weighed are drawn from. Lower is faster and coarser.">
+              <div class="pressrow">
+                <label for="dheAlpha">Order</label>
+                <span class="pressval" id="dhe-alpha-v">7.0</span>
+              </div>
+              <input type="range" id="dheAlpha" min="1.5" max="12" step="0.1" value="7"
+                title="The order of the Rényi entropy. Higher weights the single most likely reading more heavily.">
+            </div>
+
+            <div id="dsm-params" class="mode-off">
+              <div class="pressrow">
+                <label for="dsmPartials">Partials</label>
+                <span class="pressval" id="dsm-partials-v">12</span>
+              </div>
+              <input type="range" id="dsmPartials" min="1" max="32" step="1" value="12"
+                title="How many partials of the current timbre are weighed against each other. The spectrum itself comes from the Play drawer, so changing the wave changes the curve.">
+              <div class="pressrow">
+                <label for="dsmRamp">Contrast</label>
+                <span class="pressval" id="dsm-ramp-v">1.0</span>
+              </div>
+              <input type="range" id="dsmRamp" min="0.3" max="4" step="0.1" value="1"
+                title="How sharply the consonance troughs stand out of the surrounding roughness.">
+            </div>
+
+            <div id="dtn-params" class="mode-off">
+              <div class="pressrow">
+                <label for="dtnSoftness">Softness</label>
+                <span class="pressval" id="dtn-soft-v">20 ¢</span>
+              </div>
+              <input type="range" id="dtnSoftness" min="4" max="60" step="1" value="20"
+                title="How wide the well under each ratio is. This is the one number that decides whether the curve is a row of spikes or a smooth landscape — and 20 cents is the value that best fits the published ratings.">
+              <div class="pressrow">
+                <label for="dtnDepth">Ratio depth</label>
+                <span class="pressval" id="dtn-depth-v">50</span>
+              </div>
+              <input type="range" id="dtnDepth" min="8" max="120" step="2" value="50"
+                title="The largest denominator a well is dug under. Past about thirty the curve stops changing: a ratio that complex is already shallower than its simpler neighbours.">
+            </div>
+
+            <div class="pressrow" id="dyad-res-row">
+              <label for="dyadResolution">Resolution</label>
+              <span class="pressval" id="dyad-res-v">1600</span>
+            </div>
+            <input type="range" id="dyadResolution" min="400" max="4000" step="100" value="1600"
+              title="How many samples across the axis the measure is computed at. Shared by all three so they are comparable.">
+
+            <!-- The equave belongs to all three modes and is not this one's to
+                 change. A dyad is the one chord that stays perfectly readable
+                 past it — and the published ratings run to 4/1 — so the SPAN is
+                 the plot's own control: it widens the axis without touching the
+                 set the other two modes are built from. -->
+            <div class="pressrow">
+              <label for="dyadSpan">Span</label>
+              <span class="pressval" id="dyad-span-v">2 equaves</span>
+            </div>
+            <input type="range" id="dyadSpan" min="1" max="3" step="1" value="2"
+              title="How many equaves wide the axis is. At 2 the whole of the published rating data is on screen.">
+          </fieldset>
+
           <fieldset id="complexity-fieldset">
             <legend>Complexity</legend>
             <label for="complexityMethod">Measure</label>
@@ -213,6 +313,62 @@
         <!-- ============ DISPLAY ============ -->
         <div class="drawer hidden" data-drawer="display">
           <h1><span class="mode-name">Tetrads</span> <small>· display</small></h1>
+
+          <!-- ---- how the curve is drawn ----
+               Dyads only. Independent rather than a choice of one, drawn like
+               every other pair in this drawer: the curve can be shaded under,
+               stroked over, both, or neither with only the lattice left. -->
+          <fieldset id="dyad-curve-fieldset" data-mode="dyads" class="mode-off">
+            <legend>Curve</legend>
+            <div class="seg" id="dyad-curve-seg">
+              <button data-v="dyadFill" class="on"
+                title="Shade the area under the curve through the colormap, by height — so the colour says what the height says">Fill</button>
+              <button data-v="dyadLine" class="on"
+                title="Stroke the curve itself">Line</button>
+            </div>
+          </fieldset>
+
+          <!-- ---- the one thing in the app that is not derived ----
+               Thirty-eight dyads rated by listeners, with the spread they
+               produced, from Masina, Lo Presti & Stanzial (2022).
+
+               This is not another layer of decoration. Switching it on changes
+               what the vertical axis IS: the curve stops being drawn in the
+               measure's own arbitrary units and is fitted to the ratings by
+               weighted least squares, so what is on screen is the measure's
+               PREDICTION of a rating against the ratings themselves. The foot
+               then says R-squared — which is the only way to tell whether the
+               curve you are looking at describes anything, and the reason
+               there are four measures to switch between at all. -->
+          <fieldset data-mode="dyads" class="mode-off">
+            <legend>Measured listeners</legend>
+            <div class="seg" id="dyad-data-seg">
+              <button data-v="dyadRatings"
+                title="Plot the published consonance ratings with their standard deviations, fit the curve to them, and report R² in the foot. Widen the Span to 2 to bring all thirty-eight into the picture.">Ratings</button>
+            </div>
+          </fieldset>
+
+          <!-- The lattice, on the same terms the triangle has it: whether the
+               just intervals are marked at all, and whether each mark says
+               which one it is. The marks are stems rather than dots because a
+               mark here has to say two things — where the interval is, and
+               what the measure makes of it. -->
+          <fieldset id="dyad-lattice-fieldset" data-mode="dyads" class="mode-off">
+            <legend>Lattice</legend>
+            <div class="seg" id="dyad-lattice-seg">
+              <button data-v="dyadDots" class="on"
+                title="Stem every interval the limit admits up to the curve">Dots</button>
+              <button data-v="dyadLabels" class="on"
+                title="Name each one with its ratio. Names are placed simplest-first and any that would collide is dropped, so 3/2 is never buried under 27/16.">Labels</button>
+            </div>
+
+            <div class="pressrow">
+              <label for="dyadSnap">Snap</label>
+              <span class="pressval" id="dyad-snap-v">off</span>
+            </div>
+            <input type="range" id="dyadSnap" min="0" max="40" step="1" value="0"
+              title="How close the pointer must come to a just interval before it lands on it exactly. At 0 the axis is continuous everywhere.">
+          </fieldset>
 
           <!-- ---- which pane, or both ----
                Triads only. The two views answer different questions about the
@@ -483,6 +639,20 @@
               <button data-v="1" title="Alto held (A)">A</button>
               <button data-v="0" class="on" title="Tenor held (T)">T</button>
             </div>
+
+            <!-- Two voices, from the same run of letters, so the key that
+                 holds the top voice is S wherever you are.
+
+                 In a dyad the pivot is not a refinement, it is what the
+                 gesture MEANS: hold the lower voice and dragging right takes
+                 the upper one up; hold the upper and the same drag takes the
+                 lower one down. Same interval, opposite motion, and they do
+                 not sound the same. -->
+            <div class="tune-h" data-mode="dyads">Pivot</div>
+            <div class="seg" id="dyad-pivot-seg" data-mode="dyads">
+              <button data-v="1" title="Upper voice held (S) — dragging opens downward">S</button>
+              <button data-v="0" class="on" title="Lower voice held (T) — dragging opens upward">T</button>
+            </div>
           </fieldset>
 
           <!-- ---- following the hand ----
@@ -503,6 +673,20 @@
             </div>
             <input type="range" id="triadGlide" min="0" max="400" step="1" value="45"
               title="How long a voice takes to reach the pitch under the pointer. The attack happens once, when the pointer goes down; this is only how the three voices travel afterwards.">
+          </fieldset>
+
+          <!-- The same setting over two voices, and its own rather than
+               shared: contrary motion about a pivot is a different thing to
+               follow than three voices spreading, and the useful amount of
+               smoothing is not the same. -->
+          <fieldset data-mode="dyads" class="mode-off">
+            <legend>Tracking</legend>
+            <div class="pressrow">
+              <label for="dyadGlide">Portamento</label>
+              <span class="pressval" id="dyad-glide-v">45 ms</span>
+            </div>
+            <input type="range" id="dyadGlide" min="0" max="400" step="1" value="45"
+              title="How long a voice takes to reach the pitch under the pointer. The attack happens once, when the pointer goes down; this is only how the two voices travel afterwards.">
           </fieldset>
 
           <!-- Xenachord's Play drawer, on the same terms: the family list and
@@ -545,7 +729,7 @@
             <legend>Picture</legend>
             <div class="btns">
               <button class="primary wide" id="dl-svg"
-                title="The view as vectors — every point a circle and every label real text, so it can be edited and scaled without loss. (⇧⌘E)">⬇︎ Save View (.svg)</button>
+                title="The view as vectors — every point a circle and every label real text, so it can be edited and scaled without loss. In Dyads there is no raster in the file at all. (⇧⌘E)">⬇︎ Save View (.svg)</button>
               <button class="wide" id="dl-png"
                 title="The same view rasterised from that SVG at up to 4x, for where a vector file is awkward.">⬇︎ Save View (.png)</button>
             </div>
@@ -555,7 +739,7 @@
             <legend>Data</legend>
             <div class="btns">
               <button class="wide" id="dl-csv"
-                title="Every chord in the set — tetrads or triads, whichever mode is up: the enumerated chord, its notes as ratios, its cents, and its complexity under the chosen measure, sorted simplest first. (⇧⌘S)">⬇︎ Save Chords (.csv)</button>
+                title="Every chord in the set — dyads, triads or tetrads, whichever mode is up: the enumerated chord, its notes as ratios, its cents, and its complexity under the chosen measure, sorted simplest first. In Dyads it also carries what the current model says about each interval and, where anybody has been asked, what listeners said. (⇧⌘S)">⬇︎ Save Chords (.csv)</button>
             </div>
           </fieldset>
         </div>
@@ -570,8 +754,8 @@
            Update was: it belongs to all four drawers at once, and a readout
            that vanished with its drawer would have to be gone looking for. -->
       <div class="panel-foot">
-        <!-- Tetrads only. In Triads the gesture IS the play mode: the pointer
-             goes down on the triangle and three voices come with it, so a
+        <!-- Tetrads only. In the other two the gesture IS the play mode: the
+             pointer goes down on the picture and the voices come with it, so a
              latch that says "now clicks make sound" would be describing
              something that is already true. -->
         <button id="playButton" class="mode-off" data-mode="tetrads"
@@ -583,12 +767,14 @@
 
   <div id="main">
     <!-- ---- the stage ----
-         Three panes, and `data-view` on the stage says which are up: the
-         tetrahedron, the flat triangle, the lifted surface, or the last two
-         side by side. Laid out rather than swapped so that "Both" is the same
-         two panes at half the width, not a third thing to keep working. -->
+         Four panes, and `data-view` on the stage says which are up: the
+         tetrahedron, the plot, the flat triangle, the lifted surface, or the
+         last two side by side. Laid out rather than swapped so that "Both" is
+         the same two panes at half the width, not another thing to keep
+         working. -->
     <div id="stage" data-view="topo">
       <div id="container"></div>
+      <div id="dyad-pane"><canvas id="dyad-canvas"></canvas></div>
       <div id="triad-topo-pane"><canvas id="triad-canvas"></canvas></div>
       <div id="triad-3d-pane"></div>
     </div>

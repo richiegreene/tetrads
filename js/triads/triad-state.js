@@ -2,29 +2,19 @@
  *  TRIADS — what the mode is currently set to
  * =====================================================================
  *
- * globals.js holds the tetrahedron's settings and this holds the triangle's,
- * for the same reason the two have separate drawers: a control that only
- * exists in one mode has no business being read in the other, and a single
- * store would make it impossible to tell which those are.
+ * globals.js holds the tetrahedron's settings, dyad-state.js holds the plot's
+ * and this holds the triangle's, for the same reason the three have separate
+ * drawers: a control that only exists in one mode has no business being read
+ * in another, and a single store would make it impossible to tell which those
+ * are.
  *
- * The one thing that is NOT here is anything the two modes genuinely share —
+ * The one thing that is NOT here is anything the three modes genuinely share —
  * the limit, the equave, the complexity measure, the colormap, the synth, the
  * notation. Those stay where they were, and Triads reads them from the same
- * inputs Tetrads does, so a 13-limit means one thing in this app.
+ * inputs the other two do, so a 13-limit means one thing in this app; see
+ * read-panel.js. Which mode you are in is not here either — that belongs to
+ * none of the three, and lives in app-mode.js.
  * ------------------------------------------------------------------ */
-
-/**
- * Which app you are in. The rest of the app branches on this and little else.
- *
- * Triads is where it opens. It is the mode with something to look at before
- * you have set anything — a concordance surface you can drag a chord across —
- * whereas the tetrahedron is a cloud of points that has to be read before it
- * says much. The tetrahedron is therefore not built at startup at all; it is
- * generated the first time you ask for it, which is also several hundred
- * milliseconds off the boot.
- */
-export let appMode = 'triads'; // 'tetrads' | 'triads'
-export function setAppMode(v) { appMode = v; }
 
 /**
  * Which of the three panes are up.
