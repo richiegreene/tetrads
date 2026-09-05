@@ -7,17 +7,20 @@ Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of
 ## Demo
 ![display demo](https://github.com/user-attachments/assets/4247d114-28db-4907-9da5-dc5b3bece989)
 
-The panel is a side rail of three modes — Complexity Measures, Display and Play — borrowed, along with the synth and the JI notation engines, from [Xenachord Designer](https://github.com/richiegreene/xenachord). Pressing the mode you are already in shuts the drawer and gives the width back to the view.
+The panel is a side rail of four modes — Complexity Measures, Display, Play and Export — borrowed, along with the synth and the JI notation engines, from [Xenachord Designer](https://github.com/richiegreene/xenachord). Pressing the mode you are already in shuts the drawer and gives the width back to the view.
 
 ## Display 
 ### Controls
 * Rotate Tetrahedron: click/drag or arrow keys
+* Keep it turning: Rotate Continuously, under Display › Visuals › Motion. While it runs the arrow keys steer it rather than nudging it.
+* Rotation rate: [ and ], or the Motion slider beside it — one rate for both, so 34°/s is a turn every eleven seconds whether you hold an arrow or watch it spin.
   * Continuous Rotation: caps lock + arrow keys
     * speed up: ] or }
     * slow dow: [ or {
 * Zoom: two-finger scroll/mouse-wheel
-* Layout/Looks: ⇧⌘L
-  * Cycle through colormaps: Plasma, Viridis, Binary Black/White
+* Layout/Looks: ⇧⌘L cycles the colormap; the same four are in Display › Visuals as swatches
+  * Plasma and Viridis — perceptually uniform ramps
+  * Black and White — greyscale, named for the ground the set is drawn on: on black the simplest tetrads come out brightest, on white they go to ink
 * (Beta Feature) Hand Tracking: ⇧⌘K 
 
 ### Settings
@@ -61,7 +64,7 @@ How the sounding chord is written out. Reference pitch: 1/1 = C3 130.8128Hz.
 
 ### Settings
 * Playback: In-browser audio, MIDI Polyphonic Expression (MPE), or both
-* Enable Slide: set duration (sec) of portamento for adjacent SATB voices
+* Portamento: how long (0–5 s) the four voices take to reach the next tetrad. At 0 they arrive at once.
 * Set pivot voice (common-tone) with S A T B buttons (or keys)
 * Timbre: two families over the same four shapes — sine, triangle, saw, square
   * Wavetable — a fixed, band-limited waveform, volume-independent
@@ -69,7 +72,13 @@ How the sounding chord is written out. Reference pitch: 1/1 = C3 130.8128Hz.
 * Envelope: drag the corners of the ADSR curve. In the filtered family the fold is driven by amplitude, so the envelope is part of the timbre rather than a level applied after it.
 
 ## Export
-### Controls
-* Save/Export SVG: ⇧⌘E
-* Save/Export CSV: ⇧⌘S
-  * Enumerated Chords ($a:b:c:d$), Notes ($\dfrac{n}{d}$), Cents, and Complexity.
+Everything is in the Export drawer, and the key commands still work.
+
+### Picture
+What the camera is looking at, at the size of the viewport, with anything outside the frustum left out — so turn the shape to the angle you want first.
+* Save View (.svg): ⇧⌘E — vectors, every point a circle and every label real text
+* Save View (.png) — the same view rasterised from that SVG at up to 4x
+
+### Data
+* Save Chords (.csv): ⇧⌘S
+  * Enumerated Chords ($a:b:c:d$), Notes ($\dfrac{n}{d}$), Cents, and Complexity — sorted simplest first.

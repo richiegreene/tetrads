@@ -122,6 +122,64 @@ export function downloadSVG(svgString, filename) {
     URL.revokeObjectURL(url);
 }
 
+/**
+ * The same drawing, rasterised.
+ *
+ * Not a grab of the WebGL framebuffer: that would be screen resolution, and
+ * the labels in it would be the sprite textures rather than text. The PNG is
+ * rendered from the SVG above instead — the same vector scene, drawn large —
+ * which is how the reference app makes its own PNG, and it means the two
+ * exports can never disagree about what was on screen.
+ *
+ * PRINT SIZE, NOT SCREEN SIZE. At 1x a point map is a smudge and at 2x it is
+ * only a screenshot; 4x is a picture that survives a slide and a zoom. The
+ * ceilings are the browser's rather than a taste: a canvas past a few tens of
+ * megapixels comes back blank on some machines instead of failing, so a very
+ * wide viewport is given whatever scale does fit.
+ */
+export function exportToPNG(filename = 'tetrads-export.png') {
+    const view = document.getElementById('container');
+    const width = (view && view.clientWidth) || window.innerWidth;
+    const height = (view && view.clientHeight) || window.innerHeight;
+
+    const MAX_SIDE = 12000, MAX_AREA = 60e6;
+    const scale = Math.max(1, Math.min(4, MAX_SIDE / width, MAX_SIDE / height,
+                                       Math.sqrt(MAX_AREA / (width * height))));
+
+    const svgString = exportToSVG();
+    const url = URL.createObjectURL(new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' }));
+    const image = new Image();
+    image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(width * scale);
+        canvas.height = Math.round(height * scale);
+        const ctx = canvas.getContext('2d');
+        /* The SVG's own `background-color` rule is a CSS style on the root,
+           which an <img> honours — but a PNG has no page behind it to fall
+           back on, so the ground is painted in first and the drawing goes on
+           top of it. Otherwise a black-ground layout exports transparent. */
+        ctx.fillStyle = scene.background.getStyle();
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        canvas.toBlob((blob) => {
+            if (!blob) return console.error('PNG export produced no image.');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }, 'image/png');
+    };
+    image.onerror = () => {
+        URL.revokeObjectURL(url);
+        console.error('PNG export could not rasterise the scene.');
+    };
+    image.src = url;
+}
+
 export function downloadCSV(csvString, filename) {
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);

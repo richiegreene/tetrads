@@ -17,7 +17,8 @@
 
 import {
     enableNotation, notationType, enableSlide, slideDuration, playbackMode,
-    notationDisplay, isClickPlayModeActive, isShiftHeld,
+    rotationSpeed, setRotationSpeed, autoRotate, setAutoRotate,
+    notationDisplay, isClickPlayModeActive, isShiftHeld, currentLayoutMode,
     setEnableNotation, setNotationType, setEnableSlide, setSlideDuration, setPlaybackMode,
     setSagittalPrecision, setSagittalEvo,
     setCurrentPivotVoiceIndex, setIsClickPlayModeActive, setCurrentlyHovered,
@@ -26,8 +27,9 @@ import {
     mpePressure, setMpePressure
 } from '../globals.js';
 import { stopChord, setTimbre, setAdsr } from '../components/audio-engine.js';
-import { updateTetrahedron, cycleLayoutMode } from '../calculations/tetrahedron-updater.js';
-import { exportToSVG, downloadSVG, exportToCSV } from './data-export.js';
+import { updateTetrahedron, setLayoutMode, LAYOUT_GROUNDS } from '../calculations/tetrahedron-updater.js';
+import { exportToSVG, downloadSVG, exportToPNG, exportToCSV } from './data-export.js';
+import { plasmaColormap, viridisColormap, greyscaleColormap, greyscaleBlackColormap } from '../calculations/color-mapping.js';
 import { initMidiOutput, sendMpePressure, mpeChannels } from '../midi/midi-output.js';
 import { createTimbrePicker, FILTERED_MIN } from '../synth/timbre.js';
 import { attachAdsrEditor } from '../synth/adsr.js';
@@ -73,6 +75,78 @@ function seg(segId, onPick) {
     });
 }
 
+/* ---------------------------------------------------------------------
+ *  The colour layouts
+ *
+ *  A layout is a ramp and the ground it is drawn on, in the order
+ *  currentLayoutMode counts them. The chips are painted by sampling the very
+ *  functions the scene colours itself with, so the swatch is the map rather
+ *  than a picture of it — add a colormap and the panel gets it right without
+ *  a second table being kept in step.
+ * ------------------------------------------------------------------ */
+const COLORMAPS = [
+    { name: 'Plasma',   fn: plasmaColormap,
+      title: 'Perceptually uniform, dark blue through magenta to yellow.' },
+    { name: 'Viridis',  fn: viridisColormap,
+      title: 'Perceptually uniform, deep violet through green to yellow.' },
+    { name: 'Black',    fn: greyscaleBlackColormap,
+      title: 'Greyscale on a black ground: the simplest tetrads come out brightest.' },
+    { name: 'White',    fn: greyscaleColormap,
+      title: 'Greyscale on a white ground: the simplest tetrads come out darkest — the layout to print.' },
+];
+
+/** A colormap as a CSS gradient, sampled at enough stops to read as smooth. */
+function rampCss(fn, stops = 12) {
+    const parts = [];
+    for (let i = 0; i < stops; i++) {
+        /* Left to right is simple to complex, which is the direction the
+           scene reads in: the update scales an INVERTED complexity, so a
+           simple chord lands at the top of the ramp. */
+        const c = fn(1 - i / (stops - 1));
+        parts.push(`rgb(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)}) ${(i / (stops - 1) * 100).toFixed(1)}%`);
+    }
+    return `linear-gradient(90deg, ${parts.join(', ')})`;
+}
+
+/**
+ * The same row of buttons, but each one its own switch.
+ *
+ * A `.seg` normally asks which of these, and lights one. Size and Color are
+ * not a choice of one — a set can be sized and coloured, either or neither —
+ * so this variant lights them independently and keeps a hidden checkbox in
+ * step, which is what the rest of the app reads. Drawn identically to the
+ * choosing kind on purpose: they are the same press on the same kind of
+ * thing, and the difference is one you learn by pressing once.
+ */
+function toggleSeg(segId, onToggle) {
+    const el = $(segId);
+    if (!el) return;
+    el.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('button');
+        if (!btn || !el.contains(btn)) return;
+        const box = $(btn.dataset.v);
+        const on = !btn.classList.contains('on');
+        btn.classList.toggle('on', on);
+        if (box) box.checked = on;
+        onToggle?.(btn.dataset.v, on);
+    });
+}
+
+/* ---------------------------------------------------------------------
+ *  Motion
+ *
+ *  rotationSpeed is radians per frame, and it spans two orders of magnitude —
+ *  0.001 barely creeps, 0.1 is a blur — so the slider is exponential over it.
+ *  Linear, the whole usable range would sit in the first two millimetres.
+ *  [ and ] step it by 10% either way, which is a fixed number of slider
+ *  positions on an exponential scale and a wildly varying one on a linear.
+ * ------------------------------------------------------------------ */
+const ROT_MIN = 0.001, ROT_MAX = 0.1;
+const rotToSlider = (v) => Math.round(100 * Math.log(v / ROT_MIN) / Math.log(ROT_MAX / ROT_MIN));
+const sliderToRot = (t) => ROT_MIN * Math.pow(ROT_MAX / ROT_MIN, t / 100);
+/** Radians per frame, said as degrees per second at 60fps — what you see. */
+const rotLabel = (v) => `${Math.round(v * 60 * 180 / Math.PI)}\u00b0/s`;
+
 export function setupUIEventListeners() {
     const updateButton = $('updateButton');
 
@@ -107,9 +181,60 @@ export function setupUIEventListeners() {
     const layoutDisplay = $('layoutDisplay');
     seg('layout-seg', (v) => { layoutDisplay.value = v; updateButton.click(); });
 
+    toggleSeg('channel-seg', () => updateButton.click());
+
+    /* ---------------- the colormap chips ---------------- */
+    const mapsEl = $('colormap-seg');
+    COLORMAPS.forEach((m, i) => {
+        const b = document.createElement('button');
+        b.className = 'map' + (i === currentLayoutMode ? ' on' : '');
+        b.dataset.v = String(i);
+        b.dataset.ground = LAYOUT_GROUNDS[i] === 0xffffff ? 'light' : 'dark';
+        b.title = m.title;
+        b.innerHTML = `<span class="ramp"></span>${m.name}`;
+        b.querySelector('.ramp').style.background = rampCss(m.fn);
+        mapsEl.append(b);
+    });
+
+    /** Light one chip and take the scene to it. The seg and ⇧⌘L share this. */
+    const applyColormap = (index) => {
+        for (const b of mapsEl.querySelectorAll('button')) {
+            b.classList.toggle('on', b.dataset.v === String(index));
+        }
+        setLayoutMode(index);
+    };
+    seg('colormap-seg', (v) => applyColormap(parseInt(v)));
+
     for (const id of ['baseSize', 'scalingFactor']) {
         $(id).addEventListener('input', () => updateButton.click());
     }
+
+    /* ---------------- Motion ----------------
+     * The slider and the [ ] keys are the same setting, so both go through
+     * showRotation and neither can get ahead of the other. */
+    const rotSlider = $('rotationSpeed');
+    const showRotation = () => {
+        rotSlider.value = rotToSlider(rotationSpeed);
+        $('rotation-v').textContent = rotLabel(rotationSpeed);
+    };
+    rotSlider.addEventListener('input', () => {
+        setRotationSpeed(sliderToRot(parseFloat(rotSlider.value)));
+        $('rotation-v').textContent = rotLabel(rotationSpeed);
+    });
+    showRotation();
+
+    const autoRotateButton = $('autoRotate');
+    autoRotateButton.addEventListener('click', () => {
+        setAutoRotate(!autoRotate);
+        autoRotateButton.classList.toggle('latched', autoRotate);
+    });
+
+    /* three-visualizer's own key handler is what actually changes the speed
+     * — it owns the scene — so the panel follows it rather than duplicating
+     * the arithmetic. Reading on keyup catches the whole of a held repeat. */
+    window.addEventListener('keyup', (ev) => {
+        if ('[]{}'.includes(ev.key)) showRotation();
+    });
 
     /* ---------------- Notation ---------------- */
     const notationTypeInput = $('notationType');
@@ -187,9 +312,14 @@ export function setupUIEventListeners() {
         setEnableSlide(event.target.checked);
         slideDurationRow.style.display = event.target.checked ? 'block' : 'none';
     });
-    slideDurationInput.addEventListener('change', (event) => {
+    const showSlide = () => {
+        $('slide-v').textContent = `${parseFloat(slideDurationInput.value).toFixed(2)} s`;
+    };
+    slideDurationInput.addEventListener('input', (event) => {
         setSlideDuration(parseFloat(event.target.value));
+        showSlide();
     });
+    showSlide();
 
     seg('pivot-seg', (v, btn) => setCurrentPivotVoiceIndex(parseInt(btn.dataset.pivotIndex)));
 
@@ -234,6 +364,13 @@ export function setupUIEventListeners() {
     const ro = new ResizeObserver(() => { picker.refresh(); adsrEditor.redraw(); });
     ro.observe($('s-wave'));
     ro.observe($('s-adsr'));
+
+    /* ---------------- Export ----------------
+     * The same three exports the key commands have always run — the buttons
+     * and the shortcuts call one function each, so neither can drift. */
+    $('dl-svg').addEventListener('click', () => downloadSVG(exportToSVG(), 'tetrads-export.svg'));
+    $('dl-png').addEventListener('click', () => exportToPNG('tetrads-export.png'));
+    $('dl-csv').addEventListener('click', () => exportToCSV());
 
     /* ---------------- the two presses ---------------- */
     const playButtonElement = $('playButton');
@@ -308,7 +445,8 @@ export function setupUIEventListeners() {
         }
         if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'L') {
             event.preventDefault();
-            cycleLayoutMode();
+            // Through the chips, so the panel keeps saying which layout is on.
+            applyColormap((currentLayoutMode + 1) % COLORMAPS.length);
         }
         if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'S') {
             event.preventDefault();

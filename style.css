@@ -83,9 +83,12 @@ button{background:var(--panel2);color:var(--text);border:1px solid var(--line);
 button:hover{border-color:var(--accent);color:var(--accent)}
 button.primary{background:#24405c;border-color:#35608a;color:#cfe6ff;font-weight:600}
 button.primary:hover{border-color:var(--accent);color:#fff}
-/* Play latched on: the same lit state a segmented button gets, because it is
-   the same fact — this is the thing that is currently true. */
-#playButton.play-button-active{background:#24405c;border-color:var(--accent);color:#cfe6ff}
+/* Latched on: the same lit state a segmented button gets, because it is the
+   same fact — this is the thing that is currently true. Play and Rotate
+   Continuously are both switches that stay down, so they look alike. */
+#playButton.play-button-active,
+button.latched{background:#24405c;border-color:var(--accent);color:#cfe6ff}
+#autoRotate{width:100%;margin-top:8px}
 .hint{color:var(--dim);font-size:10.5px;margin-top:6px}
 .symbol{font-family:Arial,sans-serif}
 
@@ -104,6 +107,35 @@ button.primary:hover{border-color:var(--accent);color:#fff}
 /* Six readouts do not fit one row legibly, so this one is allowed to wrap and
    every button keeps its own corners rather than pretending to be a strip. */
 .seg.wrap button{flex:1 1 30%;border-left-width:1px;border-radius:6px;margin:0 3px 3px 0}
+
+/* ---------- stacked action buttons ----------
+   The reference app's Export idiom: a grid of full-width presses, each one
+   saying what it saves and in what. */
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+.btns .wide{grid-column:1/-1;padding:8px}
+
+/* A shortcut, said beside the control it belongs to rather than only in the
+   README — these were key commands before they were buttons. */
+.key-hint{float:right;color:var(--dim);font-weight:400;font-size:10px;
+  font-family:Arial,sans-serif;letter-spacing:.04em}
+
+/* ---------- the colour layouts ----------
+   Two by two rather than a strip: a chip has to show a ramp AND the ground
+   that ramp is drawn on, and four of those side by side would be four
+   slivers. The ground is the chip's own background, which is the whole
+   reason the two greyscales are legible as two layouts — one goes to light
+   on black, the other to ink on white, and a strip of ramps alone would
+   show them as the same gradient twice. */
+.maps{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 9px}
+.map{display:flex;flex-direction:column;gap:5px;padding:6px 7px;
+  font-size:11px;text-align:left;border-radius:6px;color:var(--dim)}
+.map .ramp{display:block;height:15px;border-radius:3px;
+  border:1px solid rgba(128,128,128,.35)}
+.map:hover{border-color:var(--accent)}
+.map.on{box-shadow:inset 0 0 0 1px var(--accent);color:var(--text)}
+/* Drawn on white in the scene, so drawn on white here. */
+.map[data-ground="light"]{background:#e9e9ec;color:#5c5d66;border-color:#c9cad0}
+.map[data-ground="light"]:hover,.map[data-ground="light"].on{color:#1b1c20}
 
 /* ---------- checkbox rows ---------- */
 .vis{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;
@@ -130,6 +162,9 @@ input[type=range]::-moz-range-track{height:6px;background:#3d3d3d;border-radius:
 .wave-ticks span{font-variant-numeric:tabular-nums}
 .pressrow{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .pressrow label{margin:0;font-weight:600;color:var(--text);font-size:11.5px}
+/* The number a slider is currently at, said where the label ends — so the
+   setting can be read without dragging to find out. */
+.pressval{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600;font-size:11.5px}
 
 /* =====================================================================
  *  THE READOUT

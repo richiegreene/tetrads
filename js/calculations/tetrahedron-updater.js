@@ -9,19 +9,34 @@ import {
 import { transformToRegularTetrahedron, makeTextSprite, makePointSprite } from '../components/three-visualizer.js';
 import { plasmaColormap, viridisColormap, greyscaleColormap, greyscaleBlackColormap } from './color-mapping.js';
 
-export async function cycleLayoutMode() {
-    setCurrentLayoutMode((currentLayoutMode + 1) % 4);
+/**
+ * The four colour layouts, in the order the mode index counts them.
+ *
+ * A layout is a ramp AND the ground it is drawn on, which is why the last two
+ * are two layouts rather than one inverted: Greyscale on black runs dark to
+ * light so the simplest tetrads glow, and on white it runs the other way so
+ * they go to ink. The panel's chips are painted from this table (see
+ * COLORMAPS in ui-handlers.js), so a chip cannot come to advertise a ramp the
+ * scene does not use.
+ */
+export const LAYOUT_GROUNDS = [0x000000, 0x000000, 0x000000, 0xffffff];
 
-    switch (currentLayoutMode) {
-        case 0: // Plasma
-        case 1: // Viridis
-        case 2: // Greyscale Black
-            scene.background = new THREE.Color(0x000000);
-            break;
-        case 3: // Greyscale White
-            scene.background = new THREE.Color(0xffffff);
-            break;
-    }
+/** Step to the next layout — what ⇧⌘L has always done. */
+export async function cycleLayoutMode() {
+    await setLayoutMode((currentLayoutMode + 1) % 4);
+}
+
+/**
+ * Go straight to one layout.
+ *
+ * The colours are baked into the sprites at build time rather than being a
+ * material property that could be swapped, so changing the ramp means
+ * regenerating the set — which is why this reads the whole panel back and
+ * re-runs the update rather than just recolouring what is on screen.
+ */
+export async function setLayoutMode(index) {
+    setCurrentLayoutMode(((index % 4) + 4) % 4);
+    scene.background = new THREE.Color(LAYOUT_GROUNDS[currentLayoutMode]);
 
     // We need to re-run updateTetrahedron to apply new colors
     const limitType = document.getElementById('limitType').value;

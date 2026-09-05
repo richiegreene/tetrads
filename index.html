@@ -47,6 +47,18 @@
           <path d="M9.5 6.5l9.5 6.5-9.5 6.5z" />
         </svg>
       </button>
+      <!-- Export: the set leaving the app, as a picture of what is on
+           screen or as the chords behind it. Its own mode rather than the
+           foot of Display, because it is a different question: Display asks
+           what you are looking at, Export asks who else gets it. -->
+      <button class="rail-btn" data-drawer="export" aria-expanded="false"
+        title="Export — pictures to keep, and chords to work with">
+        <svg class="rail-icon" viewBox="0 0 26 26" fill="none" stroke="currentColor"
+          stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M13 4v11" /><path d="M8.5 10.5L13 15l4.5-4.5" />
+          <path d="M5 17v3.5h16V17" />
+        </svg>
+      </button>
       <a class="rail-btn" id="info-link" href="https://github.com/richiegreene/tetrads"
         target="_blank" rel="noopener noreferrer" title="About Tetrads">
         <svg class="rail-icon" viewBox="0 0 26 26" fill="none" stroke="currentColor"
@@ -112,17 +124,27 @@
           <h1>Tetrads <small>· display</small></h1>
 
           <fieldset>
-            <legend>Points</legend>
+            <legend>Type/Setting</legend>
             <div class="seg" id="layout-seg">
               <button data-v="points" class="on" title="One point per tetrad">Points</button>
               <button data-v="labels" title="The enumerated ratio itself, in place of the point">Labels</button>
             </div>
             <input type="hidden" id="layoutDisplay" value="points">
 
-            <label class="vis">
-              <input type="checkbox" id="enableSize" checked>Enable Size</label>
-            <label class="vis">
-              <input type="checkbox" id="enableColor" checked>Enable Color</label>
+            <!-- ---- what complexity is allowed to say ----
+                 Drawn as the row above it, because they are the same kind of
+                 press on the same kind of thing — but these two are
+                 independent rather than a choice of one: a set can be sized
+                 and coloured, either, or neither. The checkboxes behind them
+                 are what the rest of the app reads. -->
+            <div class="seg" id="channel-seg">
+              <button data-v="enableSize" class="on"
+                title="Let complexity set how big each tetrad is drawn">Size</button>
+              <button data-v="enableColor" class="on"
+                title="Let complexity set each tetrad's colour, through the colormap">Color</button>
+            </div>
+            <input type="checkbox" id="enableSize" checked hidden>
+            <input type="checkbox" id="enableColor" checked hidden>
 
             <label for="baseSize">Base Size</label>
             <input type="range" id="baseSize" value="1.00" min="0.25" max="2.50" step="0.01">
@@ -176,6 +198,38 @@
               </div>
             </div>
           </fieldset>
+
+          <!-- ---- what the scene itself looks like and does ----
+               Everything here is about the picture rather than the set: no
+               control in it changes which tetrads exist or what they are
+               called, only how they are coloured and how the shape moves. -->
+          <fieldset>
+            <legend>Visuals</legend>
+
+            <!-- Four ramps, each drawn on the ground it is actually used
+                 against, so the two greyscales read as the two different
+                 layouts they are rather than as one inverted. The swatches
+                 are painted from the colormap functions themselves — see
+                 COLORMAPS in ui-handlers.js — so a chip cannot advertise a
+                 ramp the scene does not use. -->
+            <div class="tune-h">Colormap <span class="key-hint">⇧⌘L</span></div>
+            <div class="maps" id="colormap-seg"></div>
+
+            <!-- ---- how fast the shape turns ----
+                 The arrow keys have always turned the tetrahedron and [ ]
+                 have always changed how fast; the rate was the one thing you
+                 could only find by pressing a key and watching. It is a
+                 number, so it gets a slider, and the keys move the slider. -->
+            <div class="tune-h">Motion <span class="key-hint">[ ]</span></div>
+            <div class="pressrow">
+              <label for="rotationSpeed">Rotation</label>
+              <span class="pressval" id="rotation-v">34°/s</span>
+            </div>
+            <input type="range" id="rotationSpeed" min="0" max="100" step="1" value="50"
+              title="How far one press of an arrow key turns the shape, and how fast it turns on its own.">
+            <button id="autoRotate"
+              title="Keep the shape turning. While it runs, the arrow keys steer it rather than nudging it.">&#8635; Rotate Continuously</button>
+          </fieldset>
         </div>
 
         <!-- ============ PLAY ============ -->
@@ -212,10 +266,14 @@
           <fieldset>
             <legend>Voice Leading</legend>
             <label class="vis">
-              <input type="checkbox" id="enableSlide" checked>Enable Slide</label>
+              <input type="checkbox" id="enableSlide" checked>Portamento</label>
             <div id="slide-duration-row">
-              <label for="slideDuration">Slide (s)</label>
-              <input type="number" id="slideDuration" value="0.25" min="0.01" step="0.01">
+              <div class="pressrow">
+                <label for="slideDuration">Time</label>
+                <span class="pressval" id="slide-v">0.25 s</span>
+              </div>
+              <input type="range" id="slideDuration" value="0.25" min="0" max="5" step="0.01"
+                title="How long the four voices take to reach the next tetrad. At 0 they arrive at once.">
             </div>
 
             <div class="tune-h">Pivot</div>
@@ -250,6 +308,34 @@
             <div class="wave-ticks" id="s-adsr-ticks">
               <span id="s-a">A</span><span id="s-d">D</span>
               <span id="s-s">S</span><span id="s-r">R</span>
+            </div>
+          </fieldset>
+        </div>
+        <!-- ============ EXPORT ============
+             Everything that leaves the app, in the two forms it can leave in:
+             as a picture of the set, and as the set itself. -->
+        <div class="drawer hidden" data-drawer="export">
+          <h1>Tetrads <small>· export</small></h1>
+
+          <!-- The picture is the VIEW, not the whole tetrahedron: what is
+               exported is what the camera is looking at, at the size the
+               viewport currently is, with everything outside the frustum
+               left out. Turn the shape to the angle you want first. -->
+          <fieldset>
+            <legend>Picture</legend>
+            <div class="btns">
+              <button class="primary wide" id="dl-svg"
+                title="The view as vectors — every point a circle and every label real text, so it can be edited and scaled without loss. (⇧⌘E)">⬇︎ Save View (.svg)</button>
+              <button class="wide" id="dl-png"
+                title="The same view rasterised from that SVG at up to 4x, for where a vector file is awkward.">⬇︎ Save View (.png)</button>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Data</legend>
+            <div class="btns">
+              <button class="wide" id="dl-csv"
+                title="Every tetrad in the set: the enumerated chord, its notes as ratios, its cents, and its complexity under the chosen measure — sorted simplest first. (⇧⌘S)">⬇︎ Save Chords (.csv)</button>
             </div>
           </fieldset>
         </div>

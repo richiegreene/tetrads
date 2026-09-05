@@ -29,8 +29,13 @@ export let mpePressureIntervalId = null; // To store the interval ID for clearin
 
 // Playback state
 export let playbackMode = 'browser'; // Default to browser audio
-export let isCapsLockActive = false; // To track Caps Lock state
-export const continuousRotationKeys = new Set(); // To track keys for continuous rotation
+/* ---- perpetual rotation ----
+   Caps Lock used to latch the turn, read through getModifierState — which
+   browsers no longer report reliably, so the shape would simply stop turning
+   with nothing on screen to say why. A button says it instead: it is visibly
+   on or off, and the arrows steer it while it runs. */
+export let autoRotate = false;
+export let autoRotateDir = 'ArrowLeft'; // the turntable: about Y, leftward
 
 // Notation state
 export let enableNotation = true;
@@ -81,10 +86,8 @@ export function setNotationType(val) { notationType = val; }
 export function setNotationDisplay(val) { notationDisplay = val; }
 export function setSagittalPrecision(val) { sagittalPrecision = val; }
 export function setSagittalEvo(val) { sagittalEvo = val; }
-export function setIsCapsLockActive(val) { isCapsLockActive = val; }
-export function clearContinuousRotationKeys() {
-    continuousRotationKeys.clear();
-}
+export function setAutoRotate(val) { autoRotate = val; }
+export function setAutoRotateDir(val) { autoRotateDir = val; }
 
 // Helper for keyState
 export function setKeyState(key, value) {
