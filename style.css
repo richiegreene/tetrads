@@ -291,9 +291,9 @@ input[type=range]::-moz-range-track{height:6px;background:#3d3d3d;border-radius:
 .deviation-cents-monospace{font-family:monospace;font-size:1em;vertical-align:middle;
   display:inline-block;line-height:1;margin-left:.2em}
 
-/* ---------- "All": three readings of the same four voices ---------- */
+/* ---------- "All": four readings of the same four voices ---------- */
 #notation-display.notation-all{padding:10px 15px;font-size:1em}
-.notation-all-grid{display:grid;grid-template-rows:repeat(3,auto);gap:10px}
+.notation-all-grid{display:grid;grid-template-rows:repeat(4,auto);gap:10px}
 /* One column per voice, counted from the row rather than written in: Tetrads
    puts four cells here and Triads three, and a fixed template would leave the
    triad readout padded out to the width of a chord it does not have. */
@@ -304,6 +304,7 @@ input[type=range]::-moz-range-track{height:6px;background:#3d3d3d;border-radius:
   display:flex;justify-content:center;align-items:center}
 .colon-cell{font-size:1.2em;font-family:monospace;color:#bbb;padding:0 2px}
 .ratio-cell{font-size:1.2em;font-family:monospace}
+.cents-cell{font-size:1em;font-family:monospace}
 #notation-display.notation-all .heji-cell .notation-dev-notename-inline{font-size:2em}
 #notation-display.notation-all .heji-cell .heji-extensions,
 #notation-display.notation-all .heji-cell .heji2{font-size:2.376em}

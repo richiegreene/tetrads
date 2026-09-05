@@ -45,6 +45,22 @@ export function setTriadLines(v) { triadLines = v; }
 export let triadContours = 24;
 export function setTriadContours(v) { triadContours = v; }
 
+/**
+ * How wet the surface is, 0 to 1.
+ *
+ * One control over two situations — see `lighting` in color-mapping.js. It
+ * starts at nothing, because the ordinary ramps must look exactly as they
+ * always did until it is asked for: their colours already carry the values,
+ * and shading them would corrupt the reading, so gloss lays a highlight over
+ * the top and touches nothing underneath.
+ *
+ * The material layouts ignore the bottom of the range — their sheen is
+ * floored, because a material at true zero is a black slab with the relief
+ * invisible inside it rather than a duller version of the same picture.
+ */
+export let triadGloss = 0;
+export function setTriadGloss(v) { triadGloss = v; }
+
 /** How far the 3D pane lifts the field, as a fraction of the triangle's side. */
 export let triadRelief = 0.34;
 export function setTriadRelief(v) { triadRelief = v; }

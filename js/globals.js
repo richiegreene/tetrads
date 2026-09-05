@@ -39,12 +39,22 @@ export let autoRotateDir = 'ArrowLeft'; // the turntable: about Y, leftward
 
 // Notation state
 export let enableNotation = true;
-export let notationType = 'heji';
 export let notationDisplay;
-/* Sagittal's own two readings, which only mean anything while notationType is
-   'sagittal': how finely the comma is spelled, and whether the symbol carries
-   the whole alteration (revo) or stands beside a conventional sharp or flat
-   (evo). Same pair Xenachord's Play drawer offers, and named the same. */
+/* Ratio, Cents and 12EDO are independent — any combination can be shown at
+   once, so each gets its own switch rather than one choice among them. */
+export let notationShowRatio = true;
+export let notationShowCents = true;
+export let notationShowDeviation = true;
+/* Which JI spelling system is used, unlike the three above, is always shown
+   and is not a member of that omit-as-you-like set — it is an either/or
+   standing preference for which spelling the readout uses, not one more
+   readout to toggle off. */
+export let notationSpelling = 'heji'; // 'heji' | 'sagittal'
+/* Sagittal's own two readings, which only mean anything while notationSpelling
+   is 'sagittal': how finely the comma is spelled, and whether the symbol
+   carries the whole alteration (revo) or stands beside a conventional sharp
+   or flat (evo). Same pair Xenachord's Play drawer offers, and named the
+   same. */
 export let sagittalPrecision = 'medium';
 export let sagittalEvo = false;
 
@@ -89,7 +99,10 @@ export function setMpePressureIntervalTime(val) { mpePressureIntervalTime = val;
 export function setMpePressureIntervalId(val) { mpePressureIntervalId = val; }
 export function setPlaybackMode(val) { playbackMode = val; } // New setter
 export function setEnableNotation(val) { enableNotation = val; }
-export function setNotationType(val) { notationType = val; }
+export function setNotationShowRatio(val) { notationShowRatio = val; }
+export function setNotationShowCents(val) { notationShowCents = val; }
+export function setNotationShowDeviation(val) { notationShowDeviation = val; }
+export function setNotationSpelling(val) { notationSpelling = val; }
 export function setNotationDisplay(val) { notationDisplay = val; }
 export function setSagittalPrecision(val) { sagittalPrecision = val; }
 export function setSagittalEvo(val) { sagittalEvo = val; }

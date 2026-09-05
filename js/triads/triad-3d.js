@@ -29,11 +29,12 @@ import {
 } from './triad-geometry.js';
 import {
     triadRelief, triadDots, triadLabels, triadSnap, triadFill, triadLines,
-    triadContours, cursor,
+    triadContours, triadGloss, cursor,
 } from './triad-state.js';
 import { currentTriads, currentField, complexityRange } from './triad-surface.js';
 import { currentLayoutMode } from '../globals.js';
-import { colormapFn, colormapMaterial, onLight, contourSegments } from './triad-2d.js';
+import { colormapFn, colormap, colormapMaterial, onLight, contourSegments } from './triad-2d.js';
+import { lighting } from '../calculations/color-mapping.js';
 import { rotationSpeed, autoRotate, autoRotateDir, keyState } from '../globals.js';
 
 /** The triangle is drawn one unit on a side, centred on the origin. */
@@ -246,7 +247,7 @@ export function rebuild(o, force = false) {
         field ? [field.w, field.h, field.min, field.max] : null,
         triadRelief, triadFill, triadLines, triadContours, triadDots, triadLabels,
         o.equaveRatio, o.baseSize, o.scalingFactor, o.enableSize, o.enableColor,
-        currentLayoutMode, currentTriads().length,
+        currentLayoutMode, triadGloss, currentTriads().length,
     ]);
     if (!force && key === builtKey) return;
     const reliefChanged = builtRelief !== triadRelief;
@@ -265,6 +266,9 @@ export function rebuild(o, force = false) {
        comes down to let the key actually carve the relief; a value-coloured
        surface wants flat, even light so the colours read as the numbers they
        are rather than as shading. */
+    /* A material layout is modelled by light, so its fill comes down to let
+       the key actually carve the relief; a value-coloured surface wants flat,
+       even light so the colours read as the numbers they are. */
     const material = colormapMaterial();
     fillLight.intensity = material ? (material.ambient ?? 0.3) : 0.62;
     keyLight.intensity = material ? 0.95 : 0.7;
@@ -340,22 +344,23 @@ function buildSurface(field) {
     geo.setIndex(tris);
     geo.computeVertexNormals();
 
-    /* A material layout gets a Phong surface: one body colour, a specular
-       highlight and a shininess, so every bit of the modelling comes from the
-       light. A value-coloured one gets Lambert with per-vertex colour, where
-       the light is only there to keep the facets from reading as a flat
-       poster and the colour carries the model. */
-    const surfaceMaterial = material
-        ? new THREE.MeshPhongMaterial({
-            color: material.color,
-            specular: material.specular,
-            shininess: material.shininess,
-            side: THREE.DoubleSide,
-            flatShading: false,
-        })
-        : new THREE.MeshLambertMaterial({
-            vertexColors: true, side: THREE.DoubleSide, flatShading: false,
-        });
+    /* One Phong surface for both kinds, differing only in what it is given —
+       see `lighting` in color-mapping.js. A material layout puts its body
+       colour in and takes all its modelling from the light; a ramp layout
+       leaves the colour to the vertices (so `color` must be white, which
+       multiplies through unchanged) and takes only a highlight.
+
+       Lambert would do for a ramp at Gloss 0 and cannot do anything above it,
+       and at Gloss 0 the specular here is black — which is Lambert. */
+    const lit = lighting(colormap(), triadGloss);
+    const surfaceMaterial = new THREE.MeshPhongMaterial({
+        color: material ? material.color : 0xffffff,
+        vertexColors: !material,
+        specular: lit.specular,
+        shininess: lit.shininess,
+        side: THREE.DoubleSide,
+        flatShading: false,
+    });
 
     return new THREE.Mesh(geo, surfaceMaterial);
 }
@@ -368,14 +373,13 @@ function buildPlate() {
         [a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z], 3));
     geo.computeVertexNormals();
     const material = colormapMaterial();
-    return new THREE.Mesh(geo, material
-        ? new THREE.MeshPhongMaterial({
-            color: material.color, specular: material.specular,
-            shininess: material.shininess, side: THREE.DoubleSide,
-        })
-        : new THREE.MeshLambertMaterial({
-            color: onLight() ? 0xf2f3f6 : 0x0b0c10, side: THREE.DoubleSide,
-        }));
+    const lit = lighting(colormap(), triadGloss);
+    return new THREE.Mesh(geo, new THREE.MeshPhongMaterial({
+        color: material ? material.color : (onLight() ? 0xf2f3f6 : 0x0b0c10),
+        specular: lit.specular,
+        shininess: lit.shininess,
+        side: THREE.DoubleSide,
+    }));
 }
 
 /**

@@ -146,8 +146,12 @@ const blueRamp = rampFromStops([
     0x23262f, 0x1e1861, 0x1a0ebe, 0x0437f2, 0x7895fc, 0xa7c6ed, 0xd0e1f9, 0xf0f4ff, 0xffffff,
 ]);
 
-const bronzeRamp = rampFromStops([
-    0x1a1208, 0x3d2a12, 0x6b4a1e, 0x9c7132, 0xc79a4e, 0xe4bd77, 0xf6dda8,
+/* Oil on water: near-black at the bottom, and what little colour there is
+   arrives as the cold iridescence a slick throws rather than as a hue of its
+   own. Kept dark for most of its range — a petroleum that brightened evenly
+   would just be a blue ramp. */
+const petroleumRamp = rampFromStops([
+    0x05060a, 0x0b0f18, 0x122232, 0x1a3b46, 0x27604f, 0x4a6a80, 0x8c8bad, 0xd6d9e4,
 ]);
 
 const porcelainRamp = rampFromStops([
@@ -189,21 +193,83 @@ export const COLORMAPS = [
         title: 'Greyscale on a white ground: the simplest chords come out darkest — the layout to print.',
     },
     {
-        name: 'Bronze', ramp: bronzeRamp, ground: 0x000000,
-        /* A tight, dim highlight rather than a broad bright one: specular is
-           ADDED to an already-lit body, so a near-white one at a low shininess
-           clips whole slopes to flat white and the relief under them is lost.
-           The rule for both materials is a specular darker than the body and a
-           shininess high enough to keep the highlight to the crests. */
-        material: { color: 0xb07d3a, specular: 0x4e3c20, shininess: 64, ambient: 0.26 },
-        title: 'A lit surface rather than a coloured one: one bronze, modelled entirely by an angled key light and a moving highlight. Height alone carries the model.',
+        name: 'Petroleum', ramp: petroleumRamp, ground: 0x000000,
+        /* The one case where the specular is far BRIGHTER than the body. A
+           black surface has no diffuse to speak of, so the highlight is not an
+           accent on the shading — it is the entire reading of the shape, and
+           the relief exists only where the light catches it. */
+        material: { color: 0x15171c, specular: 0x9fb4c6, shininess: 70, ambient: 0.16 },
+        title: 'A black slick: almost no body, so the shape is read entirely off the cold sheen the light leaves on it. Raise Gloss to wet it further.',
     },
     {
         name: 'Porcelain', ramp: porcelainRamp, ground: 0xffffff,
+        /* The opposite case: a pale body already near white, so the specular
+           has to stay well under it or the highlight clips whole slopes flat
+           and takes the relief with it. */
         material: { color: 0xe8e4dc, specular: 0x7d7a73, shininess: 48, ambient: 0.42 },
         title: 'The same lighting on a pale glaze over a white ground — the material layout to print.',
     },
 ];
+
+/**
+ * How a layout is lit, at this Gloss setting.
+ *
+ * Gloss is one control over two quite different situations, and it does not
+ * mean the same thing to both — which is the whole reason the arithmetic is
+ * here rather than duplicated in the two renderers.
+ *
+ *   A GRADIENT layout is not lit at all. Its colours ARE the values, and
+ *   shading them by the local slope would make the map lie about its own
+ *   numbers. So gloss adds only a highlight over the top — a varnish on the
+ *   map rather than a light on it — and it starts at NOTHING. At the default
+ *   these layouts are pixel-for-pixel the flat surfaces they always were, and
+ *   the slider is something you turn up if you want it.
+ *
+ *   A MATERIAL layout is nothing BUT light: a black slick has no diffuse worth
+ *   speaking of, and its shape exists only where the highlight catches it. So
+ *   its sheen does not start at nothing — it starts at most of the way up and
+ *   the slider wets it further. A material at true zero would be a black slab
+ *   with the relief invisible inside it, which is not a duller version of the
+ *   layout, it is the absence of one.
+ *
+ * @param {Colormap} map
+ * @param {number} gloss 0..1
+ */
+export function lighting(map, gloss) {
+    const g = Math.min(1, Math.max(0, gloss));
+    const tint = (hex, k) => {
+        const r = Math.round(Math.min(255, ((hex >> 16) & 255) * k));
+        const gg = Math.round(Math.min(255, ((hex >> 8) & 255) * k));
+        const b = Math.round(Math.min(255, (hex & 255) * k));
+        return (r << 16) | (gg << 8) | b;
+    };
+
+    if (map.material) {
+        const m = map.material;
+        return {
+            material: true,
+            color: m.color,
+            ambient: m.ambient ?? 0.3,
+            /* Floored, so the layout is always legible, and headroom above its
+               designed value so the slider has somewhere to go. */
+            specular: tint(m.specular, 0.5 + 0.85 * g),
+            /* A dull sheen is a broad one and a wet one is tight, so shininess
+               rises too — otherwise turning gloss up would only make the same
+               soft patch brighter until it clipped. */
+            shininess: m.shininess + g * (118 - m.shininess),
+            strength: 1,
+        };
+    }
+
+    return {
+        material: false,
+        color: 0xffffff,
+        ambient: 1,
+        specular: tint(0xffffff, g * 0.55),
+        shininess: 10 + g * 84,
+        strength: g,
+    };
+}
 
 /** The layout currently counted by `currentLayoutMode`. */
 export function colormapAt(index) {

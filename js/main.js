@@ -4,7 +4,7 @@ import {
     setScene, setCamera, setRenderer, setControls,
     setIsShiftHeld, setKeyState, setCurrentlyHovered,
     setPlayButton, setPivotButtons,
-    enableNotation, notationType, setNotationDisplay, setNotationType,
+    enableNotation, setNotationDisplay,
     setCurrentLayoutDisplay
 } from './globals.js';
 import { initThreeJS, animate, onWindowResize, updatePivotButtonSelection } from './components/three-visualizer.js';
@@ -416,10 +416,6 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
     // The timbre and the envelope are set from the panel's own store — see
     // setupUIEventListeners, which builds the picker and the ADSR editor.
     updatePivotButtonSelection(0); // Set initial pivot to Bass (index 0)
-
-    // Set initial notation type from HTML
-    const initialNotationType = document.getElementById('notationType').value;
-    setNotationType(initialNotationType);
 
     // Setup all UI event listeners
     setupUIEventListeners();

@@ -4,7 +4,8 @@ import { state as hejiState } from '../state.js'; // HEJI state
 import * as U from '../utils/helpers.js'; // HEJI utilities
 
 import {
-    enableNotation, notationType, notationDisplay,
+    enableNotation, notationSpelling, notationDisplay,
+    notationShowRatio, notationShowCents, notationShowDeviation,
     initialBaseFreq, sagittalPrecision, sagittalEvo
 } from '../globals.js';
 /* Sagittal comes over from Xenachord whole — the Calculator, the Key, the
@@ -883,63 +884,53 @@ function getSagittalNotationHtmlPerVoice(ratioString, effectiveBaseFreq) {
 }
 
 
+/**
+ * The spelling row and however many of Ratio/Cents/12EDO are switched on,
+ * stacked in one grid. The spelling row is the one row that is never
+ * optional — HEJI or Sagittal always shows, just as which of the two is
+ * chosen by notationSpelling rather than by this omit set.
+ */
 export function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
     if (!enableNotation || !notationDisplay) return;
 
-    let output = '';
-    if (notationType === 'ratio') {
-        const baseRatio = effectiveBaseFreq / initialBaseFreq;
-        const fractionString = floatToReducedFraction(baseRatio).numerator + '/' + floatToReducedFraction(baseRatio).denominator;
-        output = `<span class="notation-ratio-base">${fractionString}</span><br><span class="notation-ratio-chord">${ratioString}</span>`;
-        notationDisplay.className = 'notation-display notation-ratio';
-    } else if (notationType === 'cents') {
-        const cents = frequencies.map(freq => 1200 * Math.log2(freq / initialBaseFreq));
-        output = cents.reverse().map(c => Math.round(c)).join('<br>');
-        notationDisplay.className = 'notation-display notation-cents';
-    } else if (notationType === 'heji') {
-        const hejiVoices = getHejiNotationHtmlPerVoice(ratioString, effectiveBaseFreq);
-        output = hejiVoices.join('&nbsp;'); // Join with spaces for current inline display
-        notationDisplay.className = 'notation-display notation-heji';
-    } else if (notationType === 'sagittal') {
-        const sagittalVoices = getSagittalNotationHtmlPerVoice(ratioString, effectiveBaseFreq);
-        output = sagittalVoices.join('&nbsp;');
-        notationDisplay.className = 'notation-display notation-sagittal';
-    } else if (notationType === 'deviation') {
-        const deviationVoices = getDeviationNotationHtmlPerVoice(ratioString, frequencies, effectiveBaseFreq);
-        output = deviationVoices.join('&nbsp;&nbsp;'); // Join with spaces for current inline display
-        notationDisplay.className = 'notation-display notation-deviation';
-    } else if (notationType === 'all') {
+    const rows = [];
+
+    if (notationShowRatio) {
         const ratioParts = ratioString.split(':');
-        const hejiVoices = getHejiNotationHtmlPerVoice(ratioString, effectiveBaseFreq);
-        const deviationVoices = getDeviationNotationHtmlPerVoice(ratioString, frequencies, effectiveBaseFreq);
-
-        let gridHtml = '<div class="notation-all-grid">';
-
-        // Row 1: Enumerated Ratio (a:b:c:d)
-        gridHtml += '<div class="notation-all-row ratio-row">';
+        let rowHtml = '<div class="notation-all-row ratio-row">';
         ratioParts.forEach((part, index) => {
-            gridHtml += `<div class="notation-all-cell ratio-cell">${part}</div>`;
+            rowHtml += `<div class="notation-all-cell ratio-cell">${part}</div>`;
             if (index < ratioParts.length - 1) {
-                gridHtml += `<div class="notation-all-cell colon-cell">:</div>`;
+                rowHtml += `<div class="notation-all-cell colon-cell">:</div>`;
             }
         });
-        gridHtml += '</div>';
-
-        // Row 2: HEJI Ext
-        gridHtml += '<div class="notation-all-row heji-row">';
-        gridHtml += hejiVoices.map(voiceHtml => `<div class="notation-all-cell heji-cell">${voiceHtml}</div>`).join('');
-        gridHtml += '</div>';
-
-        // Row 3: Deviation
-        gridHtml += '<div class="notation-all-row deviation-row">';
-        gridHtml += deviationVoices.map(voiceHtml => `<div class="notation-all-cell deviation-cell">${voiceHtml}</div>`).join('');
-        gridHtml += '</div>';
-
-        gridHtml += '</div>'; // Close notation-all-grid
-        output = gridHtml;
-        notationDisplay.className = 'notation-display notation-all';
+        rowHtml += '</div>';
+        rows.push(rowHtml);
     }
 
-    notationDisplay.innerHTML = output;
+    /* Whichever of HEJI/Sagittal is the standing preference fills this row. */
+    const spellingVoices = notationSpelling === 'sagittal'
+        ? getSagittalNotationHtmlPerVoice(ratioString, effectiveBaseFreq)
+        : getHejiNotationHtmlPerVoice(ratioString, effectiveBaseFreq);
+    rows.push('<div class="notation-all-row heji-row">' +
+        spellingVoices.map(voiceHtml => `<div class="notation-all-cell heji-cell">${voiceHtml}</div>`).join('') +
+        '</div>');
+
+    if (notationShowCents) {
+        const cents = frequencies.map(freq => 1200 * Math.log2(freq / initialBaseFreq));
+        rows.push('<div class="notation-all-row cents-row">' +
+            cents.reverse().map(c => `<div class="notation-all-cell cents-cell">${Math.round(c)}</div>`).join('') +
+            '</div>');
+    }
+
+    if (notationShowDeviation) {
+        const deviationVoices = getDeviationNotationHtmlPerVoice(ratioString, frequencies, effectiveBaseFreq);
+        rows.push('<div class="notation-all-row deviation-row">' +
+            deviationVoices.map(voiceHtml => `<div class="notation-all-cell deviation-cell">${voiceHtml}</div>`).join('') +
+            '</div>');
+    }
+
+    notationDisplay.className = 'notation-display notation-all';
+    notationDisplay.innerHTML = `<div class="notation-all-grid">${rows.join('')}</div>`;
     notationDisplay.style.display = 'block';
 }

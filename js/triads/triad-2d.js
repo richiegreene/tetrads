@@ -24,11 +24,11 @@ import {
 } from './triad-geometry.js';
 import {
     triadFill, triadLines, triadContours, triadDots, triadLabels, triadSnap,
-    triadRelief, cursor,
+    triadRelief, triadGloss, cursor,
 } from './triad-state.js';
 import { currentTriads, currentField, complexityRange } from './triad-surface.js';
 import { currentLayoutMode } from '../globals.js';
-import { colormapAt } from '../calculations/color-mapping.js';
+import { colormapAt, lighting } from '../calculations/color-mapping.js';
 
 /** The colour layout the whole app is currently set to. */
 export function colormap() { return colormapAt(currentLayoutMode); }
@@ -89,7 +89,7 @@ export function resize() {
  *  The shaded ground
  * ------------------------------------------------------------------ */
 function buildShade(field) {
-    const key = `${field.w}x${field.h}|${currentLayoutMode}|${triadRelief}|${field.min}|${field.max}`;
+    const key = `${field.w}x${field.h}|${currentLayoutMode}|${triadRelief}|${triadGloss}|${field.min}|${field.max}`;
     if (key === shadeKey && shade) return shade;
 
     const off = document.createElement('canvas');
@@ -98,33 +98,15 @@ function buildShade(field) {
     const octx = off.getContext('2d');
     const img = octx.createImageData(field.w, field.h);
 
-    const material = colormapMaterial();
-    if (material) paintHillshade(field, img, material);
-    else paintRamp(field, img);
+    /* One painter for both kinds. A material layout has its base colour lit;
+       a ramp layout has its base colour left exactly alone and only a highlight
+       laid over it. See `lighting` in color-mapping.js. */
+    paintField(field, img, lighting(colormap(), triadGloss));
 
     octx.putImageData(img, 0, 0);
     shade = off;
     shadeKey = key;
     return shade;
-}
-
-/** Value becomes hue: the ordinary reading, and what most layouts do. */
-function paintRamp(field, img) {
-    const map = colormapFn();
-    for (let y = 0; y < field.h; y++) {
-        // Row 0 of the field is the baseline; row 0 of an image is the top.
-        const src = (field.h - 1 - y) * field.w;
-        for (let x = 0; x < field.w; x++) {
-            const v = field.z[src + x];
-            const o = (y * field.w + x) * 4;
-            if (!(v === v)) { img.data[o + 3] = 0; continue; }
-            const c = map(normalise(field, v));
-            img.data[o] = Math.round(c.r * 255);
-            img.data[o + 1] = Math.round(c.g * 255);
-            img.data[o + 2] = Math.round(c.b * 255);
-            img.data[o + 3] = 255;
-        }
-    }
 }
 
 /* The light, in the flat pane. Up and to the left, which is the convention
@@ -137,36 +119,49 @@ const LIGHT = (() => {
     return [v[0] / n, v[1] / n, v[2] / n];
 })();
 
+/** The half-vector, with the eye directly overhead — fixed, so it is computed
+ *  once rather than per cell. That is what makes a Blinn-Phong highlight cheap
+ *  enough to run over every sample of the grid. */
+const HALF = (() => {
+    const v = [LIGHT[0], LIGHT[1] + 1, LIGHT[2]];
+    const n = Math.hypot(v[0], v[1], v[2]);
+    return [v[0] / n, v[1] / n, v[2] / n];
+})();
+
+const chan = (hex) => ({
+    r: ((hex >> 16) & 255) / 255,
+    g: ((hex >> 8) & 255) / 255,
+    b: (hex & 255) / 255,
+});
+
 /**
- * The field as a lit surface seen from directly above.
+ * The field, painted.
  *
- * A material layout has one colour, so shading it by value would give a flat
- * plate. Instead the field's own slope is used: the gradient at each cell is a
- * surface normal, the normal is lit by the same lamp the 3D pane uses, and
- * what you get is the relief — the identical information, carried by light
- * rather than by hue. A ridge a ramp would flatten into one band of colour
- * shows up as a ridge, which is the whole reason for the layout.
+ * The flat pane's answer to the lifted one: the field's own slope at each cell
+ * is a surface normal, and the normal is lit by the same lamp the 3D pane
+ * uses. What that light is allowed to do depends on the layout:
+ *
+ *   a MATERIAL layout has one body colour, so shading it IS the picture — a
+ *   ridge a ramp would flatten into a single band of colour shows up as a
+ *   ridge, which is the whole reason for the layout.
+ *
+ *   a RAMP layout gets its colour from the value, and dimming that colour by
+ *   the local slope would make the map lie about its own numbers. So its base
+ *   is left exactly as it was and only the specular is added on top.
  *
  * Relief scales the gradient, so the Display drawer's one control governs how
- * pronounced the surface is in BOTH panes.
+ * pronounced the surface is in BOTH panes, and Gloss scales the highlight.
  */
-function paintHillshade(field, img, material) {
-    const body = {
-        r: ((material.color >> 16) & 255) / 255,
-        g: ((material.color >> 8) & 255) / 255,
-        b: (material.color & 255) / 255,
-    };
-    const spec = {
-        r: ((material.specular >> 16) & 255) / 255,
-        g: ((material.specular >> 8) & 255) / 255,
-        b: (material.specular & 255) / 255,
-    };
-    const ambient = material.ambient ?? 0.3;
+function paintField(field, img, lit) {
+    const map = colormapFn();
+    const body = chan(lit.color);
+    const spec = chan(lit.specular);
     const span = Math.max(1e-9, field.max - field.min);
     /* The gradient is per-cell, so a coarse grid has bigger steps for the same
        surface — normalising by the cell width keeps the lighting the same at
        every resolution. */
     const scale = (triadRelief * field.w) / 3;
+    const needsLight = lit.material || lit.strength > 0.001;
 
     const at = (x, y) => {
         const cx = Math.min(field.w - 1, Math.max(0, x));
@@ -176,42 +171,50 @@ function paintHillshade(field, img, material) {
     };
 
     for (let y = 0; y < field.h; y++) {
+        // Row 0 of the field is the baseline; row 0 of an image is the top.
         const row = field.h - 1 - y;
         for (let x = 0; x < field.w; x++) {
             const o = (y * field.w + x) * 4;
             const c = at(x, row);
             if (!(c === c)) { img.data[o + 3] = 0; continue; }
 
-            /* Central differences, falling back to the centre where a
-               neighbour is outside the triangle — otherwise every boundary
-               cell would light as a cliff. */
-            const l = at(x - 1, row), r = at(x + 1, row);
-            const d = at(x, row - 1), u = at(x, row + 1);
-            const dx = ((r === r ? r : c) - (l === l ? l : c)) * 0.5 * scale;
-            const dy = ((u === u ? u : c) - (d === d ? d : c)) * 0.5 * scale;
+            let br, bg, bb;
+            if (lit.material) {
+                br = body.r; bg = body.g; bb = body.b;
+            } else {
+                const col = map(c);
+                br = col.r; bg = col.g; bb = col.b;
+            }
 
-            let nx = -dx, ny = 1, nz = -dy;
-            const nl = Math.hypot(nx, ny, nz);
-            nx /= nl; ny /= nl; nz /= nl;
+            if (needsLight) {
+                /* Central differences, falling back to the centre where a
+                   neighbour is outside the triangle — otherwise every boundary
+                   cell would light as a cliff. */
+                const l = at(x - 1, row), r = at(x + 1, row);
+                const d = at(x, row - 1), u = at(x, row + 1);
+                const dx = ((r === r ? r : c) - (l === l ? l : c)) * 0.5 * scale;
+                const dy = ((u === u ? u : c) - (d === d ? d : c)) * 0.5 * scale;
 
-            const lambert = Math.max(0, nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]);
-            const diffuse = ambient + (1 - ambient) * lambert;
+                let nx = -dx, ny = 1, nz = -dy;
+                const nl = Math.hypot(nx, ny, nz);
+                nx /= nl; ny /= nl; nz /= nl;
 
-            /* Blinn-Phong, with the eye directly overhead — the half-vector is
-               therefore fixed, which is what makes this cheap enough to run
-               over every cell of the grid. */
-            let hx = LIGHT[0], hy = LIGHT[1] + 1, hz = LIGHT[2];
-            const hl = Math.hypot(hx, hy, hz);
-            hx /= hl; hy /= hl; hz /= hl;
-            const highlight = Math.pow(
-                Math.max(0, nx * hx + ny * hy + nz * hz), material.shininess ?? 30);
+                if (lit.material) {
+                    const lambert = Math.max(0, nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]);
+                    const diffuse = lit.ambient + (1 - lit.ambient) * lambert;
+                    br *= diffuse; bg *= diffuse; bb *= diffuse;
+                }
 
-            /* The same restraint the lit pane's material is given: specular
-               is added on top of an already-lit body, so it is kept dim and
-               tight or it clips whole slopes to flat white. */
-            img.data[o] = Math.round(255 * Math.min(1, body.r * diffuse + spec.r * highlight));
-            img.data[o + 1] = Math.round(255 * Math.min(1, body.g * diffuse + spec.g * highlight));
-            img.data[o + 2] = Math.round(255 * Math.min(1, body.b * diffuse + spec.b * highlight));
+                const highlight = Math.pow(
+                    Math.max(0, nx * HALF[0] + ny * HALF[1] + nz * HALF[2]), lit.shininess);
+                br += spec.r * highlight;
+                bg += spec.g * highlight;
+                bb += spec.b * highlight;
+            }
+
+            img.data[o] = Math.round(255 * Math.min(1, br));
+            img.data[o + 1] = Math.round(255 * Math.min(1, bg));
+            img.data[o + 2] = Math.round(255 * Math.min(1, bb));
             img.data[o + 3] = 255;
         }
     }

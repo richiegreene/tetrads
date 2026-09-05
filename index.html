@@ -95,7 +95,7 @@
         <div class="drawer" data-drawer="complexity">
           <h1><span class="mode-name">Tetrads</span> <small>· complexity</small></h1>
 
-          <fieldset>
+          <fieldset id="limit-fieldset">
             <legend>Limit</legend>
             <label for="limitType">Limit type</label>
             <select id="limitType"
@@ -195,7 +195,7 @@
 
           </fieldset>
 
-          <fieldset>
+          <fieldset id="complexity-fieldset">
             <legend>Complexity</legend>
             <label for="complexityMethod">Measure</label>
             <select id="complexityMethod"
@@ -260,7 +260,7 @@
           <!-- The lattice, on Isoharmonics' own terms: whether the just
                triads are marked at all, and whether each mark says which
                chord it is. Two questions, so two switches. -->
-          <fieldset data-mode="triads" class="mode-off">
+          <fieldset id="triad-lattice-fieldset" data-mode="triads" class="mode-off">
             <legend>Lattice</legend>
             <div class="seg" id="triad-lattice-seg">
               <button data-v="triadDots"
@@ -313,12 +313,14 @@
             <input type="range" id="scalingFactor" value="2" min="0.50" max="3.00" step="0.01">
           </fieldset>
 
-          <fieldset>
+          <fieldset id="omit-fieldset">
             <legend>Omit</legend>
-            <label class="vis">
-              <input type="checkbox" id="hideUnisonVoices">Omit Unisons</label>
-            <label class="vis">
-              <input type="checkbox" id="omitOctaves">Omit Octaves</label>
+            <div class="seg" id="omit-seg">
+              <button data-v="hideUnisonVoices" title="Drop a voice doubling another at the unison">Omit Unisons</button>
+              <button data-v="omitOctaves" title="Drop a voice doubling another an octave away">Omit Octaves</button>
+            </div>
+            <input type="checkbox" id="hideUnisonVoices" hidden>
+            <input type="checkbox" id="omitOctaves" hidden>
           </fieldset>
 
           <!-- ---- how a sounding tetrad is written out ----
@@ -328,20 +330,22 @@
                chord spelled here is spelled the way that app would spell it. -->
           <fieldset>
             <legend>Notation</legend>
-            <label class="vis">
-              <input type="checkbox" id="enableNotation" checked>Enable Notation</label>
+            <div class="seg" id="notation-enable-seg">
+              <button data-v="enableNotation" class="on">Display Notation</button>
+            </div>
+            <input type="checkbox" id="enableNotation" checked hidden>
 
             <div id="notation-options">
               <div class="tune-h">Readout</div>
-              <div class="seg wrap" id="notation-seg">
-                <button data-v="all" class="on" title="Ratio, HEJI and the deviation from 12EDO at once">All</button>
-                <button data-v="ratio" title="The enumerated ratio itself">Ratio</button>
-                <button data-v="heji" title="Helmholtz-Ellis Just Intonation">HEJI</button>
+              <div class="seg" id="notation-spelling-seg">
+                <button data-v="heji" class="on" title="Helmholtz-Ellis Just Intonation">HEJI</button>
                 <button data-v="sagittal" title="Sagittal">Sagittal</button>
-                <button data-v="cents" title="Cents above 1/1">Cents</button>
-                <button data-v="deviation" title="The nearest 12EDO note and the cents off it">12EDO</button>
               </div>
-              <input type="hidden" id="notationType" value="all">
+              <div class="seg" id="notation-format-seg">
+                <button data-v="notationShowRatio" class="on" title="The enumerated ratio itself">Ratio</button>
+                <button data-v="notationShowCents" class="on" title="Cents above 1/1">Cents</button>
+                <button data-v="notationShowDeviation" class="on" title="The nearest 12EDO note and the cents off it">12EDO</button>
+              </div>
 
               <!-- Sagittal only, and asked in Sagittal's own terms. -->
               <div id="sagittal-options" style="display:none">
@@ -375,6 +379,24 @@
                  ramp the scene does not use. -->
             <div class="tune-h">Colormap <span class="key-hint">⇧⌘L</span></div>
             <div class="maps" id="colormap-seg"></div>
+
+            <!-- ---- how wet the surface is ----
+                 Directly under the chips, because it is a property of the one
+                 that is lit. Petroleum and Porcelain are read by their
+                 highlight, and this is how much of one they get; the ordinary
+                 ramps have no light on them at all, so it lays a shine over
+                 their colours instead of shading them — the values stay
+                 exactly as legible as they were.
+
+                 Triads only: the tetrahedron is drawn as flat sprites, and
+                 there is no surface there for a light to catch. -->
+            <div class="pressrow mode-off" data-mode="triads">
+              <label for="triadGloss">Gloss</label>
+              <span class="pressval" id="gloss-v">0%</span>
+            </div>
+            <input type="range" id="triadGloss" min="0" max="100" step="1" value="0"
+              class="mode-off" data-mode="triads"
+              title="How wet the lifted surface is. On Petroleum and Porcelain this is matte through to a mirror; on the colour ramps it adds a highlight over the top without touching the colours underneath.">
 
             <!-- ---- how fast the shape turns ----
                  The arrow keys have always turned the tetrahedron and [ ]

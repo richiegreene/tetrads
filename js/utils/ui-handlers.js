@@ -16,10 +16,11 @@
  * ------------------------------------------------------------------ */
 
 import {
-    enableNotation, notationType, enableSlide, slideDuration, playbackMode,
+    enableNotation, notationSpelling, enableSlide, slideDuration, playbackMode,
     rotationSpeed, setRotationSpeed, autoRotate, setAutoRotate,
     notationDisplay, isClickPlayModeActive, isShiftHeld, currentLayoutMode,
-    setEnableNotation, setNotationType, setEnableSlide, setSlideDuration, setPlaybackMode,
+    setEnableNotation, setNotationShowRatio, setNotationShowCents, setNotationShowDeviation,
+    setNotationSpelling, setEnableSlide, setSlideDuration, setPlaybackMode,
     setSagittalPrecision, setSagittalEvo, setCurrentLayoutMode,
     setCurrentPivotVoiceIndex, setIsClickPlayModeActive, setCurrentlyHovered,
     setLastPlayedFrequencies, setLastPlayedRatios,
@@ -37,9 +38,9 @@ import { createTimbrePicker, FILTERED_MIN } from '../synth/timbre.js';
 import { attachAdsrEditor } from '../synth/adsr.js';
 import { setCurrentTimbre } from '../globals.js';
 import {
-    appMode, triadModel, triadDots, setTriadModel, setTriadFill, setTriadLines,
+    appMode, triadModel, triadDots, triadLabels, setTriadModel, setTriadFill, setTriadLines,
     setTriadContours, setTriadRelief, setTriadDots, setTriadLabels,
-    setTriadSnap, setTriadGlide, heParams, smParams,
+    setTriadSnap, setTriadGlide, setTriadGloss, heParams, smParams,
 } from '../triads/triad-state.js';
 import {
     switchMode, refreshSet, generateSurface, applyView, applyPivot,
@@ -295,14 +296,38 @@ export function setupUIEventListeners() {
      * stage out — and lets go of anything that is sounding on the way across,
      * because both modes address the same synth voices by the same ids. */
     /* Complexity channels size and colour a triad's dots as much as a
-       tetrad's points, but with the dots off in Triads there is nothing left
-       for them to act on — so the fieldset goes with them. */
+       tetrad's points, but with the lattice itself invisible — neither Dots
+       nor Labels on — there is nothing left for them or for Omit to act on,
+       so both go dark together. */
     const channelFieldset = $('channel-fieldset');
+    const omitFieldset = $('omit-fieldset');
+    const limitFieldset = $('limit-fieldset');
+    const complexityFieldset = $('complexity-fieldset');
     const updateChannelVisibility = () => {
-        channelFieldset.classList.toggle('mode-off', appMode === 'triads' && !triadDots);
+        const latticeEmpty = appMode === 'triads' && !triadDots && !triadLabels;
+        channelFieldset.classList.toggle('mode-off', latticeEmpty);
+        omitFieldset.classList.toggle('mode-off', latticeEmpty);
+        limitFieldset.classList.toggle('mode-off', latticeEmpty);
+        complexityFieldset.classList.toggle('mode-off', latticeEmpty);
     };
 
-    seg('mode-seg', (v) => { switchMode(v); updateChannelVisibility(); });
+    /* Limit, Complexity, Complexity channels and Omit all decide what the
+       lattice is and shows, so in Triads they live inside the Lattice
+       fieldset rather than as siblings of it. Moved rather than duplicated:
+       each is the one control the rest of the app already reads by id, and
+       Tetrads gets it back, in its old place, the moment the mode does. */
+    const latticeFieldset = $('triad-lattice-fieldset');
+    const latticeGroup = [limitFieldset, complexityFieldset, channelFieldset, omitFieldset];
+    const latticeHomes = latticeGroup.map((el) => [el, el.parentNode, el.nextSibling]);
+    const placeLatticeGroup = (mode) => {
+        if (mode === 'triads') {
+            for (const el of latticeGroup) latticeFieldset.appendChild(el);
+        } else {
+            for (const [el, parent, next] of latticeHomes) parent.insertBefore(el, next);
+        }
+    };
+
+    seg('mode-seg', (v) => { switchMode(v); placeLatticeGroup(v); updateChannelVisibility(); });
     document.body.dataset.mode = 'tetrads';
     updateChannelVisibility();
 
@@ -318,13 +343,14 @@ export function setupUIEventListeners() {
        twice over: it changes the set, and it changes what the triangle's
        corners mean — so a surface computed for the old one is not stale
        styling but a wrong diagram, and it is rebuilt rather than kept. */
-    for (const id of ['limitType', 'complexityMethod', 'hideUnisonVoices', 'omitOctaves']) {
+    for (const id of ['limitType', 'complexityMethod']) {
         $(id).addEventListener('change', () => scheduleApply('set'));
     }
     for (const id of ['limitValue', 'maxExponent']) {
         $(id).addEventListener('input', () => scheduleApply('set'));
     }
     $('equaveRatio').addEventListener('input', () => scheduleApply('both'));
+    toggleSeg('omit-seg', () => scheduleApply('set'));
 
     /* ---------------- Display ---------------- */
     const layoutDisplay = $('layoutDisplay');
@@ -463,7 +489,7 @@ export function setupUIEventListeners() {
     });
     flagSeg('triad-lattice-seg', {
         triadDots: (on) => { setTriadDots(on); invalidateTriads(); updateChannelVisibility(); },
-        triadLabels: (on) => { setTriadLabels(on); invalidateTriads(); },
+        triadLabels: (on) => { setTriadLabels(on); invalidateTriads(); updateChannelVisibility(); },
     });
 
     press('triadContours', 'contours-v',
@@ -475,6 +501,13 @@ export function setupUIEventListeners() {
     press('triadSnap', 'snap-v',
         (v) => { setTriadSnap(v); },
         (v) => (v > 0 ? `${Math.round(v)} px` : 'off'));
+
+    /* Gloss repaints rather than regenerates: it changes how the surface is
+       lit, not what the surface is. The 2D shade is cached per gloss value,
+       which is what `rebuild` clears. */
+    press('triadGloss', 'gloss-v',
+        (v) => { setTriadGloss(v / 100); invalidateTriads({ rebuild: true }); },
+        (v) => `${Math.round(v)}%`);
 
     /* ---- how the three voices follow the hand ----
      * The one control that is the whole difference from the app this mode
@@ -533,26 +566,37 @@ export function setupUIEventListeners() {
     });
 
     /* ---------------- Notation ---------------- */
-    const notationTypeInput = $('notationType');
     const notationOptions = $('notation-options');
     const sagittalOptions = $('sagittal-options');
 
+    /* Sagittal's own precision/flavour controls matter whenever Sagittal is
+       the standing spelling preference. */
     const showSagittalOptions = () => {
-        sagittalOptions.style.display = notationTypeInput.value === 'sagittal' ? 'block' : 'none';
+        sagittalOptions.style.display = notationSpelling === 'sagittal' ? 'block' : 'none';
     };
 
-    $('enableNotation').addEventListener('change', (event) => {
-        setEnableNotation(event.target.checked);
-        notationOptions.style.display = event.target.checked ? 'block' : 'none';
-        if (!event.target.checked && notationDisplay) notationDisplay.style.display = 'none';
+    toggleSeg('notation-enable-seg', (v, on) => {
+        setEnableNotation(on);
+        notationOptions.style.display = on ? 'block' : 'none';
+        if (!on && notationDisplay) notationDisplay.style.display = 'none';
     });
 
-    seg('notation-seg', (v) => {
-        notationTypeInput.value = v;
-        setNotationType(v);
+    /* HEJI/Sagittal is a standing preference, independent of which readouts
+       are switched on below — it decides only which spelling those use. */
+    seg('notation-spelling-seg', (v) => {
+        setNotationSpelling(v);
         showSagittalOptions();
     });
     showSagittalOptions();
+
+    /* Ratio, Cents and 12EDO are independent rather than a choice of one:
+       any combination can be shown, so this is a flag pair like Fill/Lines,
+       not a seg. */
+    flagSeg('notation-format-seg', {
+        notationShowRatio: (on) => setNotationShowRatio(on),
+        notationShowCents: (on) => setNotationShowCents(on),
+        notationShowDeviation: (on) => setNotationShowDeviation(on),
+    });
 
     $('sagittalPrecision').addEventListener('change', (e) => setSagittalPrecision(e.target.value));
     seg('sagittal-flavour', (v) => setSagittalEvo(v === 'evo'));
