@@ -205,10 +205,10 @@ function onKeyDown(event) {
         startRampingPressureDown();
         event.preventDefault();
     } else if (event.key === ']' || event.key === '}') { // Speed up rotation
-        setRotationSpeed(Math.min(0.1, rotationSpeed * 1.1)); // Increase speed by 10%, max 0.1
+        setRotationSpeed(Math.min(20 * Math.PI / (180 * 60), rotationSpeed * 1.1)); // Increase speed by 10%, max 20deg/s
         event.preventDefault();
     } else if (event.key === '[' || event.key === '{') { // Slow down rotation
-        setRotationSpeed(Math.max(0.001, rotationSpeed * 0.9)); // Decrease speed by 10%, min 0.001
+        setRotationSpeed(Math.max(0.5 * Math.PI / (180 * 60), rotationSpeed * 0.9)); // Decrease speed by 10%, min 0.5deg/s
         event.preventDefault();
     }
 

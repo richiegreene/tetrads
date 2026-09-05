@@ -193,13 +193,13 @@ function press(id, valueId, apply, format) {
 /* ---------------------------------------------------------------------
  *  Motion
  *
- *  rotationSpeed is radians per frame, and it spans two orders of magnitude —
- *  0.001 barely creeps, 0.1 is a blur — so the slider is exponential over it.
+ *  rotationSpeed is radians per frame, and the slider spans 0.5-20 deg/s —
+ *  a range wide enough that it is exponential over it, not linear.
  *  Linear, the whole usable range would sit in the first two millimetres.
  *  [ and ] step it by 10% either way, which is a fixed number of slider
  *  positions on an exponential scale and a wildly varying one on a linear.
  * ------------------------------------------------------------------ */
-const ROT_MIN = 0.001, ROT_MAX = 0.1;
+const ROT_MIN = 0.5 * Math.PI / (180 * 60), ROT_MAX = 20 * Math.PI / (180 * 60);
 const rotToSlider = (v) => Math.round(100 * Math.log(v / ROT_MIN) / Math.log(ROT_MAX / ROT_MIN));
 const sliderToRot = (t) => ROT_MIN * Math.pow(ROT_MAX / ROT_MIN, t / 100);
 /** Radians per frame, said as degrees per second at 60fps — what you see. */
