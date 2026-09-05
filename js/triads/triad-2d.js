@@ -206,9 +206,12 @@ function paintHillshade(field, img, material) {
             const highlight = Math.pow(
                 Math.max(0, nx * hx + ny * hy + nz * hz), material.shininess ?? 30);
 
-            img.data[o] = Math.round(255 * Math.min(1, body.r * diffuse + spec.r * highlight * 0.55));
-            img.data[o + 1] = Math.round(255 * Math.min(1, body.g * diffuse + spec.g * highlight * 0.55));
-            img.data[o + 2] = Math.round(255 * Math.min(1, body.b * diffuse + spec.b * highlight * 0.55));
+            /* The same restraint the lit pane's material is given: specular
+               is added on top of an already-lit body, so it is kept dim and
+               tight or it clips whole slopes to flat white. */
+            img.data[o] = Math.round(255 * Math.min(1, body.r * diffuse + spec.r * highlight));
+            img.data[o + 1] = Math.round(255 * Math.min(1, body.g * diffuse + spec.g * highlight));
+            img.data[o + 2] = Math.round(255 * Math.min(1, body.b * diffuse + spec.b * highlight));
             img.data[o + 3] = 255;
         }
     }

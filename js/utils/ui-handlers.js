@@ -31,6 +31,7 @@ import { updateTetrahedron, setLayoutMode, LAYOUT_GROUNDS } from '../calculation
 import { exportToSVG, downloadSVG, exportToPNG, exportToCSV } from './data-export.js';
 import { saveTriadSVG, saveTriadPNG, exportTriadCSV } from '../triads/triad-export.js';
 import { COLORMAPS } from '../calculations/color-mapping.js';
+import { estimateWork, sayWork, WORK_BUDGET } from '../calculations/work-estimate.js';
 import { initMidiOutput, sendMpePressure, mpeChannels } from '../midi/midi-output.js';
 import { createTimbrePicker, FILTERED_MIN } from '../synth/timbre.js';
 import { attachAdsrEditor } from '../synth/adsr.js';
@@ -232,6 +233,8 @@ const SETTLE_MS = 260;
 let settleTimer = 0;
 let pendingSet = false;
 let pendingModel = false;
+let pendingForce = false;   // ↵: run it even if it is over budget
+let lastChangeAt = 0;
 let running = false;
 let applyNow = null;   // filled in below, once the drawers can be read
 
@@ -239,11 +242,30 @@ let applyNow = null;   // filled in below, once the drawers can be read
  * Ask for work, and let it happen once the panel goes quiet.
  * @param {'set'|'model'|'both'} kind
  */
-function scheduleApply(kind) {
+function scheduleApply(kind, force = false) {
     if (kind === 'set' || kind === 'both') pendingSet = true;
     if (kind === 'model' || kind === 'both') pendingModel = true;
+    if (force) pendingForce = true;
+    lastChangeAt = performance.now();
+    arm(SETTLE_MS);
+}
+
+function arm(ms) {
     clearTimeout(settleTimer);
-    settleTimer = setTimeout(() => { applyNow?.(); }, SETTLE_MS);
+    settleTimer = setTimeout(() => {
+        /* The clock, not the timer, decides whether things have gone quiet.
+         *
+         * A generation blocks the thread for a few hundred milliseconds, and
+         * everything queued behind it — including this timer — is delivered
+         * late and all at once when it lets go. A timer that simply ran on
+         * firing would therefore treat a starved beat as a silence and
+         * regenerate in the middle of a drag that never paused. Asking how
+         * long it has actually been since the last change makes starvation
+         * harmless: it just re-arms for the remainder. */
+        const quiet = performance.now() - lastChangeAt;
+        if (quiet < SETTLE_MS - 8) { arm(SETTLE_MS - quiet); return; }
+        applyNow?.();
+    }, ms);
 }
 
 export function setupUIEventListeners() {
@@ -689,7 +711,7 @@ export function setupUIEventListeners() {
     };
 
     /** Rebuild the tetrahedron from the panel. */
-    async function applyTetrads() {
+    async function applyTetrads(force = false) {
         const raw = $('limitValue').value;
         let limitValue = raw;
         let virtualFundamentalFilter = null;
@@ -718,6 +740,17 @@ export function setupUIEventListeners() {
         const equaveRatio = parseFloat($('equaveRatio').value);
         if (!(equaveRatio > 1)) return false;
 
+        /* And a mistyped one is not a limit either. See work-estimate.js: a
+           slip that turns 13 into 1113 asks for a trillion chords, and in
+           Pyodide that is a tab that never comes back. ↵ runs it anyway. */
+        const o = { limitValue, equaveRatio, limitType: $('limitType').value,
+                    maxExponent: $('maxExponent').value };
+        const work = await estimateWork(o, 4);
+        if (!force && work > WORK_BUDGET) {
+            showStatus(`${sayWork(work)} tetrads — press ↵ to generate anyway`);
+            return false;
+        }
+
         await updateTetrahedron(
             $('limitType').value, limitValue, $('maxExponent').value,
             virtualFundamentalFilter, equaveRatio, $('complexityMethod').value,
@@ -740,20 +773,26 @@ export function setupUIEventListeners() {
      */
     applyNow = async () => {
         clearTimeout(settleTimer);
+        lastChangeAt = 0;
         if (running) return;
         running = true;
         try {
             while (pendingSet || pendingModel) {
                 const wantSet = pendingSet, wantModel = pendingModel;
-                pendingSet = pendingModel = false;
+                const force = pendingForce;
+                pendingSet = pendingModel = pendingForce = false;
 
                 if (wantSet) {
                     showStatus('working…', true);
                     /* Two frames, so the status is actually on screen before
                        the thread is taken away to do the work. */
                     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-                    if (appMode === 'triads') await refreshSet();
-                    else await applyTetrads();
+                    const done = appMode === 'triads'
+                        ? await refreshSet(force)
+                        : await applyTetrads(force);
+                    /* A refusal has already said why in the foot, so the
+                       generic line below must not overwrite it. */
+                    if (done === false) { showStatus($('panel-status').textContent); continue; }
                 }
                 if (wantModel && appMode === 'triads') {
                     await generateSurface(triadModel);
@@ -789,7 +828,7 @@ export function setupUIEventListeners() {
         if (event.key === 'Enter') {
             event.preventDefault();
             if (tagName === 'INPUT') event.target.blur();
-            scheduleApply('set');
+            scheduleApply('set', true);   // ↵ overrides the budget
             applyNow?.();
         }
     });

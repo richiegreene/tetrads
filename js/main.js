@@ -271,6 +271,32 @@ def _generate_valid_numbers(limit_value, limit_mode, max_exponent=3, equave_rati
                     q.append(next_num)
     return valid_numbers if valid_numbers else {1}
 
+def estimate_combinations(limit_value, equave_ratio, limit_mode="odd", max_exponent=3, voices=4):
+    """How many chords the generator would have to walk, before it walks them.
+
+    The generators are combinations_with_replacement over the valid numbers, so
+    the count is C(n + k - 1, k) and it is knowable without generating
+    anything — which matters because the growth is brutal: doubling the limit
+    roughly doubles n, and the count goes as n^4 for tetrads. A limit of 13 is
+    a hundred thousand chords and a mistyped 1113 is ten trillion, and the
+    second one is indistinguishable from a hang.
+
+    Cheap enough to ask before every single generation, which is what makes it
+    possible for the panel to apply itself without a press to gate it.
+    """
+    try:
+        nums = _generate_valid_numbers(limit_value, limit_mode, max_exponent, float(equave_ratio))
+    except Exception:
+        return -1
+    n = len(nums)
+    if n <= 0:
+        return 0
+    k = int(voices)
+    total = 1
+    for i in range(k):
+        total = total * (n + i) // (i + 1)
+    return total
+
 def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_exponent=3, complexity_measure='Tenney', hide_unison_voices=False, omit_octaves=False, virtual_fundamental_filter=None):
     labels_data = []
     equave_ratio_float = float(equave_ratio)

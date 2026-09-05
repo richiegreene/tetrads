@@ -199,10 +199,14 @@ button.latched{background:#24405c;border-color:var(--accent);color:#cfe6ff}
    on black, the other to ink on white, and a strip of ramps alone would
    show them as the same gradient twice. */
 .maps{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 9px}
-.map{display:flex;flex-direction:column;gap:5px;padding:6px 7px;
+/* align-items and an explicit width because this is a <button>: a button is
+   not a plain flex container in every engine, and without them the swatch
+   collapses to its content width — which for an empty span is nothing, so the
+   chip advertises its colormap with a one-pixel sliver. */
+.map{display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:6px 7px;
   font-size:11px;text-align:left;border-radius:6px;color:var(--dim)}
-.map .ramp{display:block;height:15px;border-radius:3px;
-  border:1px solid rgba(128,128,128,.35)}
+.map .ramp{display:block;width:100%;height:15px;border-radius:3px;
+  border:1px solid rgba(128,128,128,.35);flex:0 0 auto}
 .map:hover{border-color:var(--accent)}
 .map.on{box-shadow:inset 0 0 0 1px var(--accent);color:var(--text)}
 /* Drawn on white in the scene, so drawn on white here. */

@@ -190,12 +190,17 @@ export const COLORMAPS = [
     },
     {
         name: 'Bronze', ramp: bronzeRamp, ground: 0x000000,
-        material: { color: 0xb07d3a, specular: 0xffe6b0, shininess: 42, ambient: 0.30 },
+        /* A tight, dim highlight rather than a broad bright one: specular is
+           ADDED to an already-lit body, so a near-white one at a low shininess
+           clips whole slopes to flat white and the relief under them is lost.
+           The rule for both materials is a specular darker than the body and a
+           shininess high enough to keep the highlight to the crests. */
+        material: { color: 0xb07d3a, specular: 0x4e3c20, shininess: 64, ambient: 0.26 },
         title: 'A lit surface rather than a coloured one: one bronze, modelled entirely by an angled key light and a moving highlight. Height alone carries the model.',
     },
     {
         name: 'Porcelain', ramp: porcelainRamp, ground: 0xffffff,
-        material: { color: 0xe8e4dc, specular: 0xffffff, shininess: 26, ambient: 0.46 },
+        material: { color: 0xe8e4dc, specular: 0x7d7a73, shininess: 48, ambient: 0.42 },
         title: 'The same lighting on a pale glaze over a white ground — the material layout to print.',
     },
 ];

@@ -9,7 +9,11 @@ Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of
 
 The panel is a side rail of four modes — Complexity Measures, Display, Play and Export — borrowed, along with the synth and the JI notation engines, from [Xenachord Designer](https://github.com/richiegreene/xenachord). Pressing the mode you are already in shuts the drawer and gives the width back to the view.
 
-## Tetrads / Triads
+**Nothing needs applying.** There is no Update and no Generate: every control in every drawer applies itself a beat after you stop moving it. The wait is deliberate — the models run in Python, on the page's own thread, so recomputing on every intermediate value of a drag would freeze the slider being dragged. What used to be the Update button is now the line at the foot of the panel saying what came of it: how many chords are in the set, which model is under the triangle, and what it cost.
+
+One thing is still asked for explicitly. The number of chords grows as the fourth power of the limit — odd-limit 13 is a hundred and twenty thousand tetrads, and a slipped keystroke making that 1113 is a *trillion* — so before generating anything the app works out how big the job would be, and anything past a couple of million is reported rather than run: *"1.0 billion tetrads — press ↵ to generate anyway"*. `↵` also just means *don't wait* for any ordinary change.
+
+## Triads / Tetrads
 Pinned above the drawers is a switch between two apps that ask the same questions of different chords.
 
 **Tetrads** is the tetrahedron above: four voices, three intervals, one point per chord.
@@ -19,7 +23,7 @@ Pinned above the drawers is a switch between two apps that ask the same question
 The triangle's bottom-left corner is the unison; its bottom-right puts the whole equave in the lower interval, and its apex puts it in the upper one.
 
 ### Models
-What the ground between the just triads is measuring. Its own **Generate** press, because it is the one thing here that takes a moment — the models run in Python, in the page.
+What the ground between the just triads is measuring. Pick one and it builds itself; move any of its numbers and it rebuilds a moment after your hand comes off.
 * **Blank** — no field: the JI lattice on a plain ground
 * **Entropy** — [harmonic entropy](https://en.xen.wiki/w/Harmonic_entropy) over the triangle, from [Isoharmonics](https://github.com/richiegreene/isoharmonics). Every triad in the equave is stamped at its point with weight $1/\sqrt{ijk}$, blurred, and the Rényi entropy of the blur taken. Peaks are concordances. Spread is asked in cents rather than pixels, so raising Resolution sharpens the picture instead of changing the model.
 * **Sethares** — [sensory dissonance](https://sethares.engr.wisc.edu/consemi.html), computed from the partials of *whatever timbre the Play drawer is currently set to*. Change the wave and the surface changes with it, which is the whole claim of the model: how rough a chord sounds is a fact about its spectrum, not only about its ratios.
@@ -31,11 +35,11 @@ What the ground between the just triads is measuring. Its own **Generate** press
 * **Lattice**: Dots and Labels, and **Snap** — how close the pointer must come to a just triad before it lands on it exactly. At 0 the surface is continuous everywhere.
 
 ### Playing the triangle
-Press and drag. The three voices are struck **once**, when the pointer goes down, and every move after that leads those same running voices to the new pitch — so a drag is one chord bending through the field rather than a stream of re-attacks. **Tracking › Portamento** is how tightly they follow: at 0 the pitch sits exactly under the pointer, and a little smoothing takes the stair-stepping off a fast drag.
+In the **flat** pane, press and drag — there is nothing else to do there. In the **lifted** pane a plain drag *turns* the surface and **⇧-drag** plays it, exactly as ⇧ sounds the tetrahedron, so the modifier means one thing across the whole app. The surface is also turned by the arrow keys, kept turning by Rotate Continuously and paced by `[` and `]` — the same Motion setting, and the same rate, as the tetrahedron. It frames itself to the pane whenever it is shown, resized, or given a new model.
+
+Either way, the three voices are struck **once**, when the pointer goes down, and every move after that leads those same running voices to the new pitch — so a drag is one chord bending through the field rather than a stream of re-attacks. **Tracking › Portamento** is how tightly they follow: at 0 the pitch sits exactly under the pointer, and a little smoothing takes the stair-stepping off a fast drag.
 
 The **Pivot** — **S**, **A** or **T** — is the voice held still while the other two move, the same press Tetrads makes with S/A/T/B over four voices (a triad has no bass under its tenor). The `s`, `a` and `t` keys select it, as they do there. Switching it while a chord is sounding is silent: the incoming pivot inherits the pitch that voice already has. Space puts the next chord back on 1/1 = C3.
-
-In the 3D pane, **Shift-drag orbits** and a plain drag plays.
 
 ### Export, in Triads
 * **.svg** — the shading is an embedded image (a continuously shaded scalar field is not vector art), but everything drawn on it stays vector: contours are paths, the lattice is circles, the labels are text. Turn Fill off and Lines on and the file is vectors end to end.
@@ -51,9 +55,12 @@ In the 3D pane, **Shift-drag orbits** and a plain drag plays.
     * speed up: ] or }
     * slow dow: [ or {
 * Zoom: two-finger scroll/mouse-wheel
-* Layout/Looks: ⇧⌘L cycles the colormap; the same four are in Display › Visuals as swatches
-  * Plasma and Viridis — perceptually uniform ramps
-  * Black and White — greyscale, named for the ground the set is drawn on: on black the simplest tetrads come out brightest, on white they go to ink
+* Layout/Looks: ⇧⌘L cycles the colormap; the same eight are in Display › Visuals as swatches
+  * Plasma, Viridis and Magma — perceptually uniform ramps
+  * Blue — [Isoharmonics](https://github.com/richiegreene/isoharmonics)' own gradient, stop for stop
+  * Black and White — greyscale, named for the ground the set is drawn on: on black the simplest chords come out brightest, on white they go to ink
+  * Bronze and Porcelain — **material** layouts rather than ramps. The 3D surface is one colour and every bit of the modelling comes from light: an angled key, a soft fill, and a specular highlight that travels across the peaks as the shape turns. Height stops being redundant with colour and becomes the only thing carrying the model, so a shallow ridge a ramp would flatten into one band shows up as a ridge. The flat pane renders these as hillshading — the same light on the same surface, seen from straight above — so the two panes stay two views of one thing.
+* **Day mode** comes on by itself whenever the view is drawn on white (White, Porcelain): the rail and the drawer go light with the viewport, on Xenachord Designer's own tokens. A dark panel against a white view is a bezel with a lamp behind it.
 * (Beta Feature) Hand Tracking: ⇧⌘K 
 
 ### Settings

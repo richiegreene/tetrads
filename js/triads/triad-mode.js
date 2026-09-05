@@ -36,6 +36,7 @@ import {
     resetPivotFreq, spellTriad,
 } from './triad-audio.js';
 import { currentTimbre, currentLayoutMode } from '../globals.js';
+import { estimateWork, sayWork, WORK_BUDGET } from '../calculations/work-estimate.js';
 import { setLayoutMode } from '../calculations/tetrahedron-updater.js';
 import { onWindowResize } from '../components/three-visualizer.js';
 import { stopChord } from '../components/audio-engine.js';
@@ -215,10 +216,25 @@ export async function switchMode(mode) {
     dirty = true;
 }
 
-/** Regenerate the JI triads from the panel. Cheap; safe to call on any change. */
-export async function refreshSet() {
-    if (appMode !== 'triads') return;
+/**
+ * Regenerate the JI triads from the panel.
+ *
+ * @param {boolean} force run even if the set is over the work budget — what ↵
+ *        means. See work-estimate.js: three voices grow more slowly than four,
+ *        but a mistyped limit still asks for billions.
+ * @returns {Promise<boolean>} false if it declined, so the caller knows the
+ *        foot is already saying why.
+ */
+export async function refreshSet(force = false) {
+    if (appMode !== 'triads') return true;
     const o = readPanel();
+
+    const work = await estimateWork(o, 3);
+    if (!force && work > WORK_BUDGET) {
+        setStatus(`${sayWork(work)} triads — press ↵ to generate anyway`);
+        return false;
+    }
+
     await generateTriadSet({
         limitType: o.limitType,
         limitValue: o.limitValue,
@@ -239,12 +255,13 @@ export async function refreshSet() {
         clearField();
         invalidate({ rebuild: true });
         await generateSurface(triadModel);
-        return;
+        return true;
     }
 
     setStatus(describeSet());
     invalidate({ rebuild: true });
     rebuild3D(o, true);
+    return true;
 }
 
 /**
