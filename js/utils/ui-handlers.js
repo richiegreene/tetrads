@@ -37,7 +37,7 @@ import { createTimbrePicker, FILTERED_MIN } from '../synth/timbre.js';
 import { attachAdsrEditor } from '../synth/adsr.js';
 import { setCurrentTimbre } from '../globals.js';
 import {
-    appMode, triadModel, setTriadModel, setTriadFill, setTriadLines,
+    appMode, triadModel, triadDots, setTriadModel, setTriadFill, setTriadLines,
     setTriadContours, setTriadRelief, setTriadDots, setTriadLabels,
     setTriadSnap, setTriadGlide, heParams, smParams,
 } from '../triads/triad-state.js';
@@ -294,8 +294,17 @@ export function setupUIEventListeners() {
      * controls of the mode you are not in, retitling the drawers, laying the
      * stage out — and lets go of anything that is sounding on the way across,
      * because both modes address the same synth voices by the same ids. */
-    seg('mode-seg', (v) => { switchMode(v); });
+    /* Complexity channels size and colour a triad's dots as much as a
+       tetrad's points, but with the dots off in Triads there is nothing left
+       for them to act on — so the fieldset goes with them. */
+    const channelFieldset = $('channel-fieldset');
+    const updateChannelVisibility = () => {
+        channelFieldset.classList.toggle('mode-off', appMode === 'triads' && !triadDots);
+    };
+
+    seg('mode-seg', (v) => { switchMode(v); updateChannelVisibility(); });
     document.body.dataset.mode = 'tetrads';
+    updateChannelVisibility();
 
     /* ---------------- Complexity Measures ---------------- */
     const limitTypeSelect = $('limitType');
@@ -425,7 +434,7 @@ export function setupUIEventListeners() {
         showModelParams(v);
         scheduleApply('model');
     });
-    showModelParams('blank');
+    showModelParams(triadModel);
 
     /* The model's own numbers. Each one rebuilds the field a beat after the
        hand comes off it — a drag sends a value a frame, and the settle timer
@@ -453,7 +462,7 @@ export function setupUIEventListeners() {
         triadLines: (on) => { setTriadLines(on); invalidateTriads({ rebuild: true }); },
     });
     flagSeg('triad-lattice-seg', {
-        triadDots: (on) => { setTriadDots(on); invalidateTriads(); },
+        triadDots: (on) => { setTriadDots(on); invalidateTriads(); updateChannelVisibility(); },
         triadLabels: (on) => { setTriadLabels(on); invalidateTriads(); },
     });
 

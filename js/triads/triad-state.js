@@ -30,7 +30,7 @@ export let triadView = 'topo'; // 'topo' | '3d' | 'both'
 export function setTriadView(v) { triadView = v; }
 
 /** Which field is under the triangle. 'blank' is the JI dots on their own. */
-export let triadModel = 'blank'; // 'blank' | 'he' | 'sethares'
+export let triadModel = 'he'; // 'blank' | 'he' | 'sethares'
 export function setTriadModel(v) { triadModel = v; }
 
 /* ---- how the field is drawn ----
@@ -53,7 +53,7 @@ export function setTriadRelief(v) { triadRelief = v; }
    Isoharmonics draws dots and labels as two independent switches, and they
    are two questions: whether the lattice is marked at all, and whether each
    mark says which chord it is. */
-export let triadDots = true;
+export let triadDots = false;
 export let triadLabels = false;
 export function setTriadDots(v) { triadDots = v; }
 export function setTriadLabels(v) { triadLabels = v; }
@@ -93,7 +93,7 @@ export function setTriadPivot(v) { triadPivot = v; }
    Defaults are Isoharmonics' own where it has them, said in the units the
    panel asks for. Resolution is the grid both models are sampled onto; it is
    shared because the two are meant to be comparable. */
-export const heParams = { resolution: 420, nLimit: 300, spread: 30, alpha: 7 };
+export const heParams = { resolution: 420, nLimit: 300, spread: 17, alpha: 7 };
 export const smParams = { resolution: 420, partials: 12, step: 0.02, spread: 20, ramp: 1 };
 
 /**

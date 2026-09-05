@@ -207,6 +207,11 @@ export async function switchMode(mode) {
         await refreshSet();
         rebuild3D(readPanel(), true);
         fit3D();
+        /* refreshSet only rebuilds the JI dots; a field model still needs its
+           own pass. Without this, a non-Blank model selected before the first
+           visit to Triads sits unbuilt until some other control happens to
+           schedule one. */
+        if (triadModel !== 'blank') await generateSurface(triadModel);
     } else {
         if (layoutOnEntry !== null && layoutOnEntry !== currentLayoutMode) {
             await setLayoutMode(currentLayoutMode);

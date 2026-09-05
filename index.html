@@ -135,20 +135,20 @@
           <fieldset data-mode="triads" class="mode-off">
             <legend>Model</legend>
             <div class="seg" id="triad-model-seg">
-              <button data-v="blank" class="on"
+              <button data-v="blank"
                 title="No field: the just-intonation lattice on a plain ground">Blank</button>
-              <button data-v="he"
+              <button data-v="he" class="on"
                 title="Harmonic entropy — how many simple readings of the sonority the ear has to choose between">Entropy</button>
               <button data-v="sethares"
                 title="Sethares' sensory dissonance, computed from the partials of the timbre currently in the Play drawer">Sethares</button>
             </div>
 
-            <div id="he-params" class="mode-off">
+            <div id="he-params">
               <div class="pressrow">
                 <label for="heSpread">Spread</label>
-                <span class="pressval" id="he-spread-v">30 ¢</span>
+                <span class="pressval" id="he-spread-v">17 ¢</span>
               </div>
-              <input type="range" id="heSpread" min="4" max="80" step="1" value="30"
+              <input type="range" id="heSpread" min="4" max="80" step="1" value="17"
                 title="How wide the ear's uncertainty about a ratio is taken to be. Narrow gives sharp isolated spikes; wide merges neighbours into broad regions of concordance.">
               <div class="pressrow">
                 <label for="heNLimit">Series depth</label>
@@ -263,7 +263,7 @@
           <fieldset data-mode="triads" class="mode-off">
             <legend>Lattice</legend>
             <div class="seg" id="triad-lattice-seg">
-              <button data-v="triadDots" class="on"
+              <button data-v="triadDots"
                 title="Mark every triad the limit admits">Dots</button>
               <button data-v="triadLabels"
                 title="Name each one with its enumerated ratio">Labels</button>
@@ -296,7 +296,7 @@
                the same measure, so the two are read the same way. Independent
                rather than a choice of one — a set can be sized and coloured,
                either, or neither. -->
-          <fieldset>
+          <fieldset id="channel-fieldset">
             <legend>Complexity channels</legend>
             <div class="seg" id="channel-seg">
               <button data-v="enableSize" class="on"
