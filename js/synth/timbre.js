@@ -314,6 +314,61 @@ function waveFn(value) {
   return (u) => a(u) + frac * (b(u) - a(u));
 }
 
+/* ------------------------------------------------------------------ *
+ * The timbre as a list of partials
+ *
+ * Sethares' model of sensory dissonance is a statement about a SPECTRUM, not
+ * about an interval: how rough two notes sound is decided by how their
+ * partials fall against each other, so a saw and a sine disagree about which
+ * triads are concordant. Triads mode therefore builds its dissonance surface
+ * out of whatever the Play drawer is currently set to, and this is the reader
+ * that asks.
+ *
+ * Amplitudes come from the same SHAPES table the wavetables are built from,
+ * crossfaded at the same morph position, so the picture is of the wave you can
+ * hear rather than of a generic harmonic series.
+ *
+ * The filtered family has no closed-form spectrum — it is a feedback
+ * recursion, which is the whole reason it needs a settling pass to be drawn at
+ * all — so it is read at the wavetable shape it is named after. That is exact
+ * at the sine end, and at the buzzy end it understates the upper partials,
+ * which moves the surface slightly toward consonance rather than somewhere
+ * arbitrary.
+ * ------------------------------------------------------------------ */
+
+/** Harmonic amplitude of the nth partial, at this slider position. */
+const SHAPE_PARTIALS = [
+  (n) => (n === 1 ? 1 : 0),                                    // sine
+  (n) => (n % 2 ? 1 / (n * n) : 0),                            // triangle
+  (n) => 1 / n,                                                // sawtooth
+  (n) => (n % 2 ? 1 / n : 0),                                  // square
+];
+
+/**
+ * @param {number} value a timbre setting from either family
+ * @param {number} count how many partials to report
+ * @returns {{freq: number[], amp: number[]}} harmonic numbers and amplitudes,
+ *          normalised so the loudest partial is 1 and silent ones dropped.
+ */
+export function spectrumFor(value, count = 12) {
+  const n = Math.max(1, Math.round(count));
+  const { lo, frac } = familyOf(value) === 'filtered'
+    ? filteredMorph(value)
+    : morph(value);
+  const a = SHAPE_PARTIALS[lo];
+  const b = SHAPE_PARTIALS[Math.min(3, lo + 1)];
+
+  const freq = [];
+  const amp = [];
+  let peak = 0;
+  for (let h = 1; h <= n; h++) {
+    const v = Math.abs(a(h) + frac * (b(h) - a(h)));
+    if (v > 1e-6) { freq.push(h); amp.push(v); peak = Math.max(peak, v); }
+  }
+  if (!freq.length) return { freq: [1], amp: [1] };
+  return { freq, amp: amp.map((v) => v / peak) };
+}
+
 /** What to call a timbre setting: a shape, or how far between two of them. */
 export function timbreName(value) {
   if (familyOf(value) === 'filtered') {

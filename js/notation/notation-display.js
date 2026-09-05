@@ -707,7 +707,10 @@ export function floatToReducedFraction(value, maxDenominator = 10000) {
  */
 function getHejiNotationHtmlPerVoice(ratioString, effectiveBaseFreq) {
     const ratioParts = ratioString.split(':').map(Number);
-    if (ratioParts.length !== 4 || ratioParts.some(isNaN)) {
+    /* A chord is however many voices it has. This was `!== 4` while Tetrads
+       was the only mode; Triads sends three, and the loops below have always
+       walked the parts rather than counting on there being four of them. */
+    if (ratioParts.length < 2 || ratioParts.some(isNaN)) {
         console.error(`Invalid ratio format for HEJI: ${ratioString}`);
         return Array(4).fill('n/a');
     }
@@ -759,7 +762,10 @@ function getHejiNotationHtmlPerVoice(ratioString, effectiveBaseFreq) {
  */
 function getDeviationNotationHtmlPerVoice(ratioString, frequencies, effectiveBaseFreq) {
     const ratioParts = ratioString.split(':').map(Number);
-    if (ratioParts.length !== 4 || ratioParts.some(isNaN)) {
+    /* A chord is however many voices it has. This was `!== 4` while Tetrads
+       was the only mode; Triads sends three, and the loops below have always
+       walked the parts rather than counting on there being four of them. */
+    if (ratioParts.length < 2 || ratioParts.some(isNaN)) {
         console.error(`Invalid ratio format for Deviation: ${ratioString}`);
         return Array(4).fill('n/a');
     }
@@ -823,7 +829,7 @@ function getDeviationNotationHtmlPerVoice(ratioString, frequencies, effectiveBas
  */
 function absoluteVoiceRatios(ratioString, effectiveBaseFreq) {
     const ratioParts = ratioString.split(':').map(Number);
-    if (ratioParts.length !== 4 || ratioParts.some(isNaN)) return null;
+    if (ratioParts.length < 2 || ratioParts.some(isNaN)) return null;
 
     const baseFraction = floatToReducedFraction(effectiveBaseFreq / initialBaseFreq);
     const reference = ratioParts[0];

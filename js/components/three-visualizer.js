@@ -14,6 +14,7 @@ import {
     autoRotate, autoRotateDir, setAutoRotateDir
 } from '../globals.js';
 
+import { appMode } from '../triads/triad-state.js';
 import { initAudio, stopChord, playChord } from '../components/audio-engine.js';
 import { sendMpePressure, mpeChannels } from '../midi/midi-output.js';
 import { updateMpePressureSliderUI } from '../utils/ui-handlers.js';
@@ -161,6 +162,13 @@ function stopRampingPressure() {
 function onKeyDown(event) {
     const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 
+    /* S/A/T/B name four voices and Shift sounds the corner under the pointer:
+       both are statements about a tetrad, and in Triads mode there is none.
+       The rotation keys are let through — Motion is shared, and steers
+       whichever scene is up. */
+    if (appMode !== 'tetrads' && !arrowKeys.includes(event.key)
+        && !'[]{}'.includes(event.key)) return;
+
     /* While it is spinning, an arrow steers rather than nudges: the shape is
      * already turning, so a press that also shoved it would read as a stutter
      * rather than as a change of direction. Taken here and gone no further,
@@ -211,6 +219,7 @@ function onKeyDown(event) {
 }
 
 function onKeyUp(event) {
+    if (appMode !== 'tetrads' && !keyState.hasOwnProperty(event.key)) return;
     if (event.key === 'Shift') {
         setIsShiftHeld(false);
         const playButtonElement = document.getElementById('playButton'); 
@@ -233,6 +242,7 @@ function onKeyUp(event) {
 }
 
 function onMouseMove(event) {
+    if (appMode !== 'tetrads') return;
     if (!isShiftHeld) {
         if (currentlyHovered) {
             stopChord();
@@ -269,6 +279,7 @@ function onMouseMove(event) {
 }
 
 function onClick(event) {
+    if (appMode !== 'tetrads') return;
     if (!isClickPlayModeActive) {
         return;
     }
@@ -347,6 +358,13 @@ export function onWindowResize() {
 
 export function animate() {
     requestAnimationFrame(animate);
+
+    /* The tetrahedron keeps its own loop, but not its own claim on the GPU:
+       while Triads is up this scene is not on screen, and rendering it anyway
+       would mean two WebGL contexts drawing every frame for one visible
+       picture. The loop stays alive so that switching back is instant. */
+    if (appMode !== 'tetrads') return;
+
     if (controls) controls.update();
 
     /* One rate for both, so the Motion readout means the same thing whether

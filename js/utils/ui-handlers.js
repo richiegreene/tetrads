@@ -20,7 +20,7 @@ import {
     rotationSpeed, setRotationSpeed, autoRotate, setAutoRotate,
     notationDisplay, isClickPlayModeActive, isShiftHeld, currentLayoutMode,
     setEnableNotation, setNotationType, setEnableSlide, setSlideDuration, setPlaybackMode,
-    setSagittalPrecision, setSagittalEvo,
+    setSagittalPrecision, setSagittalEvo, setCurrentLayoutMode,
     setCurrentPivotVoiceIndex, setIsClickPlayModeActive, setCurrentlyHovered,
     setLastPlayedFrequencies, setLastPlayedRatios,
     controls,
@@ -29,10 +29,21 @@ import {
 import { stopChord, setTimbre, setAdsr } from '../components/audio-engine.js';
 import { updateTetrahedron, setLayoutMode, LAYOUT_GROUNDS } from '../calculations/tetrahedron-updater.js';
 import { exportToSVG, downloadSVG, exportToPNG, exportToCSV } from './data-export.js';
+import { saveTriadSVG, saveTriadPNG, exportTriadCSV } from '../triads/triad-export.js';
 import { plasmaColormap, viridisColormap, greyscaleColormap, greyscaleBlackColormap } from '../calculations/color-mapping.js';
 import { initMidiOutput, sendMpePressure, mpeChannels } from '../midi/midi-output.js';
 import { createTimbrePicker, FILTERED_MIN } from '../synth/timbre.js';
 import { attachAdsrEditor } from '../synth/adsr.js';
+import { setCurrentTimbre } from '../globals.js';
+import {
+    appMode, triadModel, setTriadModel, setTriadFill, setTriadLines,
+    setTriadContours, setTriadRelief, setTriadDots, setTriadLabels,
+    setTriadSnap, setTriadGlide, heParams, smParams,
+} from '../triads/triad-state.js';
+import {
+    switchMode, refreshSet, generateSurface, applyView, applyPivot,
+    invalidate as invalidateTriads, resetReference, layout as layoutStage,
+} from '../triads/triad-mode.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -132,6 +143,48 @@ function toggleSeg(segId, onToggle) {
     });
 }
 
+/**
+ * A pair of independent switches, like toggleSeg — but reporting rather than
+ * writing to a hidden checkbox.
+ *
+ * Tetrads' Size and Color are backed by real checkboxes because the update
+ * path reads the DOM. Triads' pairs are backed by module state instead, so
+ * there is nothing to keep in step and the seg simply says what changed.
+ */
+function flagSeg(segId, flags) {
+    const el = $(segId);
+    if (!el) return;
+    el.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('button');
+        if (!btn || !el.contains(btn)) return;
+        const on = !btn.classList.contains('on');
+        btn.classList.toggle('on', on);
+        flags[btn.dataset.v]?.(on);
+    });
+}
+
+/**
+ * A slider that shows its own value.
+ *
+ * Every press in the Triads drawers is a number with a unit, and a number you
+ * can only find by dragging to see what happens is not a setting you can
+ * return to. Same idiom as Motion and Slide above, factored out because
+ * Triads adds ten of them.
+ */
+function press(id, valueId, apply, format) {
+    const input = $(id);
+    const out = $(valueId);
+    if (!input) return () => {};
+    const show = () => {
+        const v = parseFloat(input.value);
+        if (out) out.textContent = format(v);
+        return v;
+    };
+    input.addEventListener('input', () => apply(show()));
+    show();
+    return show;
+}
+
 /* ---------------------------------------------------------------------
  *  Motion
  *
@@ -169,6 +222,14 @@ export function setupUIEventListeners() {
         });
     }
 
+    /* ---------------- which app you are in ----------------
+     * Pinned above the drawers. switchMode does the visible half — hiding the
+     * controls of the mode you are not in, retitling the drawers, laying the
+     * stage out — and lets go of anything that is sounding on the way across,
+     * because both modes address the same synth voices by the same ids. */
+    seg('mode-seg', (v) => { switchMode(v); });
+    document.body.dataset.mode = 'tetrads';
+
     /* ---------------- Complexity Measures ---------------- */
     const limitTypeSelect = $('limitType');
     const primeLimitOptions = $('prime-limit-options');
@@ -196,18 +257,130 @@ export function setupUIEventListeners() {
         mapsEl.append(b);
     });
 
-    /** Light one chip and take the scene to it. The seg and ⇧⌘L share this. */
+    /**
+     * Light one chip and take the scene to it. The seg and ⇧⌘L share this.
+     *
+     * The tetrahedron bakes its colours into sprites at build time, so a new
+     * ramp means regenerating the set. The triangle keeps its field as
+     * numbers and is only shaded at paint time, so the same press there is a
+     * repaint — which is the point of not asking a plotting library for a
+     * picture in the first place.
+     */
     const applyColormap = (index) => {
         for (const b of mapsEl.querySelectorAll('button')) {
             b.classList.toggle('on', b.dataset.v === String(index));
         }
-        setLayoutMode(index);
+        if (appMode === 'triads') {
+            setCurrentLayoutMode(index);
+            invalidateTriads({ rebuild: true });
+        } else {
+            setLayoutMode(index);
+        }
     };
     seg('colormap-seg', (v) => applyColormap(parseInt(v)));
 
     for (const id of ['baseSize', 'scalingFactor']) {
         $(id).addEventListener('input', () => updateButton.click());
     }
+
+    /* ---------------------------------------------------------------------
+     *  Triads
+     *
+     *  Everything below only exists while the triangle is up. Two rules keep
+     *  it honest: nothing here writes a setting the tetrahedron also reads,
+     *  and nothing here regenerates the model except the Generate press —
+     *  Pyodide runs on this thread, so a slider that recomputed a surface
+     *  would freeze the panel it was being dragged in.
+     * ------------------------------------------------------------------ */
+
+    /* ---- which model is under the triangle ----
+     * Choosing shows that model's parameters and nothing more. The field is
+     * not built until Generate, so you can set a model up before paying for
+     * it — and Blank takes effect at once, because it costs nothing. */
+    const modelParams = { he: $('he-params'), sethares: $('sm-params') };
+    const resRow = $('triad-res-row'), resInput = $('triadResolution');
+    const showModelParams = (model) => {
+        for (const [name, el] of Object.entries(modelParams)) {
+            el.classList.toggle('mode-off', name !== model);
+        }
+        const needsGrid = model !== 'blank';
+        resRow.style.display = needsGrid ? 'flex' : 'none';
+        resInput.style.display = needsGrid ? 'block' : 'none';
+        $('triad-generate').disabled = false;
+    };
+    seg('triad-model-seg', (v) => {
+        setTriadModel(v);
+        showModelParams(v);
+        if (v === 'blank') generateSurface('blank');
+    });
+    showModelParams('blank');
+
+    $('triad-generate').addEventListener('click', () => generateSurface(triadModel));
+
+    /* The model's own numbers. They change what the NEXT generate produces,
+       so none of them redraws anything on its own. */
+    press('heSpread', 'he-spread-v', (v) => { heParams.spread = v; }, (v) => `${v} ¢`);
+    press('heNLimit', 'he-n-v', (v) => { heParams.nLimit = v; }, (v) => `${v}`);
+    press('heAlpha', 'he-alpha-v', (v) => { heParams.alpha = v; }, (v) => v.toFixed(1));
+    press('smPartials', 'sm-partials-v', (v) => { smParams.partials = v; }, (v) => `${v}`);
+    press('smStep', 'sm-step-v', (v) => { smParams.step = v; }, (v) => v.toFixed(3));
+    press('smRamp', 'sm-ramp-v', (v) => { smParams.ramp = v; }, (v) => v.toFixed(1));
+    press('triadResolution', 'triad-res-v', (v) => {
+        heParams.resolution = v; smParams.resolution = v;
+    }, (v) => `${v}`);
+
+    /* ---- how the field is drawn ----
+     * These change the picture and nothing else, so they redraw immediately.
+     * Fill and Lines are independent: a field can be shaded, contoured, both,
+     * or neither with only the lattice left. */
+    seg('triad-view-seg', (v) => applyView(v));
+    flagSeg('triad-surface-seg', {
+        triadFill: (on) => { setTriadFill(on); invalidateTriads({ rebuild: true }); },
+        triadLines: (on) => { setTriadLines(on); invalidateTriads({ rebuild: true }); },
+    });
+    flagSeg('triad-lattice-seg', {
+        triadDots: (on) => { setTriadDots(on); invalidateTriads(); },
+        triadLabels: (on) => { setTriadLabels(on); invalidateTriads(); },
+    });
+
+    press('triadContours', 'contours-v',
+        (v) => { setTriadContours(v); invalidateTriads({ rebuild: true }); },
+        (v) => `${v}`);
+    press('triadRelief', 'relief-v',
+        (v) => { setTriadRelief(v / 100); invalidateTriads(); },
+        (v) => `${Math.round(v)}%`);
+    press('triadSnap', 'snap-v',
+        (v) => { setTriadSnap(v); },
+        (v) => (v > 0 ? `${Math.round(v)} px` : 'off'));
+
+    /* ---- how the three voices follow the hand ----
+     * The one control that is the whole difference from the app this mode
+     * comes from: the attack happens once, on the way down, and this is only
+     * how far behind the pointer the pitch is allowed to be afterwards. */
+    press('triadGlide', 'triad-glide-v',
+        (v) => setTriadGlide(v / 1000),
+        (v) => (v >= 1000 ? `${(v / 1000).toFixed(2)} s` : `${Math.round(v)} ms`));
+
+    /* ---- the pivot, on Tetrads' own terms ----
+     * Four voices there, three here, and everything else about it identical:
+     * the initial of the part is both the label and the key that selects it.
+     * Button and shortcut go through one function so the two cannot come to
+     * disagree about which voice is being held — the same arrangement
+     * updatePivotButtonSelection gives the tetrahedron. */
+    const TRIAD_PARTS = { S: 2, A: 1, T: 0 };
+    const triadPivotSeg = $('triad-pivot-seg');
+
+    const pickTriadPivot = (index) => {
+        for (const b of triadPivotSeg.querySelectorAll('button')) {
+            b.classList.toggle('on', b.dataset.v === String(index));
+        }
+        applyPivot(index);
+    };
+
+    triadPivotSeg.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('button');
+        if (btn && triadPivotSeg.contains(btn)) pickTriadPivot(parseInt(btn.dataset.v));
+    });
 
     /* ---------------- Motion ----------------
      * The slider and the [ ] keys are the same setting, so both go through
@@ -333,7 +506,10 @@ export function setupUIEventListeners() {
             value: S.timbre,
             line: LINE,
             axis: AXIS,
-            onInput: (v) => { S.timbre = v; setTimbre(v); },
+            /* Also recorded in globals: Triads' Sethares surface is computed
+               from the partials of whatever wave is currently loaded, so the
+               model has to be able to ask. */
+            onInput: (v) => { S.timbre = v; setTimbre(v); setCurrentTimbre(v); },
             onChange: save,
         },
     );
@@ -356,6 +532,7 @@ export function setupUIEventListeners() {
     );
 
     setTimbre(S.timbre);
+    setCurrentTimbre(S.timbre);
     setAdsr(S.adsr);
     showAdsr();
 
@@ -368,9 +545,19 @@ export function setupUIEventListeners() {
     /* ---------------- Export ----------------
      * The same three exports the key commands have always run — the buttons
      * and the shortcuts call one function each, so neither can drift. */
-    $('dl-svg').addEventListener('click', () => downloadSVG(exportToSVG(), 'tetrads-export.svg'));
-    $('dl-png').addEventListener('click', () => exportToPNG('tetrads-export.png'));
-    $('dl-csv').addEventListener('click', () => exportToCSV());
+    /* One press per format, and the mode decides what it means — a picture of
+       the tetrahedron or a picture of the triangle, the tetrads or the triads.
+       The three key commands below go through these same three functions, so
+       a shortcut and a button cannot come to save different things. */
+    const saveSVG = () => (appMode === 'triads'
+        ? saveTriadSVG() : downloadSVG(exportToSVG(), 'tetrads-export.svg'));
+    const savePNG = () => (appMode === 'triads'
+        ? saveTriadPNG() : exportToPNG('tetrads-export.png'));
+    const saveCSV = () => (appMode === 'triads' ? exportTriadCSV() : exportToCSV());
+
+    $('dl-svg').addEventListener('click', saveSVG);
+    $('dl-png').addEventListener('click', savePNG);
+    $('dl-csv').addEventListener('click', saveCSV);
 
     /* ---------------- the two presses ---------------- */
     const playButtonElement = $('playButton');
@@ -388,6 +575,11 @@ export function setupUIEventListeners() {
     }
 
     updateButton.addEventListener('click', async () => {
+        /* One press, two sets. Both modes are built from the same limit,
+           equave and complexity measure, so Update means the same thing in
+           each — regenerate what is on screen from what the drawers say. */
+        if (appMode === 'triads') { await refreshSet(); return; }
+
         const newLimitType = $('limitType').value;
         const newLimitValueInput = $('limitValue').value;
         let newLimitValue = newLimitValueInput;
@@ -430,6 +622,21 @@ export function setupUIEventListeners() {
     });
 
     /* ---------------- keyboard ---------------- */
+
+    /* S, A and T hold a voice, exactly as S/A/T/B do in Tetrads — where the
+     * tetrahedron's own key handler owns them (see three-visualizer.js, which
+     * stands down in this mode). A press while a field is focused is a letter
+     * being typed into it, not a pivot. */
+    document.addEventListener('keydown', (event) => {
+        if (appMode !== 'triads' || event.metaKey || event.ctrlKey || event.altKey) return;
+        const tag = event.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        const index = TRIAD_PARTS[event.key.toUpperCase()];
+        if (index === undefined) return;
+        event.preventDefault();
+        pickTriadPivot(index);
+    });
+
     document.addEventListener('keydown', (event) => {
         const tagName = event.target.tagName;
         if (event.key === 'Enter' && tagName !== 'INPUT' && tagName !== 'TEXTAREA') {
@@ -441,7 +648,7 @@ export function setupUIEventListeners() {
     document.addEventListener('keydown', (event) => {
         if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'E') {
             event.preventDefault();
-            downloadSVG(exportToSVG(), 'tetrads-export.svg');
+            saveSVG();
         }
         if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'L') {
             event.preventDefault();
@@ -450,13 +657,14 @@ export function setupUIEventListeners() {
         }
         if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toUpperCase() === 'S') {
             event.preventDefault();
-            exportToCSV();
+            saveCSV();
         }
         // Spacebar puts the next chord back on the fixed base frequency.
         if (event.key === ' ' && event.target.tagName !== 'INPUT') {
             event.preventDefault();
             setLastPlayedFrequencies([]);
             setLastPlayedRatios([]);
+            resetReference();
         }
     });
 }

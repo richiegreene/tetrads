@@ -60,10 +60,45 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 /* ---------- the two presses under every drawer ---------- */
 .panel-foot{flex:0 0 auto;border-top:1px solid var(--line);padding:10px 16px;
   display:grid;grid-template-columns:1fr 1fr;gap:7px;background:var(--panel)}
+/* With Play gone in Triads, Update takes the whole width rather than sitting
+   in half of a two-column grid with a gap where a button used to be. */
+body[data-mode="triads"] .panel-foot{grid-template-columns:1fr}
 
+/* ---------- which app you are in ----------
+   Pinned above the drawers and given the panel's own ground, so it reads as
+   part of the frame rather than as the first control of whichever drawer
+   happens to be open. It is not a setting of anything below it: it decides
+   what all four drawers are about. */
+.mode-switch{flex:0 0 auto;padding:11px 16px 0;background:var(--panel)}
+.mode-switch .seg{margin-bottom:11px}
+.mode-switch .seg button{padding:6px 8px;font-size:12px;font-weight:600}
+
+/* Anything belonging to the mode you are not in. Marked rather than removed,
+   so a control keeps its value across a switch and comes back set the way you
+   left it. */
+.mode-off{display:none !important}
+
+/* ---------- the stage ----------
+   Three panes and one attribute deciding which are up. Laid out rather than
+   swapped, so "Both" is the same two panes at half the width and not a third
+   arrangement that has to be kept working separately. */
 #main{flex:1;position:relative;min-width:0;display:flex;flex-direction:column}
-#container{flex:1;min-height:0;position:relative;overflow:hidden}
-#container canvas{display:block}
+#stage{flex:1;min-height:0;display:flex;gap:1px;background:var(--line)}
+#stage > *{display:none;min-width:0;position:relative;overflow:hidden}
+#stage[data-view="tetra"] #container{display:block;flex:1}
+#stage[data-view="topo"] #triad-topo-pane{display:block;flex:1}
+#stage[data-view="3d"] #triad-3d-pane{display:block;flex:1}
+#stage[data-view="both"] #triad-topo-pane,
+#stage[data-view="both"] #triad-3d-pane{display:block;flex:1 1 50%}
+#container canvas,#triad-canvas,#triad-3d-pane canvas{display:block}
+#triad-canvas{width:100%;height:100%;cursor:crosshair}
+#triad-3d-pane{cursor:crosshair}
+
+/* The generator's own line, under its press: how many triads are in the set,
+   which model is up and what it cost. The one place in the panel that reports
+   rather than sets, so it is dimmed and italic. */
+#triad-status{font-style:italic;min-height:14px}
+#triad-status.busy{color:var(--warn);font-style:normal}
 
 #loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);
   display:flex;justify-content:center;align-items:center;
@@ -212,8 +247,12 @@ input[type=range]::-moz-range-track{height:6px;background:#3d3d3d;border-radius:
 /* ---------- "All": three readings of the same four voices ---------- */
 #notation-display.notation-all{padding:10px 15px;font-size:1em}
 .notation-all-grid{display:grid;grid-template-rows:repeat(3,auto);gap:10px}
-.notation-all-row{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;text-align:center}
-.notation-all-row.ratio-row{grid-template-columns:1fr max-content 1fr max-content 1fr max-content 1fr;gap:0}
+/* One column per voice, counted from the row rather than written in: Tetrads
+   puts four cells here and Triads three, and a fixed template would leave the
+   triad readout padded out to the width of a chord it does not have. */
+.notation-all-row{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:5px;text-align:center}
+.notation-all-row.ratio-row{grid-auto-columns:min-content;justify-content:center;gap:0}
+.notation-all-row.ratio-row .ratio-cell{padding:0 4px}
 .notation-all-cell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   display:flex;justify-content:center;align-items:center}
 .colon-cell{font-size:1.2em;font-family:monospace;color:#bbb;padding:0 2px}

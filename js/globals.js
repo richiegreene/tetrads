@@ -48,6 +48,13 @@ export let notationDisplay;
 export let sagittalPrecision = 'medium';
 export let sagittalEvo = false;
 
+/* The timbre the Play drawer is currently set to, kept where anything may read
+   it. Triads' Sethares surface is a statement about a spectrum, so it has to
+   know which wave is sounding — and the panel's own store is private to
+   ui-handlers.js, which imports the modes rather than being imported by them. */
+export let currentTimbre = 1200; // filtered saw, matching the panel's default
+export function setCurrentTimbre(v) { currentTimbre = v; }
+
 export const keyState = {
     ArrowUp: false,
     ArrowDown: false,

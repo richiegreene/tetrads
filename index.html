@@ -69,6 +69,23 @@
     </div>
 
     <div class="panel-body">
+
+      <!-- ---- which app you are in ----
+           Pinned above the drawers rather than put inside one, because it is
+           not a setting of anything below it: it decides what all four drawers
+           are about. Both modes ask the same questions — what is in the set,
+           how it is drawn, how it sounds, what leaves — so the drawers stay
+           put and only the controls that are genuinely particular to one mode
+           appear or go, marked `data-mode` in the markup below. -->
+      <div class="mode-switch">
+        <div class="seg" id="mode-seg">
+          <button data-v="tetrads" class="on"
+            title="Four voices in a tetrahedron: every JI tetrad under the limit, placed by its three intervals">Tetrads</button>
+          <button data-v="triads"
+            title="Three voices in a triangle: the same limit read over two intervals, on a concordance surface you can play">Triads</button>
+        </div>
+      </div>
+
       <div class="drawers">
 
         <!-- ============ COMPLEXITY MEASURES ============
@@ -76,7 +93,7 @@
              are generated, which is why it leads: the two drawers after it
              only decide what is done with whatever this produces. -->
         <div class="drawer" data-drawer="complexity">
-          <h1>Tetrads <small>· complexity</small></h1>
+          <h1><span class="mode-name">Tetrads</span> <small>· complexity</small></h1>
 
           <fieldset>
             <legend>Limit</legend>
@@ -104,6 +121,84 @@
               title="How wide the whole tetrad may be, outer voice to outer voice. 2 is an octave.">
           </fieldset>
 
+          <!-- ---- what the triangle is a picture OF ----
+               Triads only, and it belongs in this drawer rather than in
+               Display for the same reason the limit does: it decides what is
+               there to look at. The limit above says which chords are marked;
+               this says what the ground between them is measuring.
+
+               Its own press, because it is the one thing in the app that can
+               take a second — Pyodide runs on the page's own thread, and a
+               model that regenerated on every keystroke would freeze the field
+               it was being typed into. -->
+          <fieldset data-mode="triads" class="mode-off">
+            <legend>Model</legend>
+            <div class="seg" id="triad-model-seg">
+              <button data-v="blank" class="on"
+                title="No field: the just-intonation lattice on a plain ground">Blank</button>
+              <button data-v="he"
+                title="Harmonic entropy — how many simple readings of the sonority the ear has to choose between">Entropy</button>
+              <button data-v="sethares"
+                title="Sethares' sensory dissonance, computed from the partials of the timbre currently in the Play drawer">Sethares</button>
+            </div>
+
+            <div id="he-params" class="mode-off">
+              <div class="pressrow">
+                <label for="heSpread">Spread</label>
+                <span class="pressval" id="he-spread-v">30 ¢</span>
+              </div>
+              <input type="range" id="heSpread" min="4" max="80" step="1" value="30"
+                title="How wide the ear's uncertainty about a ratio is taken to be. Narrow gives sharp isolated spikes; wide merges neighbours into broad regions of concordance.">
+              <div class="pressrow">
+                <label for="heNLimit">Series depth</label>
+                <span class="pressval" id="he-n-v">300</span>
+              </div>
+              <input type="range" id="heNLimit" min="40" max="400" step="10" value="300"
+                title="How far up the harmonic series the triads being weighed are drawn from. Lower is faster and coarser.">
+              <div class="pressrow">
+                <label for="heAlpha">Order</label>
+                <span class="pressval" id="he-alpha-v">7.0</span>
+              </div>
+              <input type="range" id="heAlpha" min="1.5" max="12" step="0.1" value="7"
+                title="The order of the Rényi entropy. Higher weights the single most likely reading more heavily.">
+            </div>
+
+            <div id="sm-params" class="mode-off">
+              <div class="pressrow">
+                <label for="smPartials">Partials</label>
+                <span class="pressval" id="sm-partials-v">12</span>
+              </div>
+              <input type="range" id="smPartials" min="1" max="32" step="1" value="12"
+                title="How many partials of the current timbre are weighed against each other. The spectrum itself comes from the Play drawer, so changing the wave changes the surface.">
+              <div class="pressrow">
+                <label for="smStep">Detail</label>
+                <span class="pressval" id="sm-step-v">0.020</span>
+              </div>
+              <input type="range" id="smStep" min="0.005" max="0.05" step="0.001" value="0.02"
+                title="How finely the interval grid is walked before it is resampled onto the triangle. Finer is slower.">
+              <div class="pressrow">
+                <label for="smRamp">Contrast</label>
+                <span class="pressval" id="sm-ramp-v">1.0</span>
+              </div>
+              <input type="range" id="smRamp" min="0.3" max="4" step="0.1" value="1"
+                title="How sharply the consonance peaks stand out of the surrounding roughness.">
+            </div>
+
+            <div class="pressrow" id="triad-res-row" style="display:none">
+              <label for="triadResolution">Resolution</label>
+              <span class="pressval" id="triad-res-v">420</span>
+            </div>
+            <input type="range" id="triadResolution" min="160" max="700" step="20" value="420"
+              style="display:none"
+              title="How many samples across the triangle the model is computed at. Shared by both models so the two are comparable.">
+
+            <div class="btns" style="margin-top:9px">
+              <button class="primary wide" id="triad-generate"
+                title="Compute the field. Held until a setting that would change it moves.">Generate Model</button>
+            </div>
+            <div class="hint" id="triad-status">no model</div>
+          </fieldset>
+
           <fieldset>
             <legend>Complexity</legend>
             <label for="complexityMethod">Measure</label>
@@ -121,27 +216,97 @@
 
         <!-- ============ DISPLAY ============ -->
         <div class="drawer hidden" data-drawer="display">
-          <h1>Tetrads <small>· display</small></h1>
+          <h1><span class="mode-name">Tetrads</span> <small>· display</small></h1>
 
-          <fieldset>
+          <!-- ---- which pane, or both ----
+               Triads only. The two views answer different questions about the
+               same field — a contour map says exactly WHERE a concordance is
+               and nothing about how deep, a lifted surface says how deep and
+               blurs where — so "Both" is not a compromise between them but the
+               reason the setting exists. One cursor drives both. -->
+          <fieldset data-mode="triads" class="mode-off">
+            <legend>View</legend>
+            <div class="seg" id="triad-view-seg">
+              <button data-v="topo" class="on"
+                title="The triangle flat: shading and contour lines, read from above">Topology</button>
+              <button data-v="3d"
+                title="The field lifted into a surface, turned with a Shift-drag">3D</button>
+              <button data-v="both"
+                title="Both at once, side by side and linked to one cursor">Both</button>
+            </div>
+
+            <!-- Independent rather than a choice of one, drawn like the
+                 Size/Color pair below for the same reason: a field can be
+                 shaded, contoured, both, or neither with only the lattice
+                 left standing. -->
+            <div class="seg" id="triad-surface-seg">
+              <button data-v="triadFill" class="on"
+                title="Shade the field through the colormap">Fill</button>
+              <button data-v="triadLines"
+                title="Draw level lines through the field">Lines</button>
+            </div>
+
+            <div class="pressrow">
+              <label for="triadContours">Levels</label>
+              <span class="pressval" id="contours-v">24</span>
+            </div>
+            <input type="range" id="triadContours" min="4" max="60" step="1" value="24"
+              title="How many contour lines the field is cut into.">
+
+            <div class="pressrow">
+              <label for="triadRelief">Relief</label>
+              <span class="pressval" id="relief-v">34%</span>
+            </div>
+            <input type="range" id="triadRelief" min="0" max="100" step="1" value="34"
+              title="How far the 3D pane lifts the field, as a fraction of the triangle's own width.">
+          </fieldset>
+
+          <!-- The lattice, on Isoharmonics' own terms: whether the just
+               triads are marked at all, and whether each mark says which
+               chord it is. Two questions, so two switches. -->
+          <fieldset data-mode="triads" class="mode-off">
+            <legend>Lattice</legend>
+            <div class="seg" id="triad-lattice-seg">
+              <button data-v="triadDots" class="on"
+                title="Mark every triad the limit admits">Dots</button>
+              <button data-v="triadLabels"
+                title="Name each one with its enumerated ratio">Labels</button>
+            </div>
+
+            <!-- Without this the dots are decoration: a pixel is a couple of
+                 cents, and a hand cannot reliably land on 4:5:6 by aim alone.
+                 With it, a drag glides freely through the field and clicks
+                 into the lattice as it passes. -->
+            <div class="pressrow">
+              <label for="triadSnap">Snap</label>
+              <span class="pressval" id="snap-v">off</span>
+            </div>
+            <input type="range" id="triadSnap" min="0" max="40" step="1" value="0"
+              title="How close the pointer must come to a just triad before it lands on it exactly. At 0 the surface is continuous everywhere.">
+          </fieldset>
+
+          <fieldset data-mode="tetrads">
             <legend>Type/Setting</legend>
             <div class="seg" id="layout-seg">
               <button data-v="points" class="on" title="One point per tetrad">Points</button>
               <button data-v="labels" title="The enumerated ratio itself, in place of the point">Labels</button>
             </div>
             <input type="hidden" id="layoutDisplay" value="points">
+          </fieldset>
 
-            <!-- ---- what complexity is allowed to say ----
-                 Drawn as the row above it, because they are the same kind of
-                 press on the same kind of thing — but these two are
-                 independent rather than a choice of one: a set can be sized
-                 and coloured, either, or neither. The checkboxes behind them
-                 are what the rest of the app reads. -->
+          <!-- ---- what complexity is allowed to say ----
+               Shared, and the same press in both modes: complexity sizes and
+               colours a point in the tetrahedron and a dot in the triangle by
+               the same measure, so the two are read the same way. Independent
+               rather than a choice of one — a set can be sized and coloured,
+               either, or neither. -->
+          <fieldset>
+            <legend>Complexity channels</legend>
             <div class="seg" id="channel-seg">
               <button data-v="enableSize" class="on"
-                title="Let complexity set how big each tetrad is drawn">Size</button>
+                title="Let complexity set how big each chord is drawn">Size</button>
               <button data-v="enableColor" class="on"
-                title="Let complexity set each tetrad's colour, through the colormap">Color</button>
+                title="Let complexity set each chord's colour, through the colormap">Color</button>
             </div>
             <input type="checkbox" id="enableSize" checked hidden>
             <input type="checkbox" id="enableColor" checked hidden>
@@ -234,7 +399,7 @@
 
         <!-- ============ PLAY ============ -->
         <div class="drawer hidden" data-drawer="play">
-          <h1>Tetrads <small>· play</small></h1>
+          <h1><span class="mode-name">Tetrads</span> <small>· play</small></h1>
 
           <fieldset>
             <legend>Output</legend>
@@ -265,9 +430,9 @@
                while it happens. -->
           <fieldset>
             <legend>Voice Leading</legend>
-            <label class="vis">
+            <label class="vis" data-mode="tetrads">
               <input type="checkbox" id="enableSlide" checked>Portamento</label>
-            <div id="slide-duration-row">
+            <div id="slide-duration-row" data-mode="tetrads">
               <div class="pressrow">
                 <label for="slideDuration">Time</label>
                 <span class="pressval" id="slide-v">0.25 s</span>
@@ -276,13 +441,50 @@
                 title="How long the four voices take to reach the next tetrad. At 0 they arrive at once.">
             </div>
 
-            <div class="tune-h">Pivot</div>
-            <div class="seg" id="pivot-seg">
+            <div class="tune-h" data-mode="tetrads">Pivot</div>
+            <div class="seg" id="pivot-seg" data-mode="tetrads">
               <button class="pivot-button" data-pivot-index="3" title="Soprano held">S</button>
               <button class="pivot-button" data-pivot-index="2" title="Alto held">A</button>
               <button class="pivot-button" data-pivot-index="1" title="Tenor held">T</button>
               <button class="pivot-button on" data-pivot-index="0" title="Bass held">B</button>
             </div>
+
+            <!-- The same press as the row above it, over three voices instead
+                 of four: highest at the left, the held one lit, and the
+                 initial of the part on the key that selects it. A triad has no
+                 bass under its tenor, so the row is S A T and B is simply not
+                 one of the parts — which is why this is a second row rather
+                 than the four-button one with a button greyed out.
+
+                 Switching while a chord is sounding is silent: the incoming
+                 pivot inherits the pitch that voice already has, and only
+                 later drags are measured from it. -->
+            <div class="tune-h mode-off" data-mode="triads">Pivot</div>
+            <div class="seg mode-off" id="triad-pivot-seg" data-mode="triads">
+              <button data-v="2" title="Soprano held (S)">S</button>
+              <button data-v="1" title="Alto held (A)">A</button>
+              <button data-v="0" class="on" title="Tenor held (T)">T</button>
+            </div>
+          </fieldset>
+
+          <!-- ---- following the hand ----
+               Triads only, and the whole difference from the app this mode
+               comes from. There, every pointer move builds a new buffer and
+               crossfades to it, so a drag is a stream of re-attacks with half a
+               second of overlap between each. Here the three voices are struck
+               once, on the way down, and every move after that leads those same
+               running voices to the new pitch. Tracking is how tightly they
+               follow: at 0 the pitch is exactly under the pointer, and a little
+               smoothing takes the stair-stepping off a fast drag without the
+               hand feeling ahead of the sound. -->
+          <fieldset data-mode="triads" class="mode-off">
+            <legend>Tracking</legend>
+            <div class="pressrow">
+              <label for="triadGlide">Portamento</label>
+              <span class="pressval" id="triad-glide-v">45 ms</span>
+            </div>
+            <input type="range" id="triadGlide" min="0" max="400" step="1" value="45"
+              title="How long a voice takes to reach the pitch under the pointer. The attack happens once, when the pointer goes down; this is only how the three voices travel afterwards.">
           </fieldset>
 
           <!-- Xenachord's Play drawer, on the same terms: the family list and
@@ -315,7 +517,7 @@
              Everything that leaves the app, in the two forms it can leave in:
              as a picture of the set, and as the set itself. -->
         <div class="drawer hidden" data-drawer="export">
-          <h1>Tetrads <small>· export</small></h1>
+          <h1><span class="mode-name">Tetrads</span> <small>· export</small></h1>
 
           <!-- The picture is the VIEW, not the whole tetrahedron: what is
                exported is what the camera is looking at, at the size the
@@ -335,7 +537,7 @@
             <legend>Data</legend>
             <div class="btns">
               <button class="wide" id="dl-csv"
-                title="Every tetrad in the set: the enumerated chord, its notes as ratios, its cents, and its complexity under the chosen measure — sorted simplest first. (⇧⌘S)">⬇︎ Save Chords (.csv)</button>
+                title="Every chord in the set — tetrads or triads, whichever mode is up: the enumerated chord, its notes as ratios, its cents, and its complexity under the chosen measure, sorted simplest first. (⇧⌘S)">⬇︎ Save Chords (.csv)</button>
             </div>
           </fieldset>
         </div>
@@ -347,14 +549,28 @@
            inside any of them. Play is beside it because the two are the pair
            you alternate between once the panel is set. -->
       <div class="panel-foot">
-        <button id="playButton" title="Sound the tetrad under the pointer (hold ⇧)">Play (<span class="symbol">⇧</span>)</button>
+        <!-- Tetrads only. In Triads the gesture IS the play mode: the pointer
+             goes down on the triangle and three voices come with it, so a
+             latch that says "now clicks make sound" would be describing
+             something that is already true. -->
+        <button id="playButton" data-mode="tetrads"
+          title="Sound the tetrad under the pointer (hold ⇧)">Play (<span class="symbol">⇧</span>)</button>
         <button id="updateButton" class="primary" title="Regenerate the set (↵)">Update (<span class="symbol">↵</span>)</button>
       </div>
     </div>
   </aside>
 
   <div id="main">
-    <div id="container"></div>
+    <!-- ---- the stage ----
+         Three panes, and `data-view` on the stage says which are up: the
+         tetrahedron, the flat triangle, the lifted surface, or the last two
+         side by side. Laid out rather than swapped so that "Both" is the same
+         two panes at half the width, not a third thing to keep working. -->
+    <div id="stage" data-view="tetra">
+      <div id="container"></div>
+      <div id="triad-topo-pane"><canvas id="triad-canvas"></canvas></div>
+      <div id="triad-3d-pane"></div>
+    </div>
     <div id="notation-display"></div>
   </div>
 </div>

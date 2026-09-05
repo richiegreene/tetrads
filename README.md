@@ -1,13 +1,46 @@
 # Tetrads
 ## https://tetrads.richiegreene.com/
 
-Interactive tetrahedron of JI tetrads with the ability to scale via harmonic complexity models.  
+Interactive tetrahedron of JI tetrads — and a playable triangle of JI triads — with the ability to scale via harmonic complexity models.  
 Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of Sintel's [triangle](https://sintel.website/posts/triangle.html). While drawing inspiration from tetradic [harmonic entropy](https://en.xen.wiki/w/Harmonic_entropy) (4HE) this does not render 3D gaussian (multivariate normal) distributions, which are pivotal when considering HE.
 
 ## Demo
 ![display demo](https://github.com/user-attachments/assets/4247d114-28db-4907-9da5-dc5b3bece989)
 
 The panel is a side rail of four modes — Complexity Measures, Display, Play and Export — borrowed, along with the synth and the JI notation engines, from [Xenachord Designer](https://github.com/richiegreene/xenachord). Pressing the mode you are already in shuts the drawer and gives the width back to the view.
+
+## Tetrads / Triads
+Pinned above the drawers is a switch between two apps that ask the same questions of different chords.
+
+**Tetrads** is the tetrahedron above: four voices, three intervals, one point per chord.
+
+**Triads** is three voices and two intervals, which fit in a triangle — so the chords can be laid over a continuous *concordance surface* and played by dragging across it. Both modes are built from the same Limit, Equave and Complexity Measure, so a 13-limit means one thing in this app, and both are written out by the same notation engines.
+
+The triangle's bottom-left corner is the unison; its bottom-right puts the whole equave in the lower interval, and its apex puts it in the upper one.
+
+### Models
+What the ground between the just triads is measuring. Its own **Generate** press, because it is the one thing here that takes a moment — the models run in Python, in the page.
+* **Blank** — no field: the JI lattice on a plain ground
+* **Entropy** — [harmonic entropy](https://en.xen.wiki/w/Harmonic_entropy) over the triangle, from [Isoharmonics](https://github.com/richiegreene/isoharmonics). Every triad in the equave is stamped at its point with weight $1/\sqrt{ijk}$, blurred, and the Rényi entropy of the blur taken. Peaks are concordances. Spread is asked in cents rather than pixels, so raising Resolution sharpens the picture instead of changing the model.
+* **Sethares** — [sensory dissonance](https://sethares.engr.wisc.edu/consemi.html), computed from the partials of *whatever timbre the Play drawer is currently set to*. Change the wave and the surface changes with it, which is the whole claim of the model: how rough a chord sounds is a fact about its spectrum, not only about its ratios.
+
+### Display
+* **View**: Topology, 3D, or **Both** — side by side and linked to one cursor. The contour map says exactly *where* a concordance is and nothing about how deep; the lifted surface says how deep and blurs where. Drag either and the other follows.
+* **Fill** and **Lines** are independent: a field can be shaded, contoured, both, or neither with only the lattice left.
+* **Relief** — how far the 3D pane lifts the field.
+* **Lattice**: Dots and Labels, and **Snap** — how close the pointer must come to a just triad before it lands on it exactly. At 0 the surface is continuous everywhere.
+
+### Playing the triangle
+Press and drag. The three voices are struck **once**, when the pointer goes down, and every move after that leads those same running voices to the new pitch — so a drag is one chord bending through the field rather than a stream of re-attacks. **Tracking › Portamento** is how tightly they follow: at 0 the pitch sits exactly under the pointer, and a little smoothing takes the stair-stepping off a fast drag.
+
+The **Pivot** — **S**, **A** or **T** — is the voice held still while the other two move, the same press Tetrads makes with S/A/T/B over four voices (a triad has no bass under its tenor). The `s`, `a` and `t` keys select it, as they do there. Switching it while a chord is sounding is silent: the incoming pivot inherits the pitch that voice already has. Space puts the next chord back on 1/1 = C3.
+
+In the 3D pane, **Shift-drag orbits** and a plain drag plays.
+
+### Export, in Triads
+* **.svg** — the shading is an embedded image (a continuously shaded scalar field is not vector art), but everything drawn on it stays vector: contours are paths, the lattice is circles, the labels are text. Turn Fill off and Lines on and the file is vectors end to end.
+* **.png** — the flat pane rasterised from that SVG at up to 4x; the lifted pane straight from the view.
+* **.csv** — the triads, with a column for the current model's value at each one.
 
 ## Display 
 ### Controls

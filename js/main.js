@@ -12,6 +12,8 @@ import { initAudio, stopChord, playChord } from './components/audio-engine.js';
 import { updateTetrahedron, cycleLayoutMode } from './calculations/tetrahedron-updater.js';
 import { setupUIEventListeners } from './utils/ui-handlers.js';
 import { initMidiOutput } from './midi/midi-output.js';
+import { TRIADS_PY } from './triads/triad-python.js';
+import { initTriads } from './triads/triad-mode.js';
 
 // --- MAIN PYODIDE INITIALIZATION ---
 async function initPyodide() {
@@ -326,6 +328,12 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
     pyodide.FS.writeFile("python/theory/calculations.py", calculations_py_content, { encoding: "utf8" });
     pyodide.FS.writeFile("python/theory/__init__.py", "", { encoding: "utf8" });
 
+    /* Triads mode's generator, written beside the tetrahedron's and importing
+       the same theory/calculations.py rather than carrying its own copy of the
+       limit tests — so a 13-limit means one thing in this app whether it is
+       being read over three intervals or two. */
+    pyodide.FS.writeFile("python/triads_generator.py", TRIADS_PY, { encoding: "utf8" });
+
     pyodide.runPython("import sys; sys.path.append('./python')");
     await pyodide.loadPackage("micropip");
     console.log("Micropip loaded.");
@@ -335,6 +343,7 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
 
     initThreeJS();
     animate();
+    initTriads();
 
     const limitType = document.getElementById('limitType').value;
     const limitValueInput = document.getElementById('limitValue').value;
