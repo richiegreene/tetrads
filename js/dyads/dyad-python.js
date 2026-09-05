@@ -11,8 +11,6 @@
  *                             modes are built from — theory/calculations.py is
  *                             imported rather than reimplemented, so a limit
  *                             means the same thing in all three.
- *   rated_complexity          the same six discrete measures, at the ratios
- *                             the published ratings happen to name.
  *   harmonic_entropy_curve    the triangle's entropy model, one dimension down.
  *   sethares_curve            sensory dissonance against the loaded timbre.
  *   tenney_curve              the Tenney norm made continuous.
@@ -22,9 +20,8 @@
  * Tenney, Weil, Wilson, Euler, Benedetti, Arithmetic — and every one of them
  * is defined only AT the ratios. They say nothing about 351 cents, which is
  * not any ratio, so they can stand a lattice up and cannot draw a curve. That
- * is the mode's first setting, and rated_complexity is what lets those six be
- * judged against listeners alongside the other three. The other three are the
- * families that are defined EVERYWHERE:
+ * is the mode's first setting. The other three are the families that are
+ * defined EVERYWHERE:
  *
  *   PROBABILISTIC   harmonic entropy: how many simple readings the ear has to
  *                   choose between at this interval.
@@ -33,11 +30,10 @@
  *   ARITHMETIC      the Tenney norm with a parabola let down from every ratio,
  *                   so the space between ratios has a value too. This is the
  *                   continuous extension the published comparison found fits
- *                   listeners better than any of the discrete measures — see
- *                   dyad-data.js, which is what it is fitted against.
+ *                   listeners better than any of the discrete measures.
  *
  * Nothing here draws. Each model returns the raw curve over a fixed grid and
- * everything else — the colouring, the fitting, the export — is done in JS,
+ * everything else — the colouring, the drawing, the export — is done in JS,
  * for the same reason the triangle's models do: a picture cannot be
  * recoloured, refitted or emitted as vectors without being computed again.
  * ------------------------------------------------------------------ */
@@ -118,24 +114,6 @@ def generate_dyads(limit_value, axis_ratio, limit_mode="odd", max_exponent=3,
             complexity = calculate_complexity(complexity_measure, interval)
             out.append((cents(j / i), "%d:%d" % (i, j), complexity))
 
-    return out
-
-
-def rated_complexity(numerators, denominators, measure):
-    """One of the six discrete measures, at a list of ratios the app did not
-    generate.
-
-    The published ratings are thirty-eight ratios chosen by somebody else, and
-    several of them — 27/14, 33/32 — are outside any limit this app is likely
-    to be set to, so their complexity cannot be read off the lattice. It is
-    computed here rather than in JS because calculate_complexity is this app's
-    ONE statement of what Tenney, Weil, Wilson, Euler, Benedetti and Arithmetic
-    are, and a second copy of six definitions in another language is six more
-    things to get wrong.
-    """
-    out = []
-    for p, q in zip(list(numerators), list(denominators)):
-        out.append(float(calculate_complexity(measure, Fraction(int(p), int(q)))))
     return out
 
 
@@ -297,8 +275,9 @@ def tenney_curve(axis_ratio, width=1600, depth=50, softness=20.0):
     decides whether the curve is a row of spikes or a smooth landscape.
 
     Negated on the way out, so that a simple interval is a PEAK like the other
-    three models rather than a trough. The fit against listeners in
-    dyad-data.js is affine and would not care, but the plot would.
+    three models rather than a trough — which is the sign every measure on
+    this plot is stated in, so that "concordant is high" is true of all of
+    them and Relief can scale them all about one middle.
     """
     ax = float(axis_ratio)
     width = max(64, int(width))

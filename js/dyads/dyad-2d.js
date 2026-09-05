@@ -14,27 +14,22 @@
  * interval are the same point counted three ways and the exporter can emit the
  * whole picture as real vectors.
  *
- * THE VERTICAL AXIS IS TWO DIFFERENT AXES.  With Ratings off it is the model's
- * own range, normalised, and the only honest thing to say about it is which
- * end is which. With Ratings on it is a consonance rating from 0 to 1: the
- * curve is put through the weighted fit in dyad-data.js and drawn as the
- * model's PREDICTION, against the ratings themselves with the spread the
- * listeners produced. That is the one arrangement in which harmonic entropy,
- * sensory dissonance and the Tenney norm can be compared rather than merely
- * looked at in turn.
+ * TWO WAYS TO READ IT, AND THE PANEL DECIDES WHICH.  With Grid on it is a
+ * plot: a ruler in cents, a marked vertical axis, a frame. With Grid off all
+ * of that goes, the margins it was being kept for go with it, and what is left
+ * is the measure drawn across the pane. The second is not a degraded first —
+ * the shape of a concordance curve is legible without a single number on it,
+ * and once you know what the axes are the furniture is only in the way.
  * ------------------------------------------------------------------ */
 
 import {
     fitPlot, axisCents, centsTicks, valueAtCents, normalise,
 } from './dyad-geometry.js';
 import {
-    dyadFill, dyadLine, dyadDots, dyadLabels, dyadSnap, dyadRatings,
-    dyadSpan, cursor,
+    dyadFill, dyadLine, dyadLineWidth, dyadRelief, dyadGrid,
+    dyadDots, dyadLabels, dyadSnap, dyadSpan, cursor,
 } from './dyad-state.js';
-import {
-    currentDyads, currentCurve, complexityRange, modelName, ratedComplexity,
-} from './dyad-curve.js';
-import { RATINGS, fitRatings } from './dyad-data.js';
+import { currentDyads, currentCurve, complexityRange, modelName } from './dyad-curve.js';
 import { currentLayoutMode } from '../globals.js';
 import { colormapAt, isLightGround, groundCss } from '../calculations/color-mapping.js';
 
@@ -77,17 +72,20 @@ export function resize() {
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    fit = fitPlot(w, h);
+    /* The left margin exists for the axis title and the tick labels and the
+       bottom one for the ruler. With the grid off there is nothing in either,
+       so the plot takes the room back rather than sitting inset inside empty
+       borders — which is most of what makes the bare render look bare. */
+    fit = dyadGrid ? fitPlot(w, h)
+                   : fitPlot(w, h, { padL: 18, padR: 18, padT: 18, padB: 18 });
 }
 
 /* ---------------------------------------------------------------------
- *  Which vertical axis is in force
+ *  The vertical axis
  *
  *  Worked out once per paint and handed to everything that draws, so the
- *  curve, the lattice stems, the ratings and the cursor cannot come to
- *  disagree about what a height means.
- *
- *  There are two independent questions here and four answers between them.
+ *  curve, the lattice stems and the cursor cannot come to disagree about what
+ *  a height means.
  *
  *  WHAT IS BEING MEASURED. Either one of the three continuous models, which
  *  has a value at every point of the axis and is therefore drawn as a curve;
@@ -96,38 +94,23 @@ export function resize() {
  *  else. Both are real answers to "how complex is this interval", and putting
  *  them on the same axis under the same switch is the point of the mode.
  *
- *  WHAT THE HEIGHT MEANS. With Ratings off it is the measure's own range,
- *  normalised, and the only honest thing to say about it is which end is
- *  which — the units of harmonic entropy and of the Wilson norm have no
- *  relation whatever. With Ratings on it is a consonance rating from 0 to 1:
- *  whichever measure is up is put through the weighted fit in dyad-data.js and
- *  drawn as its PREDICTION, against the ratings themselves with the spread the
- *  listeners produced. That is the one arrangement in which all nine measures
- *  can be compared rather than merely looked at in turn.
+ *  VALUE AND HEIGHT ARE NOT THE SAME NUMBER. `at` and `ofDyad` give the
+ *  measure normalised across its own range, which is what the COLOUR is taken
+ *  from; `lift` turns that into a height in the box, which is what the
+ *  GEOMETRY is placed by. Relief is the difference between them, and keeping
+ *  them apart is what lets a settled curve stay coloured by the values it
+ *  actually has rather than by how much of the page it was given.
  * ------------------------------------------------------------------ */
 
 /**
- * @returns {{curved: boolean, fitted: boolean, at: (c:number)=>number,
- *            ofDyad: (d:object)=>number, place: (v:number)=>number,
- *            lo: number, hi: number, title: string, ticksInside: boolean,
- *            ticks: Array<[number,string]>, r2: number|null, n: number}}
- *   `at` is the curve's height 0..1 at an interval, NaN when there is no
- *   curve; `ofDyad` is the height of one lattice mark, which is defined in
- *   every case.
+ * @returns {{curved: boolean, at: (c:number)=>number, ofDyad: (d:object)=>number,
+ *            lift: (v:number)=>number, floor: number, title: string,
+ *            ticks: Array<[number,string]>}}
  */
 export function verticalAxis(o) {
     const curve = currentCurve();
     const curved = !!curve;
     const C = axisCents(o.equaveRatio, dyadSpan);
-
-    /* The measure at each rated ratio, which is what the fit is made from.
-       A curve is read off at the ratio's cents; a discrete measure is looked
-       up in the table Python computed from the ratios' own numbers, because
-       several of them are outside the current limit and have no lattice mark
-       to be read off. */
-    const ratedValues = curved
-        ? RATINGS.map((r) => (r.cents > C + 1e-6 ? NaN : valueAtCents(curve, r.cents, C)))
-        : ratedComplexity(o.complexityMethod);
 
     const range = complexityRange();
     const norm = (x) => {
@@ -135,55 +118,33 @@ export function verticalAxis(o) {
         return span > 1e-12 ? (x - range.lo) / span : 0.5;
     };
 
-    if (dyadRatings) {
-        const model = fitRatings(ratedValues, C);
-        /* The rating axis is drawn a little beyond 0 and 1: a fitted line is
-           not obliged to stay inside the range it was fitted to, and clipping
-           the prediction where it leaves would hide exactly the places the
-           measure is worst. */
-        const lo = -0.08, hi = 1.08;
-        const place = (v) => (v - lo) / (hi - lo);
-        const predict = (x) => (model && x === x ? place(model.a + model.b * x) : NaN);
-        return {
-            curved,
-            fitted: !!model,
-            at: (c) => (curved ? predict(valueAtCents(curve, c, C)) : NaN),
-            ofDyad: (d) => (curved ? predict(valueAtCents(curve, d.c, C)) : predict(d.complexity)),
-            place,
-            lo, hi,
-            title: 'consonance rating',
-            ticks: [[place(0), '0'], [place(0.5), '.5'], [place(1), '1']],
-            ticksInside: false,
-            r2: model ? model.r2 : null,
-            n: model ? model.n : 0,
-        };
-    }
+    /* Scaled about the middle of the box rather than about its floor, so that
+       turning Relief down settles the picture toward a straight line across
+       the centre instead of crushing it into the bottom edge. */
+    const lift = (v) => 0.5 + (v - 0.5) * dyadRelief;
 
-    /* The measure's own range. A discrete measure counts UPWARD with
-       complexity, so it is inverted here to keep "concordant is high" true of
-       every axis this plot can be set to — the three continuous models already
-       return it that way round. */
-    const title = curved ? modelName() : `${o.complexityMethod} norm`;
     return {
         curved,
-        fitted: false,
         at: (c) => (curved ? normalise(curve, valueAtCents(curve, c, C)) : NaN),
+        /* A discrete measure counts UPWARD with complexity, so it is inverted
+           here to keep "concordant is high" true of every axis this plot can
+           be set to — the three continuous models already return it that way
+           round. The 0.06 keeps the very simplest mark off the floor line. */
         ofDyad: (d) => (curved
             ? normalise(curve, valueAtCents(curve, d.c, C))
             : 0.06 + 0.9 * (1 - norm(d.complexity))),
-        place: (v) => v,
-        lo: 0, hi: 1,
-        title,
+        lift,
+        /* Where the measure's zero sits once Relief has had its way. The
+           stems stand on this and the fill closes to it, so the whole picture
+           shrinks together rather than the curve alone. */
+        floor: lift(0),
+        title: curved ? modelName() : `${o.complexityMethod} norm`,
         /* The units are the measure's own and mean nothing next to another
            measure's, so the axis is marked as a DIRECTION rather than as a
            quantity — and a word is too wide for the margin a number fits in,
-           so these two are set inside the box. The Ratings overlay is where
-           numbers become comparable, and where the margin is wanted again. */
+           so these are set inside the box. */
         ticks: curved ? [[0, 'discordant'], [1, 'concordant']]
                       : [[0, 'complex'], [1, 'simple']],
-        ticksInside: true,
-        r2: null,
-        n: 0,
     };
 }
 
@@ -212,14 +173,21 @@ export function draw(o) {
     const C = axisCents(o.equaveRatio, dyadSpan);
     const axis = verticalAxis(o);
 
-    drawFrame(o, C, axis);
+    if (dyadGrid) drawFrame(o, C, axis);
     drawCurve(o, C, axis);
     drawLattice(o, C, axis);
-    if (dyadRatings) drawRatings(o, C, axis);
     drawCursor(o, C, axis);
 }
 
 const ink = (a) => (onLight() ? `rgba(0,0,0,${a})` : `rgba(255,255,255,${a})`);
+
+/** Whether the two ends of the axis are far enough apart to be read as two. */
+export function marksAreLegible(axis, fitted = fit) {
+    if (!fitted) return false;
+    const [, top] = fitted.toPx(0, axis.lift(1));
+    const [, bottom] = fitted.toPx(0, axis.lift(0));
+    return Math.abs(bottom - top) >= 34;
+}
 
 /** The box, the cents ruler along the bottom, and whatever the y axis is. */
 function drawFrame(o, C, axis) {
@@ -249,25 +217,25 @@ function drawFrame(o, C, axis) {
     ctx.fillStyle = ink(0.45);
     ctx.fillText('cents', (x0 + x1) / 2, y0 + 24);
 
-    /* The horizontals are the y axis's own marks, which is why they come from
-       it rather than being counted here: an axis of ratings has real numbers
-       on it and an axis of model units has only a direction. */
-    ctx.textAlign = axis.ticksInside ? 'left' : 'right';
-    ctx.textBaseline = 'middle';
-    for (const [v, label] of axis.ticks) {
-        const [, y] = fit.toPx(0, v);
-        if (y < y1 - 1 || y > y0 + 1) continue;
-        if (!axis.ticksInside) {
-            ctx.strokeStyle = ink(0.12);
-            ctx.beginPath();
-            ctx.moveTo(x0, y); ctx.lineTo(x1, y);
-            ctx.stroke();
+    /* Marked where the measure's ends actually ARE, which Relief moves. A
+       "concordant" pinned to the top of the box while the curve had settled
+       into the middle would be labelling the frame rather than the data.
+       Which means that at low relief the two ends converge, and below the
+       height of the words themselves they stop being two marks and become one
+       illegible one — so they are dropped rather than overprinted. The axis
+       title up the left edge still says what the height is. */
+    if (marksAreLegible(axis)) {
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        for (const [v, label] of axis.ticks) {
+            const [, y] = fit.toPx(0, axis.lift(v));
+            if (y < y1 - 1 || y > y0 + 1) continue;
+            ctx.fillStyle = ink(0.55);
+            /* Nudged off whichever edge it is nearest, so a word set inside
+               the box at the very top or the bottom is not half over the
+               frame. */
+            ctx.fillText(label, x0 + 6, y + (v > 0.5 ? 9 : -9));
         }
-        ctx.fillStyle = ink(0.55);
-        /* Nudged off the edge it is nearest, so a word set inside the box at
-           the very top or the very bottom is not half over the frame. */
-        const inset = axis.ticksInside ? (v > 0.5 ? 9 : -9) : 0;
-        ctx.fillText(label, axis.ticksInside ? x0 + 6 : x0 - 7, y + inset);
     }
 
     ctx.strokeStyle = ink(onLight() ? 0.45 : 0.35);
@@ -299,6 +267,7 @@ function drawCurve(o, C, axis) {
     if (!curve) return;
     const { x0, x1, y0, y1 } = fit;
     const map = colormapFn();
+    const yFloor = y0 - axis.floor * (y0 - y1);
 
     /* One sample per pixel column. The model is computed at 1600 samples and
        the pane is rarely wider than that, so this is the finer of the two
@@ -308,8 +277,12 @@ function drawCurve(o, C, axis) {
     const vs = new Float64Array(cols);
     for (let i = 0; i < cols; i++) {
         const t = i / (cols - 1);
+        /* The VALUE, kept as it is — the colour is a statement about the
+           measure and must not change because the picture was made smaller. */
         vs[i] = axis.at(t * C);
-        ys[i] = y0 - Math.min(1, Math.max(0, vs[i])) * (y0 - y1);
+        /* The HEIGHT, which is the value after Relief has had its way. */
+        const h = axis.lift(Math.min(1, Math.max(0, vs[i] === vs[i] ? vs[i] : 0)));
+        ys[i] = y0 - h * (y0 - y1);
     }
 
     const path = new Path2D();
@@ -317,9 +290,12 @@ function drawCurve(o, C, axis) {
     for (let i = 1; i < cols; i++) path.lineTo(x0 + i, ys[i]);
 
     if (dyadFill) {
+        /* Closed to the lifted floor rather than to the bottom of the box, so
+           a settled curve is a thin band about the centre rather than a full
+           height of colour with a flat top. */
         const area = new Path2D(path);
-        area.lineTo(x1, y0);
-        area.lineTo(x0, y0);
+        area.lineTo(x1, yFloor);
+        area.lineTo(x0, yFloor);
         area.closePath();
         ctx.save();
         ctx.clip(area);
@@ -337,8 +313,9 @@ function drawCurve(o, C, axis) {
 
     if (dyadLine) {
         ctx.strokeStyle = dyadFill ? ink(0.75) : rgbOf(map(0.72));
-        ctx.lineWidth = dyadFill ? 1.2 : 1.8;
+        ctx.lineWidth = dyadLineWidth;
         ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
         ctx.stroke(path);
     }
 }
@@ -383,11 +360,13 @@ function drawLattice(o, C, axis) {
     /* The axis knows how tall a mark is under every setting — read off a
        curve, or taken from the mark's own complexity when the measure is one
        of the discrete six. A mark whose height cannot be worked out at all
-       stands on the floor rather than vanishing. */
+       stands on the floor rather than vanishing. Lifted, like everything else
+       vertical, so the lattice settles with the curve it is stemmed to. */
     const heightOf = (d) => {
         const v = axis.ofDyad(d);
-        return v === v ? Math.min(1, Math.max(0, v)) : 0.06;
+        return axis.lift(v === v ? Math.min(1, Math.max(0, v)) : 0.06);
     };
+    const yFloor = y0 - axis.floor * (y0 - y1);
 
     const placed = [];
     const simplestFirst = dyads.slice().sort((a, b) => a.complexity - b.complexity);
@@ -414,7 +393,7 @@ function drawLattice(o, C, axis) {
             ctx.globalAlpha = 0.5;
             ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.moveTo(x, y0); ctx.lineTo(x, y);
+            ctx.moveTo(x, yFloor); ctx.lineTo(x, y);
             ctx.stroke();
             ctx.globalAlpha = 1;
             ctx.fillStyle = color;
@@ -450,63 +429,38 @@ function drawLattice(o, C, axis) {
 }
 
 /**
- * The measured listeners.
- *
- * A point at the mean and a bar at one standard deviation either side, in the
- * ink colour rather than through the colormap: these are not a value the
- * colormap is a scale of, they are the thing the whole plot is being judged
- * against, and they must not read as one more layer of the model.
- */
-function drawRatings(o, C, axis) {
-    const { y0, y1 } = fit;
-    const at = (v) => y0 - axis.place(v) * (y0 - y1);
-
-    /* Drawn twice: a wider stroke in the ground colour, then the mark itself
-       over it. The fill under these runs the whole colormap — a point can land
-       on hard yellow or on deep indigo — and a single-coloured mark is
-       illegible against one end or the other whichever colour it is given. The
-       halo makes it legible against both without tinting it, which matters
-       because these are the one thing on the plot that is NOT a value the
-       colormap is a scale of. */
-    const bars = [];
-    for (const r of RATINGS) {
-        if (r.cents > C + 1e-6) continue;
-        const [x] = fit.toPx(r.cents / C, 0);
-        const yhi = at(Math.min(axis.hi, r.mean + r.sd));
-        const ylo = at(Math.max(axis.lo, r.mean - r.sd));
-        bars.push([x, at(r.mean), ylo, yhi]);
-    }
-
-    for (const pass of [0, 1]) {
-        ctx.strokeStyle = pass === 0 ? groundCss(groundColor()) : ink(0.85);
-        ctx.fillStyle = pass === 0 ? groundCss(groundColor()) : ink(0.95);
-        ctx.lineWidth = pass === 0 ? 3.2 : 1.1;
-        for (const [x, ym, ylo, yhi] of bars) {
-            ctx.beginPath();
-            ctx.moveTo(x, ylo); ctx.lineTo(x, yhi);
-            ctx.moveTo(x - 3, ylo); ctx.lineTo(x + 3, ylo);
-            ctx.moveTo(x - 3, yhi); ctx.lineTo(x + 3, yhi);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(x, ym, pass === 0 ? 3.9 : 2.6, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-}
-
-/**
  * Where the pointer is, and what is there.
  *
- * The readout is on the plot rather than only in the notation panel because
- * the number the mode is about — what this measure says about THIS interval —
- * has nowhere else to appear.
+ * With the grid up this is a plot's cursor: a crosshair down the whole box so
+ * the position can be read off the ruler, a ring where it meets the curve, and
+ * a readout of the number the mode is about — what this measure says about
+ * THIS interval, which has nowhere else to appear.
+ *
+ * With the grid down it is a dot on a line, and nothing else. There is no
+ * ruler left to drop a crosshair onto and no furniture for a readout to sit
+ * among, so both would be the only chrome on an otherwise bare page — which is
+ * exactly what turning the grid off was asking to be rid of.
  */
 function drawCursor(o, C, axis) {
     if (!cursor.live) return;
-    const { y0, y1, x0, x1 } = fit;
+    const { y0, y1, x1 } = fit;
     const [x] = fit.toPx(Math.min(1, Math.max(0, cursor.c / C)), 0);
     const line = onLight() ? '#111' : '#fff';
+    const v = axis.at(cursor.c);
+    const y = v === v ? y0 - axis.lift(Math.min(1, Math.max(0, v))) * (y0 - y1) : NaN;
+
+    if (!dyadGrid) {
+        /* Filled rather than ringed: at a hair's width there is no room for a
+           hole in the middle, and a solid dot is what reads as a position on
+           a line at any line width. */
+        if (y === y) {
+            ctx.fillStyle = line;
+            ctx.beginPath();
+            ctx.arc(x, y, Math.max(3, dyadLineWidth * 1.6), 0, Math.PI * 2);
+            ctx.fill();
+        }
+        return;
+    }
 
     ctx.strokeStyle = line;
     ctx.lineWidth = 1.2;
@@ -514,9 +468,7 @@ function drawCursor(o, C, axis) {
     ctx.moveTo(x, y0); ctx.lineTo(x, y1);
     ctx.stroke();
 
-    const v = axis.at(cursor.c);
-    if (v === v) {
-        const y = y0 - Math.min(1, Math.max(0, v)) * (y0 - y1);
+    if (y === y) {
         ctx.beginPath();
         ctx.arc(x, y, 4.5, 0, Math.PI * 2);
         ctx.stroke();
@@ -525,8 +477,7 @@ function drawCursor(o, C, axis) {
     const curve = currentCurve();
     const raw = curve ? valueAtCents(curve, cursor.c, C) : NaN;
     const parts = [`${Math.round(cursor.c)}¢`];
-    if (axis.fitted && v === v) parts.push(`${(axis.lo + v * (axis.hi - axis.lo)).toFixed(2)} predicted`);
-    else if (raw === raw) parts.push(raw.toFixed(3));
+    if (raw === raw) parts.push(raw.toFixed(3));
 
     const text = parts.join('  ·  ');
     ctx.font = '11px -apple-system, "Segoe UI", Helvetica, Arial, sans-serif';

@@ -48,20 +48,43 @@ export function setDyadFill(v) { dyadFill = v; }
 export function setDyadLine(v) { dyadLine = v; }
 
 /**
- * Whether the measured listeners are on the plot.
+ * How thick the curve is drawn, in pixels.
  *
- * Ratings for thirty-eight dyads, from Masina, Lo Presti and Stanzial (2022) —
- * see dyad-data.js. Switching them on changes what the vertical axis IS: the
- * curve stops being drawn in the model's own arbitrary units and is fitted to
- * the ratings by weighted least squares, so what you are looking at is the
- * model's PREDICTION of a consonance rating, against the ratings themselves,
- * with the error bars the listeners actually produced.
- *
- * That is the one honest way to put four incommensurable measures on the same
- * axis, and it is what makes switching between them mean something.
+ * The one setting here that is purely a matter of taste, and it earns its
+ * place for that reason: at a hair's width the curve is a reading, and at six
+ * pixels it is a drawing. Neither is more correct and the plot is used for
+ * both.
  */
-export let dyadRatings = false;
-export function setDyadRatings(v) { dyadRatings = v; }
+export let dyadLineWidth = 1.5;
+export function setDyadLineWidth(v) { dyadLineWidth = v; }
+
+/**
+ * How much of the pane's height the measure is allowed to use, 0 to 1.
+ *
+ * Scaled about the MIDDLE rather than about the floor, so turning it down
+ * settles the curve toward a straight line across the centre of the page
+ * instead of squashing it into the bottom. At 1 the measure spans the whole
+ * box, which is what it did before there was a control for it.
+ *
+ * Everything vertical goes through it together — the curve, the lattice stems
+ * and the floor they stand on, the axis marks — so a low relief is a smaller
+ * picture of the same plot rather than a curve floating loose over furniture
+ * drawn at full size.
+ */
+export let dyadRelief = 1;
+export function setDyadRelief(v) { dyadRelief = v; }
+
+/**
+ * Whether the plot has any furniture at all.
+ *
+ * Off, the ruler, the gridlines, the tick labels, the axis title and the frame
+ * all go, the margins they were being kept for go with them, and what is left
+ * is the measure drawn across the pane — which is the picture worth looking at
+ * once you already know what the axes are. The cursor loses its crosshair and
+ * its readout to match: a dot on a line, and nothing else on screen.
+ */
+export let dyadGrid = true;
+export function setDyadGrid(v) { dyadGrid = v; }
 
 /* ---- the JI dyads themselves ----
    Two questions, so two switches: whether the lattice is marked at all, and

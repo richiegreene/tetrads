@@ -17,11 +17,10 @@
 
 import { fitPlot, axisCents, centsTicks, valueAtCents } from './dyad-geometry.js';
 import {
-    dyadFill, dyadLine, dyadDots, dyadLabels, dyadRatings, dyadSpan,
+    dyadFill, dyadLine, dyadLineWidth, dyadGrid, dyadDots, dyadLabels, dyadSpan,
 } from './dyad-state.js';
-import { currentDyads, currentCurve, currentCurveModel, complexityRange, modelName } from './dyad-curve.js';
-import { RATINGS } from './dyad-data.js';
-import { colormapFn, onLight, groundColor, verticalAxis } from './dyad-2d.js';
+import { currentDyads, currentCurve, currentCurveModel, complexityRange } from './dyad-curve.js';
+import { colormapFn, onLight, groundColor, verticalAxis, marksAreLegible } from './dyad-2d.js';
 import { groundCss } from '../calculations/color-mapping.js';
 import { downloadSVG, downloadCSV, simplifyFraction } from '../utils/data-export.js';
 import { readPanel } from '../utils/read-panel.js';
@@ -46,7 +45,11 @@ export function exportDyadSVG() {
     const pane = document.getElementById('dyad-pane');
     const width = (pane && pane.clientWidth) || 1100;
     const height = (pane && pane.clientHeight) || 640;
-    const fit = fitPlot(width, height);
+    /* The same margins the pane is using, so the file is a picture of what is
+       on screen rather than of what the plot would look like with furniture it
+       has been told not to draw. */
+    const fit = dyadGrid ? fitPlot(width, height)
+                         : fitPlot(width, height, { padL: 18, padR: 18, padT: 18, padB: 18 });
     const light = onLight();
     const ink = light ? '#111111' : '#ffffff';
     const inkA = (a) => (light ? `rgba(0,0,0,${a})` : `rgba(255,255,255,${a})`);
@@ -60,54 +63,56 @@ export function exportDyadSVG() {
     });
     svg.appendChild(el('rect', { x: 0, y: 0, width, height, fill: groundCss(groundColor()) }));
 
-    /* ---- the ruler ---- */
-    const grid = el('g');
-    const { step, ticks } = centsTicks(C);
-    const marks = el('g', { 'font-family': 'sans-serif', 'font-size': 10, fill: inkA(0.55) });
-    ticks.forEach((c, i) => {
-        const [x] = fit.toPx(c / C, 0);
-        const major = i % 3 === 0;
-        grid.appendChild(el('line', {
-            x1: f(x), y1: f(fit.y0), x2: f(x), y2: f(fit.y1),
-            stroke: inkA(major ? 0.16 : 0.08),
-        }));
-        if (major || step >= 200) {
-            const t = el('text', { x: f(x), y: f(fit.y0 + 16), 'text-anchor': 'middle' });
-            t.textContent = String(Math.round(c));
-            marks.appendChild(t);
-        }
-    });
-    for (const [v, label] of axis.ticks) {
-        const [, y] = fit.toPx(0, v);
-        if (y < fit.y1 - 1 || y > fit.y0 + 1) continue;
-        if (!axis.ticksInside) {
+    /* ---- the ruler ----
+       All of it, or none of it: see dyadGrid in dyad-state.js. */
+    if (dyadGrid) {
+        const grid = el('g');
+        const { step, ticks } = centsTicks(C);
+        const marks = el('g', { 'font-family': 'sans-serif', 'font-size': 10, fill: inkA(0.55) });
+        ticks.forEach((c, i) => {
+            const [x] = fit.toPx(c / C, 0);
+            const major = i % 3 === 0;
             grid.appendChild(el('line', {
-                x1: f(fit.x0), y1: f(y), x2: f(fit.x1), y2: f(y), stroke: inkA(0.12),
+                x1: f(x), y1: f(fit.y0), x2: f(x), y2: f(fit.y1),
+                stroke: inkA(major ? 0.16 : 0.08),
             }));
-        }
-        const inset = axis.ticksInside ? (v > 0.5 ? 9 : -9) : 0;
-        const t = el('text', {
-            x: f(axis.ticksInside ? fit.x0 + 6 : fit.x0 - 7), y: f(y + 3 + inset),
-            'text-anchor': axis.ticksInside ? 'start' : 'end',
+            if (major || step >= 200) {
+                const t = el('text', { x: f(x), y: f(fit.y0 + 16), 'text-anchor': 'middle' });
+                t.textContent = String(Math.round(c));
+                marks.appendChild(t);
+            }
         });
-        t.textContent = label;
-        marks.appendChild(t);
+        /* Dropped rather than overprinted once Relief has brought the two ends
+           of the axis within the height of the words themselves — see
+           marksAreLegible in dyad-2d.js. */
+        if (marksAreLegible(axis, fit)) {
+            for (const [v, label] of axis.ticks) {
+                const [, y] = fit.toPx(0, axis.lift(v));
+                if (y < fit.y1 - 1 || y > fit.y0 + 1) continue;
+                const t = el('text', {
+                    x: f(fit.x0 + 6), y: f(y + 3 + (v > 0.5 ? 9 : -9)), 'text-anchor': 'start',
+                });
+                t.textContent = label;
+                marks.appendChild(t);
+            }
+        }
+        const cents = el('text', {
+            x: f((fit.x0 + fit.x1) / 2), y: f(fit.y0 + 33), 'text-anchor': 'middle',
+        });
+        cents.textContent = 'cents';
+        marks.appendChild(cents);
+        const vt = el('text', {
+            x: 0, y: 0, 'text-anchor': 'middle',
+            transform: `translate(14 ${f((fit.y0 + fit.y1) / 2)}) rotate(-90)`,
+        });
+        vt.textContent = axis.title;
+        marks.appendChild(vt);
+        svg.appendChild(grid);
+        svg.appendChild(marks);
     }
-    const cents = el('text', {
-        x: f((fit.x0 + fit.x1) / 2), y: f(fit.y0 + 33), 'text-anchor': 'middle',
-    });
-    cents.textContent = 'cents';
-    marks.appendChild(cents);
-    const vt = el('text', {
-        x: 0, y: 0, 'text-anchor': 'middle',
-        transform: `translate(14 ${f((fit.y0 + fit.y1) / 2)}) rotate(-90)`,
-    });
-    vt.textContent = axis.title;
-    marks.appendChild(vt);
-    svg.appendChild(grid);
-    svg.appendChild(marks);
 
     /* ---- the curve ---- */
+    const yFloor = fit.y0 - axis.floor * (fit.y0 - fit.y1);
     if (curve) {
         const cols = Math.max(2, Math.round(fit.x1 - fit.x0));
         const pts = [];
@@ -115,8 +120,8 @@ export function exportDyadSVG() {
         for (let i = 0; i < cols; i++) {
             const v = axis.at((i / (cols - 1)) * C);
             vals.push(v);
-            const y = fit.y0 - Math.min(1, Math.max(0, v === v ? v : 0)) * (fit.y0 - fit.y1);
-            pts.push(`${f(fit.x0 + i)} ${f(y)}`);
+            const h = axis.lift(Math.min(1, Math.max(0, v === v ? v : 0)));
+            pts.push(`${f(fit.x0 + i)} ${f(fit.y0 - h * (fit.y0 - fit.y1))}`);
         }
         const line = 'M' + pts.join('L');
 
@@ -142,7 +147,7 @@ export function exportDyadSVG() {
             defs.appendChild(grad);
             svg.appendChild(defs);
             svg.appendChild(el('path', {
-                d: `${line}L${f(fit.x1)} ${f(fit.y0)}L${f(fit.x0)} ${f(fit.y0)}Z`,
+                d: `${line}L${f(fit.x1)} ${f(yFloor)}L${f(fit.x0)} ${f(yFloor)}Z`,
                 fill: 'url(#dyadfill)', stroke: 'none',
             }));
         }
@@ -151,16 +156,18 @@ export function exportDyadSVG() {
                 d: line, fill: 'none',
                 stroke: dyadFill ? ink : rgbOf(colormapFn()(0.72)),
                 'stroke-opacity': dyadFill ? 0.75 : 1,
-                'stroke-width': dyadFill ? 1.2 : 1.8,
-                'stroke-linejoin': 'round',
+                'stroke-width': f(dyadLineWidth),
+                'stroke-linejoin': 'round', 'stroke-linecap': 'round',
             }));
         }
     }
 
-    svg.appendChild(el('rect', {
-        x: f(fit.x0), y: f(fit.y1), width: f(fit.x1 - fit.x0), height: f(fit.y0 - fit.y1),
-        fill: 'none', stroke: ink, 'stroke-opacity': light ? 0.45 : 0.35,
-    }));
+    if (dyadGrid) {
+        svg.appendChild(el('rect', {
+            x: f(fit.x0), y: f(fit.y1), width: f(fit.x1 - fit.x0), height: f(fit.y0 - fit.y1),
+            fill: 'none', stroke: ink, 'stroke-opacity': light ? 0.45 : 0.35,
+        }));
+    }
 
     /* ---- the lattice ---- */
     if (dyadDots || dyadLabels) {
@@ -174,7 +181,7 @@ export function exportDyadSVG() {
 
         const heightOf = (d) => {
             const v = axis.ofDyad(d);
-            return v === v ? Math.min(1, Math.max(0, v)) : 0.06;
+            return axis.lift(v === v ? Math.min(1, Math.max(0, v)) : 0.06);
         };
 
         const byComplexity = currentDyads().slice().sort((a, b) => a.complexity - b.complexity);
@@ -190,7 +197,7 @@ export function exportDyadSVG() {
             if (dyadDots) {
                 const r = o.enableSize ? base * (1 + (1 - norm) * (o.scalingFactor - 1)) : base;
                 stems.appendChild(el('line', {
-                    x1: f(x), y1: f(fit.y0), x2: f(x), y2: f(y),
+                    x1: f(x), y1: f(yFloor), x2: f(x), y2: f(y),
                     stroke: fill, 'stroke-opacity': 0.5,
                 }));
                 dots.appendChild(el('circle', {
@@ -217,35 +224,6 @@ export function exportDyadSVG() {
         svg.appendChild(stems);
         svg.appendChild(dots);
         svg.appendChild(names);
-    }
-
-    /* ---- the measured listeners ---- */
-    if (dyadRatings) {
-        const at = (v) => fit.y0 - axis.place(v) * (fit.y0 - fit.y1);
-        /* Haloed the same way the pane haloes them, and for the same reason —
-           see drawRatings. Two groups rather than two attributes on one,
-           because an editor opening this should be able to take the halo off
-           in a single selection if the ground it is being placed on differs. */
-        const halo = el('g', {
-            stroke: groundCss(groundColor()), 'stroke-width': 3.2, fill: groundCss(groundColor()),
-        });
-        const g = el('g', { stroke: inkA(0.85), 'stroke-width': 1.1, fill: 'none' });
-        const pts = el('g', { fill: inkA(0.95), stroke: 'none' });
-        for (const r of RATINGS) {
-            if (r.cents > C + 1e-6) continue;
-            const [x] = fit.toPx(r.cents / C, 0);
-            const yhi = at(Math.min(axis.hi, r.mean + r.sd));
-            const ylo = at(Math.max(axis.lo, r.mean - r.sd));
-            const d = `M${f(x)} ${f(ylo)}L${f(x)} ${f(yhi)}M${f(x - 3)} ${f(ylo)}L${f(x + 3)} ${f(ylo)}`
-                    + `M${f(x - 3)} ${f(yhi)}L${f(x + 3)} ${f(yhi)}`;
-            halo.appendChild(el('path', { d, fill: 'none' }));
-            halo.appendChild(el('circle', { cx: f(x), cy: f(at(r.mean)), r: 3.9, stroke: 'none' }));
-            g.appendChild(el('path', { d }));
-            pts.appendChild(el('circle', { cx: f(x), cy: f(at(r.mean)), r: 2.6 }));
-        }
-        svg.appendChild(halo);
-        svg.appendChild(g);
-        svg.appendChild(pts);
     }
 
     return new XMLSerializer().serializeToString(svg);
@@ -302,11 +280,10 @@ function drop(blob, filename) {
 /**
  * The set itself.
  *
- * The other modes' columns over two voices, and two more that only this mode
- * can fill: what the model says about each interval, and — where anybody has
- * actually been asked — what listeners said about it. Those last two columns
- * side by side are the whole comparison the mode is for, in a form you can
- * take somewhere else and plot yourself.
+ * The other modes' columns over two voices, and one more this mode can fill:
+ * what the current model says about each interval, alongside the discrete
+ * complexity the whole app is set to measure by. The two side by side are the
+ * comparison the mode is for, in a form you can take somewhere else.
  */
 export function exportDyadCSV() {
     const dyads = currentDyads();
@@ -319,28 +296,20 @@ export function exportDyadCSV() {
     const curve = currentCurve();
     const model = currentCurveModel();
 
-    /* Ratings are looked up by ratio rather than by cents: a rounded cent
-       value is not a key, and 33/32 and 16/15 are five cents apart. */
-    const rated = new Map();
-    for (const r of RATINGS) rated.set(`${r.p}/${r.q}`, r);
-
     const rows = dyads.slice().sort((a, b) => a.complexity - b.complexity).map((d) => {
         const [i, j] = d.label.split(':').map(Number);
         const ratio = `${j}/${i}`;
         const notes = `${simplifyFraction(i, i)} ${simplifyFraction(j, i)}`;
         const value = curve ? valueAtCents(curve, d.c, C) : NaN;
-        const r = rated.get(ratio);
         return [
             d.label, ratio, `"${notes}"`, d.c.toFixed(3), d.complexity,
             curve ? (value === value ? value.toFixed(5) : '') : null,
-            r ? r.mean.toFixed(3) : '', r ? r.sd.toFixed(3) : '',
         ].filter((x) => x !== null).join(',');
     });
 
     const header = ['Dyad', 'Ratio', 'Notes', 'Cents', measure]
-        .concat(curve ? [modelName(model) === null ? 'Model' : model === 'he' ? 'HarmonicEntropy'
+        .concat(curve ? [model === 'he' ? 'HarmonicEntropy'
             : model === 'sethares' ? 'Sethares' : 'TenneyContinuous'] : [])
-        .concat(['RatedMean', 'RatedStdDev'])
         .join(',');
 
     downloadCSV([header, ...rows].join('\n'), 'dyads-export.csv');

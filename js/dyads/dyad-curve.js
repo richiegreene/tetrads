@@ -26,7 +26,6 @@ import { pyodide, python_ready } from '../globals.js';
 import { wrapCurve } from './dyad-geometry.js';
 import { spectrumFor } from '../synth/timbre.js';
 import { dheParams, dsmParams, dtnParams } from './dyad-state.js';
-import { RATED_P, RATED_Q } from './dyad-data.js';
 
 /** The generated set, and what it was generated from. */
 let dyadSet = [];
@@ -111,41 +110,6 @@ generate_dyads(
     dyadSet = out;
     setKey = key;
     return dyadSet;
-}
-
-/* ---------------------------------------------------------------------
- *  The discrete measures, at the rated ratios
- *
- *  Six numbers per ratio and thirty-eight ratios, so the whole table is 228
- *  values and is worth exactly one Python call per measure ever. Cached
- *  forever rather than per session state, because it is not state: what the
- *  Tenney norm of 27/14 is does not depend on anything the panel can be set
- *  to.
- * ------------------------------------------------------------------ */
-const ratedByMeasure = new Map();
-
-/** Fetch and cache one measure's values at the rated ratios. */
-export async function loadRatedComplexity(measure) {
-    if (!python_ready || ratedByMeasure.has(measure)) return ratedByMeasure.get(measure) || null;
-    try {
-        pyodide.globals.set('py_rated_p', RATED_P);
-        pyodide.globals.set('py_rated_q', RATED_Q);
-        const raw = await pyodide.runPythonAsync(`
-from dyads_generator import rated_complexity
-rated_complexity(py_rated_p, py_rated_q, "${measure}")
-        `);
-        const arr = Float64Array.from(raw);
-        if (raw.destroy) raw.destroy();
-        ratedByMeasure.set(measure, arr);
-        return arr;
-    } catch (err) {
-        return null;
-    }
-}
-
-/** What is already known, for the paint path — which cannot wait. */
-export function ratedComplexity(measure) {
-    return ratedByMeasure.get(measure) || null;
 }
 
 /** The complexity range across the current set, for sizing and colouring. */

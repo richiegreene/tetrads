@@ -63,12 +63,13 @@ import {
 } from '../triads/triad-mode.js';
 import {
     dyadModel, dyadDots, dyadLabels, setDyadModel, setDyadFill, setDyadLine,
-    setDyadRatings, setDyadDots, setDyadLabels, setDyadSnap, setDyadGlide,
-    setDyadPivot, setDyadSpan, setDyadResolution, dheParams, dsmParams, dtnParams,
+    setDyadLineWidth, setDyadRelief, setDyadGrid, setDyadDots, setDyadLabels,
+    setDyadSnap, setDyadGlide, setDyadSpan, setDyadResolution,
+    dheParams, dsmParams, dtnParams,
 } from '../dyads/dyad-state.js';
 import {
     refreshSet as refreshDyadSet, generateModel as generateDyadModel,
-    invalidate as invalidateDyads, restate as restateDyads,
+    invalidate as invalidateDyads,
     applyPivot as applyDyadPivot, resetReference as resetDyadReference,
 } from '../dyads/dyad-mode.js';
 
@@ -683,17 +684,28 @@ export function setupUIEventListeners() {
         (v) => (v === 1 ? '1 equave' : `${v} equaves`));
 
     /* ---- how the curve is drawn ----
-     * Fill and Line change the picture and nothing else, so they redraw at
-     * once. Ratings is the one display switch here that changes what the
-     * vertical axis IS — see dyad-2d.js — so the foot has to say the fit
-     * again afterwards even though nothing was recomputed. */
+     * Everything here changes the picture and nothing else, so it all redraws
+     * at once. There is no model to recompute: the curve is held as numbers
+     * and every one of these is a decision about how to put those numbers on
+     * a page. */
     flagSeg('dyad-curve-seg', {
         dyadFill: (on) => { setDyadFill(on); invalidateDyads(); },
         dyadLine: (on) => { setDyadLine(on); invalidateDyads(); },
     });
-    flagSeg('dyad-data-seg', {
-        dyadRatings: (on) => { setDyadRatings(on); invalidateDyads(); restateDyads(); },
+    press('dyadLineWidth', 'dyad-width-v',
+        (v) => { setDyadLineWidth(v); invalidateDyads(); },
+        (v) => `${v.toFixed(1)} px`);
+
+    /* Grid changes the MARGINS as well as what is drawn in them — with no
+       ruler and no labels there is nothing for the borders to hold — so the
+       pane has to be measured again rather than merely repainted. */
+    flagSeg('dyad-grid-seg', {
+        dyadGrid: (on) => { setDyadGrid(on); layoutStage(); invalidateDyads(); },
     });
+    press('dyadRelief', 'dyad-relief-v',
+        (v) => { setDyadRelief(v / 100); invalidateDyads(); },
+        (v) => `${Math.round(v)}%`);
+
     flagSeg('dyad-lattice-seg', {
         dyadDots: (on) => { setDyadDots(on); invalidateDyads(); updateChannelVisibility(); },
         dyadLabels: (on) => { setDyadLabels(on); invalidateDyads(); updateChannelVisibility(); },

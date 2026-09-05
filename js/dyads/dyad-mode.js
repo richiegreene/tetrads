@@ -24,13 +24,12 @@ import {
     appMode, registerMode, setStatus, letStatusPaint,
 } from '../app-mode.js';
 import {
-    dyadModel, setDyadModel, dyadSpan, dyadRatings, setDyadPivot,
-    setCursor, setCursorLive,
+    dyadModel, setDyadModel, dyadSpan, setDyadPivot, setCursor, setCursorLive,
 } from './dyad-state.js';
-import { attach2D, draw as draw2D, resize as resize2D, verticalAxis } from './dyad-2d.js';
+import { attach2D, draw as draw2D, resize as resize2D } from './dyad-2d.js';
 import {
     generateDyadSet, generateCurve, currentCurve, currentDyads, clearCurve,
-    curveIsStale, modelShortName, loadRatedComplexity,
+    curveIsStale, modelShortName,
 } from './dyad-curve.js';
 import {
     dyadNoteOn, dyadMove, dyadNoteOff, dyadAllOff, rebindPivot, resetPivotFreq,
@@ -128,12 +127,6 @@ export async function refreshSet(force = false) {
         return false;
     }
 
-    /* The rated ratios' complexity under whatever measure is now chosen, so
-       that a fit is available the moment Ratings is switched on. Cached
-       forever per measure — see loadRatedComplexity — so this is one Python
-       call the first time each of the six is selected and nothing after. */
-    await loadRatedComplexity(o.complexityMethod);
-
     await generateDyadSet({
         limitType: o.limitType,
         limitValue: o.limitValue,
@@ -197,33 +190,20 @@ export async function generateModel(model) {
 /**
  * What the panel has produced, as the foot says it.
  *
- * With the ratings up this is where the fit goes, and it is the most useful
- * line in the app: R-squared against thirty-eight measured listeners is the
- * one number that says whether the curve you are looking at is describing
- * anything. Switch models and watch it move.
+ * Which measure is being reported has to name the discrete case by the
+ * Complexity drawer's own choice, and has to say that it IS the discrete one:
+ * the Tenney norm at the ratios and the Tenney norm made continuous are two
+ * different measures, and a foot that called both of them "Tenney" would be
+ * hiding the comparison the mode exists to make.
  */
 function describeSet() {
     const o = readPanel();
     const n = currentDyads().length;
-    /* Which measure is being reported has to name the discrete case by the
-       Complexity drawer's own choice, and has to say that it is the discrete
-       one: Tenney at the ratios and Tenney made continuous are two different
-       measures that fit the listeners differently, and a foot that called both
-       of them "Tenney" would be hiding the most interesting comparison the
-       mode can make. */
     const model = currentCurve()
         ? modelShortName()
         : `${o.complexityMethod} at ratios`;
-    const head = `${n} dyads · ${model}`;
-    if (!dyadRatings) return head;
-
-    const axis = verticalAxis(o);
-    if (axis.r2 === null) return `${head} · ratings`;
-    return `${head} · R² ${axis.r2.toFixed(3)} · ${axis.n} rated`;
+    return `${n} dyads · ${model}`;
 }
-
-/** Say it again without regenerating — what a display toggle needs. */
-export function restate() { setStatus(describeSet()); }
 
 /* ---------------------------------------------------------------------
  *  Things the panel does to the mode

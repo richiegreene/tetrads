@@ -27,7 +27,7 @@ All three are built from the same Limit, Equave and Complexity Measure, so a 13-
 The triangle's bottom-left corner is the unison; its bottom-right puts the whole equave in the lower interval, and its apex puts it in the upper one.
 
 ## Dyads
-Nine ways of measuring how complex the interval between two notes is, on one axis, against thirty-eight people who were asked.
+Nine ways of measuring how complex the interval between two notes is, on one axis, playable by dragging along it.
 
 A dyad has a single degree of freedom, which changes what a picture of it can be. The triangle needs a contour map and a lifted surface side by side because a shaded surface says *where* a concordance is or *how deep* it is but not both; a curve says both in the same mark. So there is one pane, no view switch, and the vertical axis is free to be the thing the mode is actually about.
 
@@ -43,36 +43,13 @@ The **Measure** fieldset chooses what the plot is a picture of. The first option
 
   A simple ratio digs a deep well and a complex one a shallow dimple. **Softness** is $s$ — the one number deciding whether the curve is a row of spikes or a smooth landscape.
 
-**Span** is the plot's own axis control: how many equaves wide it is. The Equave belongs to all three modes and is not this one's to change, but a dyad is the one chord that stays perfectly readable past it. At 2 the whole of the published rating data is on screen.
-
-### Measured listeners
-**Display › Ratings** puts thirty-eight measured dyads on the plot, with the standard deviation the listeners produced, from
-
-> Masina, I., Lo Presti, G. & Stanzial, D. "Dyad's consonance and dissonance: combining the compactness and roughness approaches." *Eur. Phys. J. Plus* **137**, 1254 (2022). [doi:10.1140/epjp/s13360-022-03456-2](https://doi.org/10.1140/epjp/s13360-022-03456-2)
-
-This is the one thing in the app that is not derived from anything — it is what people said — and switching it on changes what the vertical axis **is**. The measure stops being drawn in its own arbitrary units and is fitted to the ratings by weighted least squares, weights $1/\sigma^2$, so what is on screen is the measure's *prediction* of a consonance rating against the ratings themselves. The foot then reports $R^2$.
-
-That is the only arrangement in which nine incommensurable measures can be compared rather than merely looked at in turn. Switch between them and watch it move:
-
-| Measure | $R^2$ |
-|---|---|
-| Tenney, continuous | 0.930 |
-| Tenney, at ratios | 0.888 |
-| Wilson | 0.862 |
-| Harmonic entropy | 0.844 |
-| Weil | 0.812 |
-| Euler | 0.797 |
-| Sethares | 0.684 |
-| Arithmetic | 0.579 |
-| Benedetti | 0.285 |
-
-(At the default settings, over all thirty-eight ratings. The four the paper's own comparison reports — Tenney, Wilson, Weil, Euler — reproduce its figures exactly.)
-
-Narrow the Span and the fit is recomputed over only the ratings still in the picture, which is honest rather than convenient: it is a different question with a different answer.
+**Span** is the plot's own axis control: how many equaves wide it is. The Equave belongs to all three modes and is not this one's to change, but a dyad is the one chord that stays perfectly readable past it.
 
 ### Display
-* **Curve**: **Fill** shades the area under the curve through the colormap *by height*, so the colour says what the height says; **Line** strokes the curve. Both go away when the measure has no curve to draw.
-* **Lattice**: Dots stems every just interval up to the curve — a stem rather than a bare dot because the mark has to say two things, where the interval is and what the measure makes of it. Labels are placed simplest-first and any that would collide with one already placed is dropped, so 3/2 is never buried under 27/16.
+* **Curve** — **Fill** shades the area under the curve through the colormap *by height*, so the colour says what the height says; **Line** strokes it. **Line size** is how thick: at a hair's width the curve is a reading, at six pixels it is a drawing. The whole fieldset goes when the measure has no curve to draw.
+* **Plot › Grid lines** — the cents ruler, the gridlines, the tick labels, the axis title and the frame. Turned off they all go, *and the margins they were being kept for go with them*, so the measure is drawn across the whole pane. The cursor loses its crosshair and its readout to match: a dot on a line, and nothing else on screen. It is not a degraded view — the shape of a concordance curve is legible without a single number on it, and once you know what the axes are the furniture is only in the way.
+* **Plot › Relief** — how much of the pane's height the measure is allowed to use. Scaled about the **middle** rather than the floor, so turning it down settles the curve toward a straight line across the centre of the page instead of crushing it into the bottom edge. Everything vertical goes through it together — the curve, the lattice stems and the floor they stand on, the axis marks — so a low relief is a smaller picture of the same plot rather than a curve floating loose under furniture drawn at full size. Colour is taken from the *value* rather than the height, so a settled curve stays coloured by the numbers it actually has.
+* **Lattice** — Dots stems every just interval up to the curve, a stem rather than a bare dot because the mark has to say two things: where the interval is, and what the measure makes of it. Labels are placed simplest-first and any that would collide with one already placed is dropped, so 3/2 is never buried under 27/16.
 * **Snap** — how close the pointer must come to a just interval before it lands on it exactly. At 0 the axis is continuous everywhere.
 
 ### Playing the line
@@ -81,9 +58,9 @@ Press and drag anywhere in the box — the height is the measure's answer, not a
 The **Pivot** — **S** or **T** — is not a refinement here, it is what the gesture *means*. Hold the lower voice and dragging right takes the upper one up; hold the upper and the same drag takes the lower one down. Same interval, opposite motion, and they do not sound the same. The `s` and `t` keys select it. Space puts the next dyad back on 1/1 = C3.
 
 ### Export, in Dyads
-* **.svg** — **no raster at any resolution.** The triangle's exporter has to embed its shading as an image because a continuously shaded scalar field is one polygon per grid cell; a curve has no such problem. The fill is a single linear gradient sampled from the colormap itself, and everything else is a path, a circle or real text.
+* **.svg** — **no raster at any resolution.** The triangle's exporter has to embed its shading as an image because a continuously shaded scalar field is one polygon per grid cell; a curve has no such problem. The fill is a single linear gradient sampled from the colormap itself, and everything else is a path, a circle or real text. Grid lines, Line size and Relief all apply, so a bare render exports bare.
 * **.png** — rasterised from that SVG at up to 4x.
-* **.csv** — the dyads with their cents and complexity, the current measure's value at each one, and — where anybody has actually been asked — the published mean rating and its standard deviation, side by side.
+* **.csv** — the dyads with their cents, their complexity under the measure the whole app is set to, and the current model's value at each one.
 
 ## Triads
 Three voices, two intervals, and a concordance surface you can drag a chord across.

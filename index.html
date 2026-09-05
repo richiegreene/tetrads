@@ -326,26 +326,37 @@
               <button data-v="dyadLine" class="on"
                 title="Stroke the curve itself">Line</button>
             </div>
+
+            <div class="pressrow">
+              <label for="dyadLineWidth">Line size</label>
+              <span class="pressval" id="dyad-width-v">1.5 px</span>
+            </div>
+            <input type="range" id="dyadLineWidth" min="0.5" max="8" step="0.1" value="1.5"
+              title="How thick the curve is drawn. At a hair's width it is a reading; at six pixels it is a drawing.">
           </fieldset>
 
-          <!-- ---- the one thing in the app that is not derived ----
-               Thirty-eight dyads rated by listeners, with the spread they
-               produced, from Masina, Lo Presti & Stanzial (2022).
-
-               This is not another layer of decoration. Switching it on changes
-               what the vertical axis IS: the curve stops being drawn in the
-               measure's own arbitrary units and is fitted to the ratings by
-               weighted least squares, so what is on screen is the measure's
-               PREDICTION of a rating against the ratings themselves. The foot
-               then says R-squared — which is the only way to tell whether the
-               curve you are looking at describes anything, and the reason
-               there are four measures to switch between at all. -->
+          <!-- ---- the furniture, and how much of the page is used ----
+               Two settings about the plotting area rather than about the
+               measure drawn in it, which is why they are together and apart
+               from Curve above: Relief goes on applying when the measure is
+               one of the discrete six and there is no curve at all. -->
           <fieldset data-mode="dyads" class="mode-off">
-            <legend>Measured listeners</legend>
-            <div class="seg" id="dyad-data-seg">
-              <button data-v="dyadRatings"
-                title="Plot the published consonance ratings with their standard deviations, fit the curve to them, and report R² in the foot. Widen the Span to 2 to bring all thirty-eight into the picture.">Ratings</button>
+            <legend>Plot</legend>
+            <div class="seg" id="dyad-grid-seg">
+              <button data-v="dyadGrid" class="on"
+                title="The cents ruler, the gridlines, the tick labels, the axis title and the frame. Turned off they all go, the margins they were being kept for go with them, and the cursor loses its crosshair and readout — a dot on a line, and nothing else on screen.">Grid lines</button>
             </div>
+
+            <!-- Scaled about the MIDDLE of the pane rather than about its
+                 floor, so turning it down settles the curve toward a straight
+                 line across the centre instead of crushing it into the bottom
+                 edge. The lattice and the floor it stands on go with it. -->
+            <div class="pressrow">
+              <label for="dyadRelief">Relief</label>
+              <span class="pressval" id="dyad-relief-v">100%</span>
+            </div>
+            <input type="range" id="dyadRelief" min="0" max="100" step="1" value="100"
+              title="How much of the pane's height the measure is allowed to use. At 100% it spans the whole box; at nothing it is a straight line across the middle.">
           </fieldset>
 
           <!-- The lattice, on the same terms the triangle has it: whether the
