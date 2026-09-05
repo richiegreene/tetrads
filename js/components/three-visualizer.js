@@ -89,9 +89,9 @@ export function updatePivotButtonSelection(selectedIndex) {
 
     pivotButtonsElements.forEach(button => {
         if (parseInt(button.dataset.pivotIndex) === selectedIndex) {
-            button.classList.add('selected');
+            button.classList.add('on');
         } else {
-            button.classList.remove('selected');
+            button.classList.remove('on');
         }
     });
     setCurrentPivotVoiceIndex(selectedIndex); 
@@ -341,12 +341,12 @@ export function initThreeJS() {
     setScene(new THREE.Scene());
     scene.background = new THREE.Color(0x000000);
 
-    setCamera(new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000));
+    setCamera(new THREE.PerspectiveCamera(75, (container.clientWidth || 1) / (container.clientHeight || 1), 0.1, 1000));
     camera.position.set(0, 3, 6);
     camera.lookAt(0, 0, 0);
 
     setRenderer(new THREE.WebGLRenderer({ antialias: true }));
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(container.clientWidth || 1, container.clientHeight || 1);
     container.appendChild(renderer.domElement);
 
     setControls(new OrbitControls(camera, renderer.domElement));
@@ -361,14 +361,21 @@ export function initThreeJS() {
     renderer.domElement.addEventListener('mousemove', onMouseMove, false);
     renderer.domElement.addEventListener('click', onClick, false); 
     window.addEventListener('resize', onWindowResize, false);
+    new ResizeObserver(onWindowResize).observe(container);
 }
 
+/* The viewport is no longer the window: the panel takes width from it, and
+   opening or shutting the panel resizes it without the window changing at
+   all. So the size is read off #container, and initThreeJS puts a
+   ResizeObserver on it rather than relying on the window's own event. */
 export function onWindowResize() {
-    if (camera && renderer) {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    }
+    const container = document.getElementById('container');
+    if (!camera || !renderer || !container) return;
+    const w = container.clientWidth || 1;
+    const h = container.clientHeight || 1;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
 }
 
 export function animate() {

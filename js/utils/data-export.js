@@ -4,8 +4,12 @@ import { camera, currentSprites, scene } from '../globals.js';
 export function exportToSVG() {
     const svgNS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNS, 'svg');
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    /* The drawing is the viewport, not the window: the panel takes width from
+       one and not the other, and an export sized to the window would place
+       every point against a frame that is not the one on screen. */
+    const view = document.getElementById('container');
+    const width = (view && view.clientWidth) || window.innerWidth;
+    const height = (view && view.clientHeight) || window.innerHeight;
     svg.setAttribute('xmlns', svgNS);
     svg.setAttribute('width', width);
     svg.setAttribute('height', height);

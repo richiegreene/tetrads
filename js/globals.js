@@ -21,10 +21,6 @@ export let rotationSpeed = 0.01;
 export function setRotationSpeed(val) { rotationSpeed = val; }
 export let enableSlide = true;
 export let slideDuration = 0.25;
-export let enableHandTracking = false; // New global state for hand tracking
-export let handTrackingMode = 'displayVirtualHands'; // Default to displaying virtual hands
-export let currentPeriodicWave = null; // For custom waveforms
-export let compensationGainNode;
 
 export let mpePressure = 64; // Current MPE pressure value (0-127)
 export let mpePressureRampSpeed = 1; // How quickly pressure changes per interval
@@ -40,6 +36,12 @@ export const continuousRotationKeys = new Set(); // To track keys for continuous
 export let enableNotation = true;
 export let notationType = 'heji';
 export let notationDisplay;
+/* Sagittal's own two readings, which only mean anything while notationType is
+   'sagittal': how finely the comma is spelled, and whether the symbol carries
+   the whole alteration (revo) or stands beside a conventional sharp or flat
+   (evo). Same pair Xenachord's Play drawer offers, and named the same. */
+export let sagittalPrecision = 'medium';
+export let sagittalEvo = false;
 
 export const keyState = {
     ArrowUp: false,
@@ -69,10 +71,6 @@ export function setLastPlayedRatios(val) { lastPlayedRatios = val; }
 export function setLatestUpdateToken(val) { latestUpdateToken = val; }
 export function setEnableSlide(val) { enableSlide = val; }
 export function setSlideDuration(val) { slideDuration = val; }
-export function setEnableHandTracking(val) { enableHandTracking = val; } // New setter for hand tracking
-export function setHandTrackingMode(val) { handTrackingMode = val; } // New setter for hand tracking mode
-export function setCurrentPeriodicWave(val) { currentPeriodicWave = val; }
-export function setCompensationGainNode(val) { compensationGainNode = val; }
 export function setMpePressure(val) { mpePressure = val; }
 export function setMpePressureRampSpeed(val) { mpePressureRampSpeed = val; }
 export function setMpePressureIntervalTime(val) { mpePressureIntervalTime = val; }
@@ -81,6 +79,8 @@ export function setPlaybackMode(val) { playbackMode = val; } // New setter
 export function setEnableNotation(val) { enableNotation = val; }
 export function setNotationType(val) { notationType = val; }
 export function setNotationDisplay(val) { notationDisplay = val; }
+export function setSagittalPrecision(val) { sagittalPrecision = val; }
+export function setSagittalEvo(val) { sagittalEvo = val; }
 export function setIsCapsLockActive(val) { isCapsLockActive = val; }
 export function clearContinuousRotationKeys() {
     continuousRotationKeys.clear();

@@ -5,8 +5,12 @@ import * as U from '../utils/helpers.js'; // HEJI utilities
 
 import {
     enableNotation, notationType, notationDisplay,
-    initialBaseFreq
+    initialBaseFreq, sagittalPrecision, sagittalEvo
 } from '../globals.js';
+/* Sagittal comes over from Xenachord whole — the Calculator, the Key, the
+   Boundaries and the comma tables — rather than being rewritten here, so a
+   pitch spelled in this app is spelled the way that one spells it. */
+import { sagittalSpellings } from '../xen-notation/tuner-notation.js';
 
 // Helper functions for _getPC (minimal UI interaction, mainly fixed defaults for Tetrads context)
 export function getRefOctave() { return 9; } // Default to C4 (index 9) for octave
@@ -806,6 +810,73 @@ function getDeviationNotationHtmlPerVoice(ratioString, frequencies, effectiveBas
 }
 
 
+/**
+ * The absolute ratio each voice sounds, against the app's fixed 1/1.
+ *
+ * A tetrad's own ratio is relative to its bass, and the bass has itself been
+ * carried away from 1/1 by every pivot since the first chord — so a voice's
+ * pitch is the product of the two, and that product is what a notation has to
+ * spell. HEJI arrives at the same place by adding monzos; Sagittal wants the
+ * ratio itself, so it is multiplied out here.
+ *
+ * @returns {{num:number, den:number}[]} one per voice, reduced.
+ */
+function absoluteVoiceRatios(ratioString, effectiveBaseFreq) {
+    const ratioParts = ratioString.split(':').map(Number);
+    if (ratioParts.length !== 4 || ratioParts.some(isNaN)) return null;
+
+    const baseFraction = floatToReducedFraction(effectiveBaseFreq / initialBaseFreq);
+    const reference = ratioParts[0];
+
+    return ratioParts.map((numerator) => {
+        if (reference === 0) return null;
+        const reduced = U.reduce(numerator, reference);
+        const [num, den] = U.reduce(
+            reduced[0] * baseFraction.numerator,
+            reduced[1] * baseFraction.denominator
+        );
+        return { num, den };
+    });
+}
+
+/**
+ * Generates the HTML string for Sagittal notation, one entry per voice.
+ *
+ * A ratio too complex for the chosen precision has no spelling at all, which
+ * is a real answer rather than a failure: it says this interval is finer than
+ * the notation being asked for. It is drawn as a dash, and raising Precision
+ * is what makes it a symbol.
+ */
+function getSagittalNotationHtmlPerVoice(ratioString, effectiveBaseFreq) {
+    const ratios = absoluteVoiceRatios(ratioString, effectiveBaseFreq);
+    if (!ratios) {
+        console.error(`Invalid ratio format for Sagittal: ${ratioString}`);
+        return Array(4).fill('n/a');
+    }
+
+    return ratios.map((r) => {
+        if (!r) return 'n/a';
+        let spellings = [];
+        try {
+            spellings = sagittalSpellings(r.num, r.den, {
+                precision: sagittalPrecision,
+                useEvo: sagittalEvo,
+                useUnicode: true,   // the glyph, never the ASCII transliteration
+                showEnh: false,
+            });
+        } catch (err) {
+            console.warn(`Sagittal could not spell ${r.num}/${r.den}`, err);
+        }
+        // Xenachord's own fallback: a pitch Sagittal cannot spell at this
+        // precision is shown as the ratio it is, rather than as nothing.
+        if (!spellings.length) return `<span class="tune-letter">${r.num}/${r.den}</span>`;
+        const { letter, symbol } = spellings[0];
+        return `<span class="tune-letter">${letter}</span>` +
+               `<span class="sag-symbol">${symbol}</span>`;
+    });
+}
+
+
 export function updateNotationDisplay(ratioString, frequencies, effectiveBaseFreq) {
     if (!enableNotation || !notationDisplay) return;
 
@@ -823,6 +894,10 @@ export function updateNotationDisplay(ratioString, frequencies, effectiveBaseFre
         const hejiVoices = getHejiNotationHtmlPerVoice(ratioString, effectiveBaseFreq);
         output = hejiVoices.join('&nbsp;'); // Join with spaces for current inline display
         notationDisplay.className = 'notation-display notation-heji';
+    } else if (notationType === 'sagittal') {
+        const sagittalVoices = getSagittalNotationHtmlPerVoice(ratioString, effectiveBaseFreq);
+        output = sagittalVoices.join('&nbsp;');
+        notationDisplay.className = 'notation-display notation-sagittal';
     } else if (notationType === 'deviation') {
         const deviationVoices = getDeviationNotationHtmlPerVoice(ratioString, frequencies, effectiveBaseFreq);
         output = deviationVoices.join('&nbsp;&nbsp;'); // Join with spaces for current inline display

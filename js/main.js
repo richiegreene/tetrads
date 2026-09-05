@@ -8,11 +8,9 @@ import {
     setCurrentLayoutDisplay
 } from './globals.js';
 import { initThreeJS, animate, onWindowResize, updatePivotButtonSelection } from './components/three-visualizer.js';
-import { initAudio, stopChord, playChord, updateWaveform } from './components/audio-engine.js';
+import { initAudio, stopChord, playChord } from './components/audio-engine.js';
 import { updateTetrahedron, cycleLayoutMode } from './calculations/tetrahedron-updater.js';
 import { setupUIEventListeners } from './utils/ui-handlers.js';
-import { initHandTracker } from './components/hand-tracker.js'; // Import initHandTracker
-
 import { initMidiOutput } from './midi/midi-output.js';
 
 // --- MAIN PYODIDE INITIALIZATION ---
@@ -338,31 +336,6 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
     initThreeJS();
     animate();
 
-    // Initialize hand tracking with error handling
-    try {
-        console.log('Initializing hand tracking...');
-        await initHandTracker();
-        console.log('Hand tracking initialized successfully');
-    } catch (error) {
-        console.error('Failed to initialize hand tracking:', error);
-    }
-
-    // Key command to toggle hand tracking section visibility
-    document.addEventListener('keydown', (event) => {
-        if (event.shiftKey && event.metaKey && (event.key === 'K' || event.key === 'k')) {
-            event.preventDefault(); // Prevent default browser behavior for this key combination
-            const handTrackingSection = document.getElementById('hand-tracking-section');
-            if (handTrackingSection) {
-                if (handTrackingSection.style.display === 'none') {
-                    handTrackingSection.style.display = 'grid'; // Or 'block', depending on preferred layout
-                    console.log('Hand tracking section displayed via Shift+Command+K.');
-                } else {
-                    handTrackingSection.style.display = 'none';
-                    console.log('Hand tracking section hidden via Shift+Command+K.');
-                }
-            }
-        }
-    });
     const limitType = document.getElementById('limitType').value;
     const limitValueInput = document.getElementById('limitValue').value;
     let limitValue = limitValueInput;
@@ -405,8 +378,8 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
     setPivotButtons(document.querySelectorAll('.pivot-button'));
     setNotationDisplay(document.getElementById('notation-display'));
 
-    // Set initial waveform and pivot button selection
-    updateWaveform(parseFloat(document.getElementById('timbreSlider').value));
+    // The timbre and the envelope are set from the panel's own store — see
+    // setupUIEventListeners, which builds the picker and the ADSR editor.
     updatePivotButtonSelection(0); // Set initial pivot to Bass (index 0)
 
     // Set initial notation type from HTML

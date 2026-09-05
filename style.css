@@ -1,438 +1,191 @@
-body, html {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    font-family: sans-serif;
-    background-color: #000;
-    color: #fff;
+/* =====================================================================
+ *  TETRADS — the panel, and the readout
+ * =====================================================================
+ *
+ * The chrome is Xenachord Designer's, token for token: the same palette, the
+ * same rail and drawer, the same fieldsets, segmented buttons, scopes and
+ * checkboxes. The two apps share a synth and a notation engine, and a control
+ * that looks different in each would suggest it does something different.
+ *
+ * What is Tetrads' own is everything under "the readout" at the foot of this
+ * file — the notation panel, which has no counterpart there.
+ * ------------------------------------------------------------------ */
+
+:root {
+  --bg:#15161a; --panel:#1e1f25; --panel2:#25262e; --panel-bright:#2f313a; --line:#33343d;
+  --text:#e9e9ec; --dim:#9a9ba4; --accent:#6fb7ff; --warn:#ffb454; --ok:#79d18b;
+  --scope-bg:#12161c;
 }
 
-/* HEJI Fonts for Notation Display */
-@font-face {
-    font-family: "HEJI2";
-    src: url("fonts/HEJI2.otf") format("opentype");
-}
-@font-face {
-    font-family: "HEJIExtensions2022";
-    src: url("fonts/HEJIExtensions2025-Text.ttf") format("opentype");
-}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
+  font:13px/1.45 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
 
-#container {
-    width: 100vw;
-    height: 100vh;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
+/* ---------- fonts ----------
+   The same five faces Xenachord loads, and for the same reason: a name
+   spelled by the shared engines is drawn from the glyphs those engines were
+   written against. */
+@font-face{font-family:"HEJI2";src:url("fonts/HEJI2.otf") format("opentype")}
+@font-face{font-family:"HEJIExtensions2022";src:url("fonts/HEJIExtensions2025-Text.ttf") format("opentype")}
+@font-face{font-family:"Bravura";src:url("fonts/Bravura.woff2") format("woff2");font-display:block}
+@font-face{font-family:"EdoAccidentals";src:url("fonts/notes.otf") format("opentype")}
+@font-face{font-family:"Inter";src:url("fonts/inter.ttf") format("opentype")}
 
-#loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2em;
-    z-index: 100;
-}
+#app{display:flex;height:100%;min-height:0}
 
-#notation-display {
-    position: fixed;
-    bottom: 10px;
-    left: 5px;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-family: monospace;
-    font-size: 1.2em;
-    display: none; /* Initially hidden */
-    text-align: left;
-    /* Default styling for HEJI Ext */
-    line-height: 1.2;
-}
+/* ---------- side rail + drawer ---------- */
+#panel{display:flex;overflow:hidden;background:var(--panel);
+  border-right:1px solid var(--line);
+  width:61px;min-width:61px;flex:0 0 auto;transition:width .14s ease,min-width .14s ease}
+#panel.open{width:340px;min-width:340px}
+.rail{width:60px;flex:0 0 auto;border-right:1px solid var(--line);
+  padding:10px 0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.rail-btn{position:relative;width:42px;height:42px;padding:0;display:grid;
+  place-items:center;color:var(--dim);border-radius:9px;cursor:pointer;
+  background:transparent;border:1px solid transparent}
+.rail-btn>*{pointer-events:none}
+.rail-btn:hover{color:var(--text);background:var(--panel2)}
+.rail-btn[aria-expanded="true"]{color:var(--text);background:transparent;
+  box-shadow:inset 0 0 0 1px var(--accent)}
+.rail-icon{width:24px;height:24px}
+/* The info link sits at the foot of the rail rather than in the run of
+   modes: it is not a mode, and it leaves the app. */
+#info-link{margin-top:auto;text-decoration:none}
 
-#notation-display.notation-heji {
-    /* Specific styles for HEJI notation */
-    font-size: 1.5em; /* Adjust size to make HEJI symbols more prominent */
-    padding: 15px 20px; /* Adjust padding */
-}
+.panel-body{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.drawers{flex:1;min-height:0;overflow-y:auto}
+.drawer{padding:14px 16px 20px}
+.drawer.hidden{display:none}
 
-#notation-display .notation-dev-notename {
-    font-family: monospace;
-    font-size: 2em; /* Larger for the main note name */
-    /* Removed display: block; to allow inline flow */
-    line-height: 1; /* Adjust line height for stacking */
-}
+/* ---------- the two presses under every drawer ---------- */
+.panel-foot{flex:0 0 auto;border-top:1px solid var(--line);padding:10px 16px;
+  display:grid;grid-template-columns:1fr 1fr;gap:7px;background:var(--panel)}
 
-#notation-display .notation-dev-notename-inline {
-    font-family: monospace;
-    font-size: 1em; /* Adjusted for uniform sizing */
-    display: inline-block; /* Allow inline flow */
-    vertical-align: middle;
-    line-height: 1; /* Adjust line height for stacking */
-    margin-right: 0.2em; /* Small spacing between notes */
-}
+#main{flex:1;position:relative;min-width:0;display:flex;flex-direction:column}
+#container{flex:1;min-height:0;position:relative;overflow:hidden}
+#container canvas{display:block}
 
-#notation-display .heji-extensions {
-    font-family: "HEJIExtensions2022", sans-serif;
-    font-size: 1.5em; /* Adjust size as needed */
-    letter-spacing: 0.05em;
-    display: inline-block;
-    vertical-align: middle;
-    line-height: 1;
-}
+#loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);
+  display:flex;justify-content:center;align-items:center;
+  font-family:monospace;font-size:1.6em;z-index:100}
 
-#notation-display .heji2 {
-    font-family: "HEJI2", sans-serif;
-    font-size: 1.5em; /* Adjust size as needed */
-    display: inline-block;
-    vertical-align: middle;
-    line-height: 1;
-}
+/* ---------- panel furniture ---------- */
+h1{font-size:15px;margin:2px 0 12px;color:var(--text);font-weight:600}
+h1 small{color:var(--dim);font-weight:400}
+fieldset{border:1px solid var(--line);border-radius:8px;margin:0 0 12px;padding:9px 11px}
+legend{color:var(--dim);font-size:10.5px;font-weight:400;letter-spacing:.03em;padding:0 6px}
+label{display:block;color:var(--dim);font-size:11px;margin:7px 0 3px}
+select,input[type=number],input[type=text]{width:100%;background:var(--panel2);color:var(--text);
+  border:1px solid var(--line);border-radius:6px;padding:5px 7px;font-size:12.5px}
+select:focus,input:focus{outline:1px solid var(--accent);outline-offset:-1px}
+button{background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:6px;padding:6px 8px;font-size:11.5px;cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.primary{background:#24405c;border-color:#35608a;color:#cfe6ff;font-weight:600}
+button.primary:hover{border-color:var(--accent);color:#fff}
+/* Play latched on: the same lit state a segmented button gets, because it is
+   the same fact — this is the thing that is currently true. */
+#playButton.play-button-active{background:#24405c;border-color:var(--accent);color:#cfe6ff}
+.hint{color:var(--dim);font-size:10.5px;margin-top:6px}
+.symbol{font-family:Arial,sans-serif}
+
+.tune-h{display:block;color:var(--text);font-weight:600;font-size:11.5px;margin:10px 0 5px}
+.tune-h:first-child{margin-top:0}
+
+/* ---------- segmented buttons ---------- */
+.seg{display:flex;gap:0;margin:0 0 9px;flex-wrap:wrap}
+.seg button{flex:1 1 0;min-width:0;border-radius:0;padding:4px 6px;font-size:11px;
+  border-left-width:0;color:var(--dim)}
+.seg button:first-child{border-radius:6px 0 0 6px;border-left-width:1px}
+.seg button:last-child{border-radius:0 6px 6px 0}
+.seg button.on{background:var(--panel-bright);color:var(--text);
+  box-shadow:inset 0 0 0 1px var(--accent)}
+.seg button:hover{color:var(--accent)}
+/* Six readouts do not fit one row legibly, so this one is allowed to wrap and
+   every button keeps its own corners rather than pretending to be a strip. */
+.seg.wrap button{flex:1 1 30%;border-left-width:1px;border-radius:6px;margin:0 3px 3px 0}
+
+/* ---------- checkbox rows ---------- */
+.vis{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;
+  color:var(--dim);margin:7px 0 3px;font-size:11px}
+.vis:hover{color:var(--text)}
+.vis input{accent-color:var(--accent);margin:0}
+
+/* ---------- sliders ---------- */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;
+  margin:5px 0 0;background:#3d3d3d;border-radius:6px;outline:none;accent-color:var(--accent)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+  width:14px;height:14px;border-radius:50%;background:var(--accent);border:none;margin-top:-4px}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+  background:var(--accent);border:none}
+input[type=range]::-webkit-slider-runnable-track{height:6px;background:#3d3d3d;border-radius:6px}
+input[type=range]::-moz-range-track{height:6px;background:#3d3d3d;border-radius:6px}
+
+/* ---------- the synth's two drawn controls ---------- */
+.scope{display:block;width:100%;height:74px;background:var(--scope-bg);
+  border:1px solid var(--line);border-radius:6px}
+#s-adsr{height:92px;cursor:pointer;touch-action:none}
+.wave-ticks{display:flex;justify-content:space-between;
+  color:var(--dim);font-size:10px;margin-top:3px}
+.wave-ticks span{font-variant-numeric:tabular-nums}
+.pressrow{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.pressrow label{margin:0;font-weight:600;color:var(--text);font-size:11.5px}
+
+/* =====================================================================
+ *  THE READOUT
+ * =====================================================================
+ * What the tetrad under the pointer is called. It floats over the viewport
+ * rather than living in the panel, because it belongs to the corner being
+ * touched and not to the settings that produced it.
+ * ------------------------------------------------------------------ */
+
+#notation-display{position:absolute;bottom:12px;left:12px;
+  background:rgba(30,31,37,.92);backdrop-filter:blur(4px);
+  border:1px solid var(--line);border-radius:8px;
+  color:var(--text);padding:10px 15px;font-family:monospace;font-size:1.2em;
+  display:none;text-align:left;line-height:1.2;pointer-events:none;z-index:10}
+
+/* The engines emit these class names, and Xenachord's metrics for them are
+   reproduced exactly — 1em Inter nominal, 1.5em HEJI, 1.333em Bravura for
+   Sagittal — so a name reads the same in both apps. */
+.tune-letter{font-family:"Inter",sans-serif;font-size:1em}
+#notation-display .heji-extensions{font-family:"HEJIExtensions2022","HEJI2",sans-serif;
+  font-size:1.5em;letter-spacing:0;display:inline-block;vertical-align:middle;line-height:1}
+#notation-display .heji2{font-family:"HEJI2",sans-serif;font-size:1.5em;letter-spacing:0;
+  display:inline-block;vertical-align:middle;line-height:1}
+#notation-display .sag-symbol{font-family:"Bravura",serif;font-size:1.333em;
+  display:inline-block;vertical-align:middle;line-height:1}
+.edo-name{font-family:"EdoAccidentals",sans-serif}
+
+#notation-display.notation-heji,
+#notation-display.notation-sagittal{font-size:1.5em;padding:15px 20px}
+
+#notation-display .notation-dev-notename{font-family:monospace;font-size:2em;line-height:1}
+#notation-display .notation-dev-notename-inline{font-family:monospace;font-size:1em;
+  display:inline-block;vertical-align:middle;line-height:1;margin-right:.2em}
 
 #notation-display .notation-ratio-base,
-#notation-display .notation-ratio-chord {
-    font-family: monospace;
-    font-size: 1.2em;
-}
+#notation-display .notation-ratio-chord{font-family:monospace;font-size:1.2em}
 
-#settings-menu {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background-color: rgba(30, 30, 30, 0.8);
-    border-radius: 8px;
-    z-index: 10;
-    color: white;
-    font-family: monospace;
-    transform: scale(0.85);
-    transform-origin: top left;
-}
+#notation-display.notation-deviation{font-size:1em;padding:15px 20px;line-height:1.2}
 
-#settings-header {
-    padding: 10px 15px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    min-width: 15px;
-}
+.midiAccidental-heji-font{font-family:"HEJI2",sans-serif;font-size:1em;
+  vertical-align:middle;display:inline-block;line-height:1}
+.deviation-cents-monospace{font-family:monospace;font-size:1em;vertical-align:middle;
+  display:inline-block;line-height:1;margin-left:.2em}
 
-#settings-header .toggle-icon {
-    transition: transform 0.2s;
-    display: inline-block;
-}
-
-.settings-title-group {
-    display: flex;
-    align-items: center;
-}
-
-#info-link {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1.2em;
-    margin-left: 35px;
-}
-
-#info-link:hover {
-    color: #0056b3;
-}
-
-#settings-header.collapsed #info-link {
-    display: none;
-}
-
-#settings-header.collapsed .toggle-icon {
-    transform: rotate(-90deg);
-}
-
-#settings-content {
-    padding: 0 15px 15px 15px;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 10px;
-    align-items: center;
-}
-
-
-
-#settings-menu label {
-    white-space: nowrap;
-    font-size: 13px;
-    min-width: 70px; /* Added min-width for alignment */
-}
-
-#midiOutputSelect {
-    width: 100%;
-}
-#settings-menu input, #settings-menu select, #settings-menu button {
-    width: auto; /* Changed from 100% to auto */
-    box-sizing: border-box;
-    padding: 5px;
-    border-radius: 4px;
-    border: 1px solid #555;
-    background-color: #4a4a4a;
-    color: #fff;
-    font-size: 13px;
-    font-family: monospace;
-}
-
-#timbre-row {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 35px;
-    margin-top: 0;
-}
-
-#timbreSlider {
-    width: 100%;
-}
-
-/* Range slider styling to match Timbre aesthetic */
-#settings-menu input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 6px;
-    background: #3d3d3d;
-    border-radius: 6px;
-    outline: none;
-}
-#settings-menu input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #007bff;
-    border: none;
-    box-shadow: none;
-    margin-top: -4px;
-}
-#settings-menu input[type="range"]::-moz-range-thumb {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #007bff;
-    border: none;
-    box-shadow: none;
-}
-#settings-menu input[type="range"]:focus { outline: none; }
-#settings-menu input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: #3d3d3d; border-radius: 6px; }
-#settings-menu input[type="range"]::-moz-range-track { height: 6px; background: #3d3d3d; border-radius: 6px; }
-
-#waveformCanvas {
-    border: 1px solid #555;
-    background-color: #2a2a2a;
-    border-radius: 4px;
-}
-#settings-menu button {
-    grid-column: 1 / -1;
-    cursor: pointer;
-    background-color: #5a5a5a;
-}
-
-#settings-menu button:hover {
-    background-color: #6a6a6a;
-}
-
-#settings-menu button.play-button-active {
-    background-color: #007bff;
-    border-color: #007bff;
-}
-
-#settings-menu button.play-button-active:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
-}
-
-/* New styles for pivot buttons */
-.settings-row {
-    grid-column: 1 / -1; /* Span across both columns */
-    display: grid; /* Change from flex to grid */
-    grid-template-columns: auto 1fr; /* Align with settings-content grid */
-    gap: 35px; /* Maintain consistent gap */
-    align-items: center;
-    margin-top: 0;
-}
-
-.settings-row label {
-    flex-shrink: 0; /* Prevent label from shrinking */
-    font-size: 13px;
-    white-space: nowrap;
-}
-
-.pivot-buttons {
-    display: flex;
-    gap: 5px;
-    flex-grow: 1; /* Allow buttons to take available space */
-}
-
-.pivot-button {
-    flex-grow: 1; /* Make buttons grow to fill space */
-    padding: 5px 10px;
-    border: 1px solid #555;
-    border-radius: 4px;
-    background-color: #5a5a5a;
-    color: #fff;
-    cursor: pointer;
-    font-size: 13px;
-    text-align: center;
-}
-
-.pivot-button:hover {
-    background-color: #6a6a6a;
-}
-
-#midiOutputSelect {
-    width: 100%;
-}
-
-#midi-device-selector {
-    grid-template-columns: auto 3fr; /* Give more space to the select element */
-}
-
-#settings-menu .pivot-button.selected {
-    background-color: #007bff; /* Blue for selected */
-    border-color: #007bff;
-}
-
-#settings-menu .pivot-button.selected:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
-}
-
-.symbol {
-    font-family: Arial, sans-serif;
-}
-
-.controls-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.controls-container select, .controls-container input[type="number"] {
-    width: auto;
-    flex-grow: 1;
-}
-
-.inline-label {
-    margin-left: 8px;
-}
-
-/* Custom checkbox styles */
-#settings-menu input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    width: 14px;
-    height: 14px;
-    border: 1px solid #fff;
-    border-radius: 2px;
-    background-color: transparent;
-    cursor: pointer;
-    position: relative;
-    vertical-align: middle;
-}
-
-#settings-menu input[type="checkbox"]:checked {
-    background-color: #007bff;
-    border-color: #007bff;
-}
-
-#notation-display.notation-deviation {
-    /* Specific styles for Deviation notation */
-    font-size: 1.0em; /* Adjusted for uniform sizing */
-    padding: 15px 20px; /* Adjust padding */
-    line-height: 1.2; /* Ensure lines are well-spaced */
-}
-
-.midiAccidental-heji-font {
-    font-family: "HEJI2", sans-serif;
-    font-size: 1em; /* Adjusted for uniform sizing */
-    vertical-align: middle;
-    display: inline-block;
-    line-height: 1;
-}
-
-.deviation-cents-monospace {
-    font-family: monospace;
-    font-size: 1em; /* Adjusted for uniform sizing */
-    vertical-align: middle;
-    display: inline-block;
-    line-height: 1;
-    margin-left: 0.2em; /* Small space between accidental and cents */
-}
-
-/* New styles for 'All' notation type */
-#notation-display.notation-all {
-    padding: 10px 15px;
-    font-size: 1.0em; /* Overall smaller font size for combined display */
-}
-
-.notation-all-grid {
-    display: grid;
-    grid-template-rows: repeat(3, auto); /* Three rows for Ratio, HEJI, Deviation */
-    gap: 10px; /* Gap between rows */
-}
-
-.notation-all-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Default for HEJI and Deviation rows */
-    gap: 5px; /* Gap between columns/voices */
-    text-align: center;
-}
-
-.notation-all-row.ratio-row {
-    grid-template-columns: 1fr max-content 1fr max-content 1fr max-content 1fr; /* 4 for numbers, 3 for colons */
-    gap: 0px; /* Remove gap for ratio row to make colons closer */
-}
-
-.notation-all-cell {
-    white-space: nowrap; /* Prevent wrapping within a cell */
-    overflow: hidden;
-    text-overflow: ellipsis; /* Add ellipsis if content overflows */
-    display: flex; /* Use flex to center content vertically and horizontally */
-    justify-content: center;
-    align-items: center;
-}
-
-.colon-cell {
-    font-size: 1.2em; /* Same size as ratio numbers */
-    font-family: monospace;
-    color: #bbb; /* Slightly dim the colons */
-    padding: 0 2px; /* Small padding around colons */
-}
-
-.ratio-cell {
-    font-size: 1.2em; /* Larger for Ratio */
-    font-family: monospace;
-    /* Removed font-weight: bold; */
-}
-
-#notation-display.notation-all .heji-cell .notation-dev-notename-inline {
-    font-size: 2.0em; /* Doubled for priority */
-}
+/* ---------- "All": three readings of the same four voices ---------- */
+#notation-display.notation-all{padding:10px 15px;font-size:1em}
+.notation-all-grid{display:grid;grid-template-rows:repeat(3,auto);gap:10px}
+.notation-all-row{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;text-align:center}
+.notation-all-row.ratio-row{grid-template-columns:1fr max-content 1fr max-content 1fr max-content 1fr;gap:0}
+.notation-all-cell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  display:flex;justify-content:center;align-items:center}
+.colon-cell{font-size:1.2em;font-family:monospace;color:#bbb;padding:0 2px}
+.ratio-cell{font-size:1.2em;font-family:monospace}
+#notation-display.notation-all .heji-cell .notation-dev-notename-inline{font-size:2em}
 #notation-display.notation-all .heji-cell .heji-extensions,
-#notation-display.notation-all .heji-cell .heji2 {
-    font-size: 2.376em; /* Doubled for priority */
-}
-
+#notation-display.notation-all .heji-cell .heji2{font-size:2.376em}
 .deviation-cell .notation-dev-notename-inline,
 .deviation-cell .midiAccidental-heji-font,
-.deviation-cell .deviation-cents-monospace {
-    font-size: 0.8em; /* Smaller for Deviation */
-}
-
-#hand-tracking-section {
-    display: none;
-}
+.deviation-cell .deviation-cents-monospace{font-size:.8em}

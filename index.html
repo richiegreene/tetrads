@@ -6,150 +6,275 @@
     <title>tetrads</title>
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="stylesheet" href="style.css">
-    <style>
-        #notation-display {
-            position: fixed;
-            bottom: 10px;
-            left: 5px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 1.2em;
-            display: none; /* Initially hidden */
-            text-align: left;
-        }
-    </style>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
-    <!-- MediaPipe Hand Tracking Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/hand-pose-detection@2.0.0/dist/hand-pose-detection.js"></script>
 </head>
 <body>
-    <video id="webcam-feed" style="display: none;" autoplay playsinline></video>
-    <div id="container"></div>
-    <canvas id="handTrackingCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;"></canvas>
-    <div id="loading-overlay" style="font-family: monospace; font-size: 1.2em;">loading...</div>
-    <div id="notation-display"></div>
-    <div id="settings-menu">
-        <div id="settings-header">
-            <div class="settings-title-group">
-                <span>Settings</span>
-                <a href="https://github.com/richiegreene/tetrads" id="info-link" target="_blank" rel="noopener noreferrer">‎ ⓘ‎ ‎ </a>
+<div id="app">
+
+  <!-- ----------  side rail + drawer  ----------
+       The rail is the whole index of what the app is set from — what the
+       tetrads ARE, how they are DRAWN, and how they SOUND — so there is no
+       header above the panel saying the same thing twice. The drawer is the
+       one you are in. Shut, the panel is the width of the rail and the
+       viewport keeps everything it gives back. -->
+  <aside id="panel" class="open">
+    <div class="rail">
+      <!-- Complexity: three pitches and the edges between them, which is
+           what a limit and a complexity measure are read over. -->
+      <button class="rail-btn" data-drawer="complexity" aria-expanded="true"
+        title="Complexity Measures — which tetrads exist at all">
+        <svg class="rail-icon" viewBox="0 0 26 26" fill="none" stroke="currentColor"
+          stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M13 4.5L21 19H5z" />
+          <path d="M13 4.5v14.5M13 19l-8-6M13 19l8-6" />
+        </svg>
+      </button>
+      <!-- Display: an eye, because the drawer changes nothing but what you
+           are looking at. -->
+      <button class="rail-btn" data-drawer="display" aria-expanded="false"
+        title="Display — how the set is drawn and read">
+        <svg class="rail-icon" viewBox="0 0 26 26" fill="none" stroke="currentColor"
+          stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2.5 13S6.5 6.5 13 6.5 23.5 13 23.5 13 19.5 19.5 13 19.5 2.5 13 2.5 13z" />
+          <circle cx="13" cy="13" r="3" />
+        </svg>
+      </button>
+      <!-- Play: sounding the set. -->
+      <button class="rail-btn" data-drawer="play" aria-expanded="false"
+        title="Play — sounding the tetrads">
+        <svg class="rail-icon" viewBox="0 0 26 26" fill="none" stroke="currentColor"
+          stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9.5 6.5l9.5 6.5-9.5 6.5z" />
+        </svg>
+      </button>
+      <a class="rail-btn" id="info-link" href="https://github.com/richiegreene/tetrads"
+        target="_blank" rel="noopener noreferrer" title="About Tetrads">
+        <svg class="rail-icon" viewBox="0 0 26 26" fill="none" stroke="currentColor"
+          stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="13" cy="13" r="9.5" /><path d="M13 11.5v6" /><path d="M13 8.6v.1" />
+        </svg>
+      </a>
+    </div>
+
+    <div class="panel-body">
+      <div class="drawers">
+
+        <!-- ============ COMPLEXITY MEASURES ============
+             What is in the set at all. Everything here changes which tetrads
+             are generated, which is why it leads: the two drawers after it
+             only decide what is done with whatever this produces. -->
+        <div class="drawer" data-drawer="complexity">
+          <h1>Tetrads <small>· complexity</small></h1>
+
+          <fieldset>
+            <legend>Limit</legend>
+            <label for="limitType">Limit type</label>
+            <select id="limitType"
+              title="How far an interval may reach before it is left out. Odd- and integer-limit count the ratio's own numbers; prime-limit counts which primes it is built from.">
+              <option value="Integer">Integer-Limit</option>
+              <option value="Odd" selected>Odd-Limit</option>
+              <option value="Prime">Prime-Limit</option>
+            </select>
+            <label for="limitValue">Limit</label>
+            <input type="text" id="limitValue" value="13"
+              title="The limit itself. A slash adds a virtual-fundamental filter — 13/1.3.5 keeps only tetrads whose fundamental is one of those, and 13/1...8 takes the range.">
+            <div id="prime-limit-options" style="display:none">
+              <label for="maxExponent">Max exponent</label>
+              <input type="number" id="maxExponent" value="3" min="1" step="1"
+                title="How many times one prime may be used in a single interval.">
             </div>
-            <span class="toggle-icon">▼</span>
+          </fieldset>
+
+          <fieldset>
+            <legend>Register</legend>
+            <label for="equaveRatio">Equave</label>
+            <input type="number" id="equaveRatio" value="2" min="1" step="0.1"
+              title="How wide the whole tetrad may be, outer voice to outer voice. 2 is an octave.">
+          </fieldset>
+
+          <fieldset>
+            <legend>Complexity</legend>
+            <label for="complexityMethod">Measure</label>
+            <select id="complexityMethod"
+              title="Which measure of an interval's complexity the tetrad is sized and coloured by.">
+              <option value="Arithmetic">Arithmetic</option>
+              <option value="Benedetti">Benedetti</option>
+              <option value="Gradus">Euler</option>
+              <option value="Tenney" selected>Tenney</option>
+              <option value="Weil">Weil</option>
+              <option value="Wilson">Wilson</option>
+            </select>
+          </fieldset>
         </div>
-        <div id="settings-content">
-            <div class="settings-row" id="limit-settings" style="display: flex; align-items: center; gap: 8px;">
-                <select id="limitType" style="width: 50%;">
-                    <option value="Integer">Integer-Limit</option>
-                    <option value="Odd" selected>Odd-Limit</option>
-                    <option value="Prime">Prime-Limit</option>
-                </select>
-                <input type="text" id="limitValue" value="13" style="width: 50%;">
+
+        <!-- ============ DISPLAY ============ -->
+        <div class="drawer hidden" data-drawer="display">
+          <h1>Tetrads <small>· display</small></h1>
+
+          <fieldset>
+            <legend>Points</legend>
+            <div class="seg" id="layout-seg">
+              <button data-v="points" class="on" title="One point per tetrad">Points</button>
+              <button data-v="labels" title="The enumerated ratio itself, in place of the point">Labels</button>
             </div>
-            <div class="settings-row" id="prime-limit-options" style="display: none; align-items: center; gap: 8px;">
-                <label for="maxExponent" style="width: 30%;">Max Exp.</label>
-                <input type="number" id="maxExponent" value="3" min="1" step="1" style="width: 70%;">
-            </div>
-            <label for="equaveRatio">Register</label>
-            <input type="number" id="equaveRatio" value="2" min="1" step="0.1">
-            <label for="complexityMethod">Complexity</label>
-            <select id="complexityMethod">
-                <option value="Arithmetic">Arithmetic</option>
-                <option value="Benedetti">Benedetti</option>
-                <option value="Gradus">Euler</option>
-                <option value="Tenney" selected>Tenney</option>
-                <option value="Weil">Weil</option>
-                <option value="Wilson">Wilson</option>
-            </select>
-            <label for="layoutDisplay">Display</label>
-            <select id="layoutDisplay">
-                <option value="points">Points</option>
-                <option value="labels">Labels</option>
-            </select>
-            <label for="enableNotation">Notation</label>
-            <div class="controls-container">
-                <input type="checkbox" id="enableNotation" checked>
-                <select id="notationType">
-                    <option value="all" selected>All</option>
-                    <option value="cents">Cents from 1/1</option>
-                    <option value="deviation">Cents from 12EDO</option>
-                    <option value="ratio">Enumerated Ratio</option>
-                    <option value="heji">Helmholtz-Ellis JI Pitch Notation</option>
-                </select>
-            </div>
-            <label for="enableSize">Enable Size</label>
-            <div class="controls-container">
-                <input type="checkbox" id="enableSize" checked>
-                <label for="enableColor" class="inline-label">Enable Color</label> 
-                <input type="checkbox" id="enableColor" checked>
-            </div>
+            <input type="hidden" id="layoutDisplay" value="points">
+
+            <label class="vis">
+              <input type="checkbox" id="enableSize" checked>Enable Size</label>
+            <label class="vis">
+              <input type="checkbox" id="enableColor" checked>Enable Color</label>
+
             <label for="baseSize">Base Size</label>
             <input type="range" id="baseSize" value="1.00" min="0.25" max="2.50" step="0.01">
             <label for="scalingFactor">Measure</label>
             <input type="range" id="scalingFactor" value="2" min="0.50" max="3.00" step="0.01">
-            <label for="hideUnisonVoices">Omit Unisons</label>
-            <div class="controls-container">
-                <input type="checkbox" id="hideUnisonVoices">
-                <label for="omitOctaves" class="inline-label">Omit Octaves</label>
-                <input type="checkbox" id="omitOctaves">
-            </div>
-            <div id="hand-tracking-section">
-                <label for="enableHandTracking">Hand Tracking</label>
-                <div class="controls-container">
-                    <input type="checkbox" id="enableHandTracking">
-                    <select id="handTrackingMode">
-                        <option value="displayVirtualHands" selected>Display Virtual Hands</option>
-                        <option value="hideHands">Hide Hands</option>
-                    </select>
+          </fieldset>
+
+          <fieldset>
+            <legend>Omit</legend>
+            <label class="vis">
+              <input type="checkbox" id="hideUnisonVoices">Omit Unisons</label>
+            <label class="vis">
+              <input type="checkbox" id="omitOctaves">Omit Octaves</label>
+          </fieldset>
+
+          <!-- ---- how a sounding tetrad is written out ----
+               The readouts are one list because they are one question — what
+               the corner under the pointer says — and the three JI languages
+               in it are Xenachord's own, built from the same engines, so a
+               chord spelled here is spelled the way that app would spell it. -->
+          <fieldset>
+            <legend>Notation</legend>
+            <label class="vis">
+              <input type="checkbox" id="enableNotation" checked>Enable Notation</label>
+
+            <div id="notation-options">
+              <div class="tune-h">Readout</div>
+              <div class="seg wrap" id="notation-seg">
+                <button data-v="all" class="on" title="Ratio, HEJI and the deviation from 12EDO at once">All</button>
+                <button data-v="ratio" title="The enumerated ratio itself">Ratio</button>
+                <button data-v="heji" title="Helmholtz-Ellis Just Intonation">HEJI</button>
+                <button data-v="sagittal" title="Sagittal">Sagittal</button>
+                <button data-v="cents" title="Cents above 1/1">Cents</button>
+                <button data-v="deviation" title="The nearest 12EDO note and the cents off it">12EDO</button>
+              </div>
+              <input type="hidden" id="notationType" value="all">
+
+              <!-- Sagittal only, and asked in Sagittal's own terms. -->
+              <div id="sagittal-options" style="display:none">
+                <label for="sagittalPrecision">Precision</label>
+                <select id="sagittalPrecision" title="How finely Sagittal spells the comma">
+                  <option value="medium" selected>Athenian</option>
+                  <option value="high">Promethean</option>
+                  <option value="ultra">Herculean</option>
+                  <option value="extreme">Olympian</option>
+                </select>
+                <div class="seg" id="sagittal-flavour">
+                  <button data-v="revo" class="on" title="Pure Sagittal: the symbol carries the whole alteration">revo</button>
+                  <button data-v="evo" title="Sagittal beside a conventional sharp or flat">evo</button>
                 </div>
-                <div class="settings-row" id="hand-smoothing-row">
-                    <label for="handSmoothingSlider">Hand Smoothing</label>
-                    <input type="range" id="handSmoothingSlider" min="0" max="100" value="25" step="1">
-                </div>
+              </div>
             </div>
+          </fieldset>
+        </div>
+
+        <!-- ============ PLAY ============ -->
+        <div class="drawer hidden" data-drawer="play">
+          <h1>Tetrads <small>· play</small></h1>
+
+          <fieldset>
+            <legend>Output</legend>
             <label for="playbackMode">Playback</label>
             <select id="playbackMode">
-                <option value="browser" selected>In-Browser Audio</option>
-                <option value="mpe-midi">MIDI Polyphonic Expression (MPE)</option>
-                <option value="both">Both</option>
+              <option value="browser" selected>In-Browser Audio</option>
+              <option value="mpe-midi">MIDI Polyphonic Expression (MPE)</option>
+              <option value="both">Both</option>
             </select>
-            <div class="settings-row" id="midi-device-selector" style="display: none;">
-                <label for="midiOutputSelect">MIDI Out</label>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <select id="midiOutputSelect" style="flex-grow: 0.7;">
-                        <option>No devices found</option>
-                    </select>
-                    <input type="range" id="mpePressureSlider" min="0" max="127" value="64" step="1" style="display: none; flex-grow: 0.3;">
-                </div>
-            </div>
-            <label for="enableSlide">Enable Slide</label>
-            <div class="controls-container">
-                <input type="checkbox" id="enableSlide" checked>
-                <input type="number" id="slideDuration" value="0.25" min="0.01" step="0.01">
-            </div>
-            <div class="settings-row" id="timbre-row">
-                <label for="timbreSlider">Timbre</label>
-                <input type="range" id="timbreSlider" min="0" max="3" value="1" step="0.01">
-                <canvas id="waveformCanvas" width="60" height="30"></canvas>
-            </div>
-            <div class="settings-row">
-                <label>Pivot</label>
-                <div class="pivot-buttons">
-                    <button id="pivotSoprano" class="pivot-button" data-pivot-index="3">S</button>
-                    <button id="pivotAlto" class="pivot-button" data-pivot-index="2">A</button>
-                    <button id="pivotTenor" class="pivot-button" data-pivot-index="1">T</button>
-                    <button id="pivotBass" class="pivot-button selected" data-pivot-index="0">B</button>
-                </div>
-            </div>
-            <button id="playButton">Play (<span class="symbol">⇧</span>)</button>
-            <button id="updateButton">Update (<span class="symbol">↵</span>)</button>
-        </div>
-    </div>
 
-    <script type="module" src="js/main.js"></script>
+            <div id="midi-device-selector" style="display:none">
+              <label for="midiOutputSelect">MIDI Out</label>
+              <select id="midiOutputSelect">
+                <option>No devices found</option>
+              </select>
+              <div id="mpe-pressure-row" style="display:none">
+                <label for="mpePressureSlider">MPE Pressure</label>
+                <input type="range" id="mpePressureSlider" min="0" max="127" value="64" step="1">
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- ---- moving between tetrads ----
+               A tetrad is not a note but a place, and the move from one to
+               the next is what the pointer is drawing. Slide leads the four
+               voices there rather than re-striking them, so the progression
+               is heard as motion; the pivot says which voice is held fixed
+               while it happens. -->
+          <fieldset>
+            <legend>Voice Leading</legend>
+            <label class="vis">
+              <input type="checkbox" id="enableSlide" checked>Enable Slide</label>
+            <div id="slide-duration-row">
+              <label for="slideDuration">Slide (s)</label>
+              <input type="number" id="slideDuration" value="0.25" min="0.01" step="0.01">
+            </div>
+
+            <div class="tune-h">Pivot</div>
+            <div class="seg" id="pivot-seg">
+              <button class="pivot-button" data-pivot-index="3" title="Soprano held">S</button>
+              <button class="pivot-button" data-pivot-index="2" title="Alto held">A</button>
+              <button class="pivot-button" data-pivot-index="1" title="Tenor held">T</button>
+              <button class="pivot-button on" data-pivot-index="0" title="Bass held">B</button>
+            </div>
+          </fieldset>
+
+          <!-- Xenachord's Play drawer, on the same terms: the family list and
+               the slider's range are written in by createTimbrePicker rather
+               than spelled out here, so the two apps cannot come to offer
+               different shapes. -->
+          <fieldset>
+            <legend>Synth</legend>
+            <label class="tune-h" for="s-family">Timbre</label>
+            <select id="s-family"
+              title="Wavetable: fixed waveform, volume-independent. Filtered wavetable: sine phase-modulated by its own low-passed output, so quiet notes stay near-sine and loud ones buzz."></select>
+            <canvas id="s-wave" class="scope" style="margin-top:9px"></canvas>
+            <div class="pressrow" style="margin-top:7px">
+              <label for="s-timbre" id="s-label" style="margin:0;font-weight:600;
+                color:var(--text);font-size:11.5px">Filtered saw</label>
+            </div>
+            <input id="s-timbre" type="range" min="1000" max="1300" step="1" value="1200">
+            <div class="wave-ticks" id="s-ticks"></div>
+
+            <div class="tune-h" style="margin-top:12px">Envelope</div>
+            <canvas id="s-adsr" class="scope"
+              title="Drag the corners: the first is the attack, the second the decay and the level it falls to, the last the release."></canvas>
+            <div class="wave-ticks" id="s-adsr-ticks">
+              <span id="s-a">A</span><span id="s-d">D</span>
+              <span id="s-s">S</span><span id="s-r">R</span>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <!-- ---- the two presses, under every drawer ----
+           Update belongs to Complexity and Display and Play alike — every one
+           of them can change what the next press generates — so it is not put
+           inside any of them. Play is beside it because the two are the pair
+           you alternate between once the panel is set. -->
+      <div class="panel-foot">
+        <button id="playButton" title="Sound the tetrad under the pointer (hold ⇧)">Play (<span class="symbol">⇧</span>)</button>
+        <button id="updateButton" class="primary" title="Regenerate the set (↵)">Update (<span class="symbol">↵</span>)</button>
+      </div>
+    </div>
+  </aside>
+
+  <div id="main">
+    <div id="container"></div>
+    <div id="notation-display"></div>
+  </div>
+</div>
+
+<div id="loading-overlay">loading...</div>
+
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
