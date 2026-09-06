@@ -46,7 +46,7 @@ The **Measure** fieldset chooses what the plot is a picture of. The first option
 **Span** is the plot's own axis control: how many equaves wide it is. The Equave belongs to all three modes and is not this one's to change, but a dyad is the one chord that stays perfectly readable past it.
 
 ### Display
-* **Curve** — **Fill** shades the area under the curve through the colormap *by height*, so the colour says what the height says; **Line** strokes it. **Line size** is how thick: at a hair's width the curve is a reading, at six pixels it is a drawing. The whole fieldset goes when the measure has no curve to draw.
+* **Curve** — **Fill** shades the area under the curve through the colormap *by value*, so the colour says what the height says. **Line** strokes it, through the same colormap and along its own length: the value is a function of the horizontal position and of nothing else, so a stroke coloured by the value is a stroke with a horizontal gradient on it. **Line size** is how thick, from half a pixel to eight — which is the point of colouring it, because at eight pixels the line is wide enough to read as a band of colour rather than as a contour. The whole fieldset goes when the measure has no curve to draw.
 * **Plot › Grid lines** — the cents ruler, the gridlines, the tick labels, the axis title and the frame. Turned off they all go, *and the margins they were being kept for go with them*, so the measure is drawn across the whole pane. The cursor loses its crosshair and its readout to match: a dot on a line, and nothing else on screen. It is not a degraded view — the shape of a concordance curve is legible without a single number on it, and once you know what the axes are the furniture is only in the way.
 * **Plot › Relief** — how much of the pane's height the measure is allowed to use. Scaled about the **middle** rather than the floor, so turning it down settles the curve toward a straight line across the centre of the page instead of crushing it into the bottom edge. Everything vertical goes through it together — the curve, the lattice stems and the floor they stand on, the axis marks — so a low relief is a smaller picture of the same plot rather than a curve floating loose under furniture drawn at full size. Colour is taken from the *value* rather than the height, so a settled curve stays coloured by the numbers it actually has.
 * **Lattice** — Dots stems every just interval up to the curve, a stem rather than a bare dot because the mark has to say two things: where the interval is, and what the measure makes of it. Labels are placed simplest-first and any that would collide with one already placed is dropped, so 3/2 is never buried under 27/16.
@@ -58,7 +58,7 @@ Press and drag anywhere in the box — the height is the measure's answer, not a
 The **Pivot** — **S** or **T** — is not a refinement here, it is what the gesture *means*. Hold the lower voice and dragging right takes the upper one up; hold the upper and the same drag takes the lower one down. Same interval, opposite motion, and they do not sound the same. The `s` and `t` keys select it. Space puts the next dyad back on 1/1 = C3.
 
 ### Export, in Dyads
-* **.svg** — **no raster at any resolution.** The triangle's exporter has to embed its shading as an image because a continuously shaded scalar field is one polygon per grid cell; a curve has no such problem. The fill is a single linear gradient sampled from the colormap itself, and everything else is a path, a circle or real text. Grid lines, Line size and Relief all apply, so a bare render exports bare.
+* **.svg** — **no raster at any resolution.** The triangle's exporter has to embed its shading as an image because a continuously shaded scalar field is one polygon per grid cell; a curve has no such problem. The fill and the stroke share one 256-stop linear gradient sampled from the colormap itself, and everything else is a path, a circle or real text. Grid lines, Line size and Relief all apply, so a bare render exports bare.
 * **.png** — rasterised from that SVG at up to 4x.
 * **.csv** — the dyads with their cents, their complexity under the measure the whole app is set to, and the current model's value at each one.
 
@@ -98,7 +98,7 @@ The **Pivot** — **S**, **A** or **T** — is the voice held still while the ot
     * speed up: ] or }
     * slow dow: [ or {
 * Zoom: two-finger scroll/mouse-wheel
-* Layout/Looks: ⇧⌘L cycles the colormap; the same eight are in Display › Visuals as swatches
+* Layout/Looks: ⇧⌘L cycles the colormap; the same twelve are in Display › Visuals as swatches. Ten are ramps, where colour carries the measure. The two **Constant** layouts are one colour and no gradient — in all three modes — because their surface is meant to be read off its lighting and its geometry, with the measure left to Size; the swatch on the chip sets the body colour, and the marks drawn on it take that colour's hue at a brightness the ground can be read against.
   * Plasma, Viridis and Magma — perceptually uniform ramps
   * Blue — [Isoharmonics](https://github.com/richiegreene/isoharmonics)' own gradient, stop for stop
   * Black and White — greyscale, named for the ground the set is drawn on: on black the simplest chords come out brightest, on white they go to ink

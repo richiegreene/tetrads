@@ -155,6 +155,32 @@ export function verticalAxis(o) {
 const rgbOf = (c) => `rgb(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)})`;
 
 /**
+ * The colormap laid along the axis, as a paint.
+ *
+ * The measure's value is a function of the horizontal position and of nothing
+ * else, so "colour this by the value" and "colour this with a horizontal
+ * gradient" are the same instruction — which is what lets a stroke be coloured
+ * by the value at all. A thick line then runs through the ramp along its
+ * length instead of being one flat sample of it. On a constant layout every
+ * stop is the same colour and it comes out flat, which is what constant means.
+ *
+ * A gradient rather than a segment per column: a stroke has to be drawn as one
+ * path or its joins and its round caps are not the shape they should be, and
+ * hundreds of short separately-coloured segments would overlap at every bend
+ * and show every one of them at any real line width.
+ */
+function valueGradient(x0, x1, cols, vs, map) {
+    const g = ctx.createLinearGradient(x0, 0, x1, 0);
+    const stops = Math.max(2, Math.min(cols - 1, 512));
+    for (let s = 0; s <= stops; s++) {
+        const i = Math.round((s / stops) * (cols - 1));
+        const v = vs[i];
+        g.addColorStop(s / stops, rgbOf(map(v === v ? Math.min(1, Math.max(0, v)) : 0)));
+    }
+    return g;
+}
+
+/**
  * @param {object} o the settings the drawer reads out of the panel:
  *        equaveRatio, enableSize, enableColor, baseSize, scalingFactor
  */
@@ -257,10 +283,15 @@ function drawFrame(o, C, axis) {
 /**
  * The measure itself.
  *
- * Shaded under and stroked over, independently. The shading is coloured by
- * HEIGHT rather than by position, so the ramp says the same thing the height
- * does and the two readings reinforce each other — which is what makes a
- * colour layout mean something on a curve at all.
+ * Shaded under and stroked over, independently, and BOTH coloured by the
+ * measure's own value at that point — so the ramp says the same thing the
+ * height says and the two readings reinforce each other, which is what makes
+ * a colour layout mean anything on a curve at all.
+ *
+ * The shading walks the columns and the stroke takes a gradient, which is the
+ * same colouring arrived at two ways: a fill can be laid down a column at a
+ * time and be exact, but a stroke has to be one path or its joins and caps
+ * come apart, so it needs the ramp as a paint rather than as a loop.
  */
 function drawCurve(o, C, axis) {
     const curve = currentCurve();
@@ -312,7 +343,14 @@ function drawCurve(o, C, axis) {
     }
 
     if (dyadLine) {
-        ctx.strokeStyle = dyadFill ? ink(0.75) : rgbOf(map(0.72));
+        /* Through the colormap, whether or not there is a fill under it. The
+           line used to be a flat sample of the ramp, which wasted the one
+           thing a thick line can show that a thin one cannot: at eight pixels
+           it is wide enough to read as a coloured band, and the band should
+           say what the height says. Over a fill the two agree by construction,
+           so the stroke reads as the fill's own edge rather than as an outline
+           drawn around it. */
+        ctx.strokeStyle = valueGradient(x0, x1, cols, vs, map);
         ctx.lineWidth = dyadLineWidth;
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';

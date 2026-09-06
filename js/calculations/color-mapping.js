@@ -243,30 +243,58 @@ function specularFor(hex) {
     });
 }
 
-/** A constant's ramp — what its dots, labels and contours are coloured by. */
+/**
+ * A constant's ramp — what its points, dots, labels, contours and curve are
+ * coloured by.
+ *
+ * ONE COLOUR, AT EVERY VALUE. This used to spread the chosen colour across
+ * five stops, from a shade of it to a tint of it, so a layout called Constant
+ * was plainly a gradient and the complexity it was drawing was being said
+ * twice — once by the size and once by a ramp the layout is supposed not to
+ * have. Now it is flat, in all three modes: a tetrahedron of one colour, a
+ * lattice of one colour, a curve of one colour.
+ *
+ * What that costs is that COLOUR carries nothing here, which is the point of
+ * the layout rather than a defect of it. A constant is for reading a shape off
+ * its lighting and its geometry, so the measure is left to Size; if colour
+ * should carry it, one of the ten ramps is the layout that does that.
+ *
+ * WHY IT IS NOT LITERALLY THE SWATCH COLOUR.  The swatch sets the BODY — the
+ * lit surface, which is drawn in exactly that colour and read off its
+ * highlight. Marks drawn ON that surface have the opposite job: they have to
+ * be seen against it and against the ground, and the two constants are pale on
+ * paper and near-black on black precisely because that is what makes a good
+ * lit body. So the mark colour is the body's own hue taken to a brightness it
+ * can be read at — which is what the old five stops were reaching for at their
+ * ends, minus the gradient in between.
+ *
+ * Scaled rather than mixed toward white or black, so the hue and the
+ * saturation survive: pick a red and the marks are a brighter red, not pink.
+ */
 function constantRamp(hex, lightGround) {
     const c = rgb(hex);
-    const shade = (k) => hexOf({ r: c.r * k, g: c.g * k, b: c.b * k });
-    const tint = (k) => hexOf({
-        r: c.r + (1 - c.r) * k, g: c.g + (1 - c.g) * k, b: c.b + (1 - c.b) * k,
-    });
-    /* The lattice has to stay legible against the ground whatever colour the
-       body is, so it is spread across the whole range from that colour rather
-       than drawn in it: to ink on paper, to light on black. */
-    return lightGround
-        ? rampFromStops([tint(0.45), tint(0.15), shade(0.75), shade(0.42), shade(0.18)])
-        : rampFromStops([shade(0.35), shade(0.7), hex, tint(0.35), tint(0.72)]);
+    /* Ink on paper, light on black. Far enough from either ground to read
+       without being so far that a dark layout starts to glare. */
+    const target = lightGround ? 0.18 : 0.62;
+    const k = target / Math.max(0.02, luminance(hex));
+    const flat = {
+        r: Math.min(1, c.r * k),
+        g: Math.min(1, c.g * k),
+        b: Math.min(1, c.b * k),
+    };
+    /* A fresh object per call, matching what rampFromStops returns — several
+       callers keep what they are handed. */
+    return () => ({ r: flat.r, g: flat.g, b: flat.b });
 }
 
 function constantEntry(which, ground, name, title) {
     const hex = constantColors[which];
-    const light = isLightGround(ground);
     return {
         name,
         title,
         constant: which,
         ground,
-        ramp: constantRamp(hex, light),
+        ramp: constantRamp(hex, isLightGround(ground)),
         material: {
             color: hex,
             specular: specularFor(hex),

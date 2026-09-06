@@ -125,37 +125,50 @@ export function exportDyadSVG() {
         }
         const line = 'M' + pts.join('L');
 
-        if (dyadFill) {
-            /* The one gradient in the file, and the only honest way to say
-               what the pane is showing: the ramp is sampled at 64 stops, which
-               is finer than the eye resolves across a plot this wide and is
-               one element rather than several hundred rectangles. */
+        /* The one gradient in the file, and both marks are painted with it:
+           the shading under the curve and the curve itself are the same
+           measure read at the same places, so a second gradient could only be
+           the same one twice or the same one wrong. userSpaceOnUse rather than
+           the default bounding box, because the fill's box and the stroke's
+           box are not identical and a proportional gradient would land the
+           two of them a pixel apart.
+
+           256 stops rather than the 64 this started with: a flat fill can
+           afford a coarse ramp, but a stroke a few pixels wide IS the ramp,
+           and a spike narrower than a stop would take its colour from its
+           neighbour. */
+        if (dyadFill || dyadLine) {
             const map = colormapFn();
             const defs = el('defs');
             const grad = el('linearGradient', {
-                id: 'dyadfill', x1: '0', y1: '0', x2: '1', y2: '0',
+                id: 'dyad-ramp', gradientUnits: 'userSpaceOnUse',
+                x1: f(fit.x0), y1: '0', x2: f(fit.x1), y2: '0',
             });
-            const STOPS = 64;
+            const STOPS = Math.max(2, Math.min(cols - 1, 256));
             for (let s = 0; s <= STOPS; s++) {
                 const i = Math.round((s / STOPS) * (cols - 1));
                 const v = Math.min(1, Math.max(0, vals[i] === vals[i] ? vals[i] : 0));
                 grad.appendChild(el('stop', {
-                    offset: `${((s / STOPS) * 100).toFixed(2)}%`,
+                    offset: `${((s / STOPS) * 100).toFixed(3)}%`,
                     'stop-color': rgbOf(map(v)),
                 }));
             }
             defs.appendChild(grad);
             svg.appendChild(defs);
+        }
+
+        if (dyadFill) {
             svg.appendChild(el('path', {
                 d: `${line}L${f(fit.x1)} ${f(yFloor)}L${f(fit.x0)} ${f(yFloor)}Z`,
-                fill: 'url(#dyadfill)', stroke: 'none',
+                fill: 'url(#dyad-ramp)', stroke: 'none',
             }));
         }
         if (dyadLine) {
+            /* Through the ramp whether or not there is a fill under it — see
+               drawCurve in dyad-2d.js, which this is a picture of. */
             svg.appendChild(el('path', {
                 d: line, fill: 'none',
-                stroke: dyadFill ? ink : rgbOf(colormapFn()(0.72)),
-                'stroke-opacity': dyadFill ? 0.75 : 1,
+                stroke: 'url(#dyad-ramp)',
                 'stroke-width': f(dyadLineWidth),
                 'stroke-linejoin': 'round', 'stroke-linecap': 'round',
             }));
