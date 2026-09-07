@@ -20,12 +20,12 @@ import {
     fitTriangle, centsToShape, equaveCents, SQRT3_2,
 } from './triad-geometry.js';
 import {
-    triadFill, triadLines, triadContours, triadDots, triadLabels, triadView,
+    triadFill, triadLines, triadContours, triadDots, triadLabels, triadView, triadGloss,
 } from './triad-state.js';
 import { currentTriads, currentField, currentFieldModel, complexityRange } from './triad-surface.js';
-import { colormapFn, onLight, groundColor, contourSegments } from './triad-2d.js';
-import { domElement as gl3d } from './triad-3d.js';
-import { groundCss } from '../calculations/color-mapping.js';
+import { colormap, colormapFn, onLight, groundColor, contourSegments, paintField } from './triad-2d.js';
+import { domElement as gl3d, frameTight, restoreFrame } from './triad-3d.js';
+import { groundCss, lighting } from '../calculations/color-mapping.js';
 import { downloadSVG, downloadCSV, simplifyFraction } from '../utils/data-export.js';
 import { readPanel } from './triad-mode.js';
 
@@ -37,28 +37,31 @@ const el = (name, attrs = {}) => {
 };
 const f = (n) => (Math.round(n * 100) / 100).toString();
 
-/** The field as a data URI, at the resolution it was computed at. */
+/** The lifted pane, read back at whatever crop frameTight can manage — see
+ *  triad-3d.js — rather than the live view's own looser fit, so the exported
+ *  file is the surface filling the frame instead of a screenshot of it. */
+function capture3D(filename) {
+    const canvas = gl3d();
+    if (!canvas) return;
+    const saved = frameTight();
+    canvas.toBlob((blob) => {
+        restoreFrame(saved);
+        if (blob) drop(blob, filename);
+    }, 'image/png');
+}
+
+/** The field as a data URI, at the resolution it was computed at.
+ *
+ *  Painted through the same lighting the on-screen pane uses — see
+ *  paintField in triad-2d.js — so Relief and Gloss leave the file looking
+ *  like what was on screen rather than the flat, unlit colour ramp. */
 function fieldImage(field) {
     const c = document.createElement('canvas');
     c.width = field.w;
     c.height = field.h;
     const g = c.getContext('2d');
     const img = g.createImageData(field.w, field.h);
-    const map = colormapFn();
-    const span = field.max - field.min;
-    for (let y = 0; y < field.h; y++) {
-        const src = (field.h - 1 - y) * field.w;
-        for (let x = 0; x < field.w; x++) {
-            const v = field.z[src + x];
-            const o = (y * field.w + x) * 4;
-            if (!(v === v)) { img.data[o + 3] = 0; continue; }
-            const col = map(span > 1e-12 ? (v - field.min) / span : 0.5);
-            img.data[o] = Math.round(col.r * 255);
-            img.data[o + 1] = Math.round(col.g * 255);
-            img.data[o + 2] = Math.round(col.b * 255);
-            img.data[o + 3] = 255;
-        }
-    }
+    paintField(field, img, lighting(colormap(), triadGloss));
     g.putImageData(img, 0, 0);
     return c.toDataURL('image/png');
 }
@@ -195,6 +198,11 @@ export function saveTriadSVG() {
         return;
     }
     downloadSVG(exportTriadSVG(), 'triads-export.svg');
+    /* Both panes up: the flat one just left as a real vector file, but the
+       lifted one beside it is still on screen and would otherwise vanish
+       from the export entirely. Same raw-canvas readback saveTriadPNG uses
+       below, just not bundled with a second copy of the flat pane. */
+    if (triadView === 'both') capture3D('triads-3d.png');
 }
 
 /**
@@ -207,11 +215,8 @@ export function saveTriadSVG() {
  */
 export function saveTriadPNG(filename = 'triads-export.png') {
     if (triadView === '3d' || triadView === 'both') {
-        const canvas = gl3d();
-        if (canvas) {
-            canvas.toBlob((blob) => { if (blob) drop(blob, filename); }, 'image/png');
-            if (triadView === '3d') return;
-        }
+        capture3D(filename);
+        if (triadView === '3d') return;
     }
 
     const pane = document.getElementById('triad-topo-pane');

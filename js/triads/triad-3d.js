@@ -182,7 +182,7 @@ export function fitView() {
  * Only the distance and the target are set. The DIRECTION is left alone, so a
  * surface the user has turned stays turned when the pane resizes.
  */
-function frameCamera() {
+function frameCamera(margin = 1.06) {
     if (!camera || !controls || !host) return;
     if (host.clientWidth < 2 || host.clientHeight < 2) return;
     const half = SIDE / 2;
@@ -222,9 +222,34 @@ function frameCamera() {
     }
 
     controls.target.copy(target);
-    camera.position.copy(target).addScaledVector(dir, distance * 1.06);
+    camera.position.copy(target).addScaledVector(dir, distance * margin);
     camera.updateProjectionMatrix();
     controls.update();
+}
+
+/**
+ * Pull in as tight as the frustum allows, render once, and hand back what the
+ * camera was before — for a PNG capture, where the live view's 6% breathing
+ * room (frameCamera's default margin, kept so orbiting never clips the
+ * surface against the edge) would leave the export looking like a screenshot
+ * rather than a crop. Restore with restoreFrame once the pixels are read.
+ */
+export function frameTight(margin = 1.002) {
+    if (!camera || !controls || !renderer || !scene) return null;
+    const saved = { pos: camera.position.clone(), target: controls.target.clone() };
+    frameCamera(margin);
+    renderer.render(scene, camera);
+    return saved;
+}
+
+/** Undo frameTight, and repaint so the live pane is back to what it was. */
+export function restoreFrame(saved) {
+    if (!saved || !camera || !controls || !renderer || !scene) return;
+    camera.position.copy(saved.pos);
+    controls.target.copy(saved.target);
+    camera.updateProjectionMatrix();
+    controls.update();
+    renderer.render(scene, camera);
 }
 
 /* ---------------------------------------------------------------------
@@ -236,7 +261,6 @@ function frameCamera() {
  * ------------------------------------------------------------------ */
 
 let builtKey = '';
-let builtRelief = null;
 
 export function rebuild(o, force = false) {
     if (!scene) return;
@@ -250,9 +274,7 @@ export function rebuild(o, force = false) {
         layoutSignature(currentLayoutMode), triadGloss, currentTriads().length,
     ]);
     if (!force && key === builtKey) return;
-    const reliefChanged = builtRelief !== triadRelief;
     builtKey = key;
-    builtRelief = triadRelief;
 
     scene.background = new THREE.Color(groundColor());
     marker.material.color.set(onLight() ? 0x111111 : 0xffffff);
@@ -292,7 +314,12 @@ export function rebuild(o, force = false) {
     if (triadDots) { lattice = buildLattice(E, o); if (lattice) world.add(lattice); }
     if (triadLabels) { labels = buildLabels(E, o); if (labels) world.add(labels); }
 
-    if (reliefChanged) frameCamera();
+    /* No re-frame here on purpose: Relief (and everything else that forces a
+       rebuild) changes the geometry, not the view the user has set up. A
+       camera that snapped back to centre on every drag of the slider would
+       fight anyone trying to orbit the surface while adjusting it. The
+       camera is only ever framed explicitly — see fitView, called on entering
+       the mode, on a resize, and after the field itself changes. */
 }
 
 function disposeDeep(root) {

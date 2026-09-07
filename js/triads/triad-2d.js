@@ -154,7 +154,7 @@ const chan = (hex) => ({
  * Relief scales the gradient, so the Display drawer's one control governs how
  * pronounced the surface is in BOTH panes, and Gloss scales the highlight.
  */
-function paintField(field, img, lit) {
+export function paintField(field, img, lit) {
     const map = colormapFn();
     const body = chan(lit.color);
     const spec = chan(lit.specular);
