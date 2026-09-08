@@ -34,14 +34,14 @@ import {
     mpePressure, setMpePressure
 } from '../globals.js';
 import { stopChord, setTimbre, setAdsr } from '../components/audio-engine.js';
-import { updateTetrahedron, setLayoutMode, LAYOUT_GROUNDS } from '../calculations/tetrahedron-updater.js';
+import { updateTetrahedron, setLayoutMode } from '../calculations/tetrahedron-updater.js';
 import { onWindowResize } from '../components/three-visualizer.js';
 import { exportToSVG, downloadSVG, exportToPNG, exportToCSV } from './data-export.js';
 import { saveTriadSVG, saveTriadPNG, exportTriadCSV } from '../triads/triad-export.js';
 import { saveDyadSVG, saveDyadPNG, exportDyadCSV } from '../dyads/dyad-export.js';
 import {
-    colormaps, colormapAt, COLORMAP_COUNT, constantColors, setConstantColor,
-    isLightGround, groundCss,
+    colormaps, COLORMAP_COUNT, constantColors, setConstantColor,
+    isLightGround, groundCss, currentTheme, setTheme, themeGround,
 } from '../calculations/color-mapping.js';
 import { estimateWork, sayWork, WORK_BUDGET } from '../calculations/work-estimate.js';
 import { initMidiOutput, sendMpePressure, mpeChannels } from '../midi/midi-output.js';
@@ -124,17 +124,17 @@ function seg(segId, onPick) {
  * ------------------------------------------------------------------ */
 
 /**
- * A material layout's swatch: the material, lit.
+ * The constant's swatch: flat colour, and nothing else.
  *
- * A ramp swatch would be a lie about a layout whose surface is one colour, so
- * the chip shows what the surface will actually look like — the body colour
- * with the key light's highlight where the key light is, which is the same
- * top-left as the scene's own.
+ * It used to be a lit sphere — a radial gradient from the specular down to a
+ * shaded edge — which showed what the 3D body would look like but read, at
+ * chip size, as one more gradient in a row of gradients. The one thing this
+ * chip has to say is that this layout has NO ramp, so it says it the only way
+ * a swatch can: one colour, corner to corner. The corner itself stays the
+ * ramp chips' — see `.map[data-kind="constant"] .ramp` in style.css.
  */
-function materialCss(mat) {
-    const hex = (c) => '#' + c.toString(16).padStart(6, '0');
-    return `radial-gradient(circle at 30% 26%, ${hex(mat.specular)} 0%, `
-        + `${hex(mat.color)} 46%, rgba(0,0,0,.55) 100%)`;
+function constantCss(mat) {
+    return '#' + mat.color.toString(16).padStart(6, '0');
 }
 
 /** A colormap as a CSS gradient, sampled at enough stops to read as smooth. */
@@ -412,8 +412,9 @@ export function setupUIEventListeners() {
     /* ---------------- the colormap chips ----------------
      * Painted by sampling the very functions the scene colours itself with, so
      * a swatch is the map rather than a picture of it. Rebuilt rather than
-     * restyled when a constant's colour changes, because its ramp, its
-     * highlight and its ambient are all derived from that colour. */
+     * restyled when the constant's colour or the theme changes, because the
+     * ramp direction, the ground under every chip, and the constant's ramp,
+     * highlight and ambient are all derived from those two. */
     const mapsEl = $('colormap-seg');
 
     const paintChips = () => {
@@ -423,34 +424,34 @@ export function setupUIEventListeners() {
             b.className = 'map' + (i === currentLayoutMode ? ' on' : '');
             b.dataset.v = String(i);
             b.dataset.ground = isLightGround(m.ground) ? 'light' : 'dark';
-            /* The chip is drawn on the ground the layout is drawn on, which is
-               the whole reason two greyscales read as two layouts rather than
-               as one gradient twice — and now also why Bone reads as paper. */
+            /* Every chip is drawn on the ground the scene is drawn on — one
+               ground now, the theme's — so a chip shows the ramp as it will
+               actually be seen, including the way it reverses on paper. */
             b.style.background = groundCss(m.ground);
-            if (m.material) b.dataset.kind = 'material';
+            b.dataset.kind = m.constant ? 'constant' : 'ramp';
             b.title = m.title;
 
-            const ramp = document.createElement('span');
-            ramp.className = 'ramp';
-            ramp.style.background = m.material ? materialCss(m.material) : rampCss(m.ramp);
-            b.append(ramp);
+            const swatch = document.createElement('span');
+            swatch.className = 'ramp';
+            swatch.style.background = m.constant ? constantCss(m.material) : rampCss(m.ramp);
+            b.append(swatch);
 
             if (m.constant) {
-                /* The swatch IS the setting, so it lives on the chip rather
-                   than in a row underneath: there are two constants and they
-                   remember separate colours, and a single picker somewhere
-                   else could not say which one it was about. */
+                /* The picker sits on the chip rather than in a row underneath,
+                   because the colour is not a setting of the panel — it is
+                   what this one layout IS, and it belongs where the layout is
+                   chosen. */
                 const row = document.createElement('span');
                 row.className = 'const-row';
                 const picker = document.createElement('input');
                 picker.type = 'color';
-                picker.value = groundCss(constantColors[m.constant]);
+                picker.value = groundCss(constantColors.body);
                 picker.title = 'The colour the light is applied to';
                 /* The press underneath selects the layout; the picker must not
                    also toggle it on the way to opening. */
                 picker.addEventListener('click', (ev) => ev.stopPropagation());
                 picker.addEventListener('input', () => {
-                    setConstantColor(m.constant, parseInt(picker.value.slice(1), 16));
+                    setConstantColor(parseInt(picker.value.slice(1), 16));
                     paintChips();
                     if (currentLayoutMode === i) applyColormap(i);
                 });
@@ -464,7 +465,7 @@ export function setupUIEventListeners() {
     };
 
     /**
-     * Day mode, when the view is in day mode.
+     * Day mode, when the theme is day.
      *
      * Xenachord Designer's own arrangement, and its own tokens: when the
      * viewport goes light the rail and the drawer go with it, because a dark
@@ -472,12 +473,14 @@ export function setupUIEventListeners() {
      * chrome reads off the same custom properties, so overriding them on
      * `body.bright` recolours the subtree without a second stylesheet.
      *
-     * Which layouts are light is a luminance test rather than a list: the
-     * bright ones sit on cream, blush and sage as well as on hard white, and
-     * a constant's ground is whatever its column's is.
+     * Still a luminance test on the ground rather than a string comparison on
+     * the theme, so the chrome and the renderers are deciding from the same
+     * fact: if the light ground is ever tinted further, nothing here moves.
      */
-    const applyBrightMode = (index) => {
-        document.body.classList.toggle('bright', isLightGround(colormapAt(index).ground));
+    const applyBrightMode = () => {
+        const light = isLightGround(themeGround());
+        document.body.classList.toggle('bright', light);
+        document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
     };
 
     /**
@@ -493,7 +496,6 @@ export function setupUIEventListeners() {
         for (const b of mapsEl.querySelectorAll('button')) {
             b.classList.toggle('on', b.dataset.v === String(index));
         }
-        applyBrightMode(index);
         if (appMode === 'tetrads') {
             setLayoutMode(index);
         } else {
@@ -501,8 +503,38 @@ export function setupUIEventListeners() {
             restyle({ rebuild: true });
         }
     };
+    /* ---------------- the theme ----------------
+     *
+     * The ground used to be part of a colour layout: picking Bone picked
+     * paper, picking Magma picked black, and the only way to read one ramp on
+     * the other ground was to give up the ramp. It is a switch of its own now,
+     * at the foot of the rail under the info button — the ramp is what the
+     * numbers look like, the ground is what the room looks like, and they were
+     * never the same decision.
+     *
+     * Flipping it moves the ground under every layout and reverses the ramps,
+     * so it is not a restyle of the chrome: the chips are repainted from the
+     * new ground and the scene is taken through the ordinary layout press,
+     * which is already the code that regenerates or repaints per mode.
+     */
+    const THEME_STORE = 'tetrads.theme.v1';
+    let stored = null;
+    try { stored = localStorage.getItem(THEME_STORE); } catch (e) {}
+    setTheme(stored === 'light' ? 'light' : 'dark');
+
+    const themeBtn = $('theme-toggle');
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+            try { localStorage.setItem(THEME_STORE, currentTheme()); } catch (e) {}
+            applyBrightMode();
+            paintChips();
+            applyColormap(currentLayoutMode);
+        });
+    }
+
+    applyBrightMode();
     paintChips();
-    applyBrightMode(currentLayoutMode);
     seg('colormap-seg', (v) => applyColormap(parseInt(v)));
 
     for (const id of ['baseSize', 'scalingFactor']) {

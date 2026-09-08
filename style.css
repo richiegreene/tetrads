@@ -25,9 +25,9 @@
 
    Everything in the chrome reads off these custom properties, so overriding
    them in scope recolours the whole subtree without a second stylesheet. The
-   class is put on by applyBrightMode in ui-handlers.js, which asks the colour
-   layout what ground it is drawn on rather than testing for a particular one:
-   White and Porcelain are both light, and there may be more. */
+   class is put on by applyBrightMode in ui-handlers.js, which asks the THEME
+   what ground it is drawn on — one switch at the foot of the rail, rather
+   than a property of whichever colour ramp happens to be picked. */
 body.bright #panel, body.bright #loading-overlay{
   --bg:#e9e9ec; --panel:#f2f2f4; --panel2:#e4e5e9; --panel-bright:#d8d9de;
   --line:#c9cad0; --text:#1b1c20; --dim:#5c5d66; --accent:#1f6feb;
@@ -80,8 +80,24 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
   box-shadow:inset 0 0 0 1px var(--accent)}
 .rail-icon{width:24px;height:24px}
 /* The info link sits at the foot of the rail rather than in the run of
-   modes: it is not a mode, and it leaves the app. */
+   modes: it is not a mode, and it leaves the app. The theme toggle sits under
+   it for the mirror reason — it is not a mode either, and it is about the
+   whole window rather than about anything in a drawer. */
 #info-link{margin-top:auto;text-decoration:none}
+
+/* ---- the night/day toggle ----
+   Both glyphs are in the markup and one is shown at a time, rather than one
+   glyph being swapped by script: no icon flashes in on first paint, and the
+   rule that decides which is showing lives beside the rule that draws them.
+
+   The icon shows the STATE, not the action — a crescent while the app is dark,
+   a sun while it is light. That is the reading every phone uses, and the
+   opposite convention (show what you will GET) is only legible if you already
+   know which convention you are looking at. */
+#theme-toggle .theme-icon{grid-area:1/1}
+#theme-toggle .light-icon{display:none}
+html[data-theme="light"] #theme-toggle .dark-icon{display:none}
+html[data-theme="light"] #theme-toggle .light-icon{display:block}
 
 .panel-body{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
 .drawers{flex:1;min-height:0;overflow-y:auto}
@@ -206,18 +222,20 @@ button.latched{background:#24405c;border-color:var(--accent);color:#cfe6ff}
   font-family:Arial,sans-serif;letter-spacing:.04em}
 
 /* ---------- the colour layouts ----------
-   Two columns, and the grid runs DOWN one before starting the next — the left
-   column is every dark layout, the right every bright one, each ending in its
-   own constant. Row-major would have interleaved them, which is the one thing
-   the arrangement is for: you pick a ground first and a ramp second, so the
-   grounds should be the columns.
+   Six chips in two columns, filled row by row: five perceptually uniform ramps
+   and then Constant, which is not a ramp.
 
-   A chip has to show a ramp AND the ground that ramp is drawn on, which is the
-   whole reason the two greyscales read as two layouts rather than as one
-   gradient twice — and now also why Bone reads as paper rather than as brown.
-   The ground is the chip's own background, painted from the layout itself. */
-.maps{display:grid;grid-auto-flow:column;grid-template-columns:1fr 1fr;
-  grid-template-rows:repeat(6,auto);gap:6px;margin:0 0 9px}
+   The grid used to run DOWN one column before starting the next, because the
+   two columns were the two GROUNDS — a dark set and a bright set, twelve chips
+   for what is really two decisions. The ground is the theme now, one switch at
+   the foot of the rail, so there is nothing for a column to mean and the
+   ordinary reading order is the right one.
+
+   A chip is still drawn on the ground the scene is drawn on, because a ramp
+   read against black and the same ramp read against paper are genuinely
+   different pictures — and on paper the ramps are sampled backwards, which the
+   chip shows rather than describes. */
+.maps{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 9px}
 /* align-items and an explicit width because this is a <button>: a button is
    not a plain flex container in every engine, and without them the swatch
    collapses to its content width — which for an empty span is nothing, so the
@@ -232,16 +250,21 @@ button.latched{background:#24405c;border-color:var(--accent);color:#cfe6ff}
    has to come off that ground rather than off the panel's. */
 .map[data-ground="light"]{color:#5c5d66;border-color:#c9cad0}
 .map[data-ground="light"]:hover,.map[data-ground="light"].on{color:#1b1c20}
-/* A constant's swatch is a lit body rather than a ramp, so it is drawn as one:
-   rounder, and with a little depth under it. The chip has to show what the
-   surface will look like, and a strip of gradient would be a picture of the
-   ramp its dots are coloured by instead. */
-.map[data-kind="material"] .ramp{height:19px;border-radius:10px;
-  box-shadow:inset 0 -1px 2px rgba(0,0,0,.35)}
+/* The constant's swatch is a RECTANGLE of flat colour — no gradient, no sheen.
+   It used to be drawn as a lit sphere, which was honest about the 3D body but
+   read, at this size, as a sixth gradient.
 
-/* The picker sits on the chip, beside the name, because there are two
-   constants with two remembered colours and a picker anywhere else could not
-   say which one it belonged to. */
+   The corner is the ramp chips' own 3px, not a hard square. What separates
+   this chip from its neighbours is that it holds ONE colour where they hold a
+   run of them, and that is already unmissable at a glance; squaring the corner
+   on top of it was a second signal for a difference that did not need two, and
+   it made the one chip in the grid whose edges disagreed with every other look
+   like an oversight rather than a statement. Same bevel, different fill. */
+.map[data-kind="constant"] .ramp{border-radius:3px}
+
+/* The picker sits on the chip, beside the name, because the colour is not a
+   setting of the panel — it is what this one layout IS, and it belongs where
+   the layout is chosen. */
 .const-row{display:flex;align-items:center;gap:5px}
 .const-row input[type=color]{-webkit-appearance:none;appearance:none;
   width:16px;height:16px;padding:0;border:1px solid rgba(128,128,128,.55);

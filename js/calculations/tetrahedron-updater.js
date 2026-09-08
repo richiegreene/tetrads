@@ -7,20 +7,13 @@ import {
     camera
 } from '../globals.js';
 import { transformToRegularTetrahedron, makeTextSprite, makePointSprite } from '../components/three-visualizer.js';
-import { colormaps, colormapAt, COLORMAP_COUNT, isLightGround } from './color-mapping.js';
+import { colormapAt, COLORMAP_COUNT, isLightGround } from './color-mapping.js';
 
-/**
- * The ground each colour layout is drawn on, in the order the mode index
- * counts them.
- *
- * Derived from the one table rather than written out beside it — see
- * color-mapping.js, which is also what the panel's chips are painted from
- * and what the triangle shades itself with. A layout is a ramp AND its ground,
- * which is why Black and White are two layouts rather than one inverted:
- * greyscale on black runs dark to light so the simplest chords glow, and on
- * white it runs the other way so they go to ink.
- */
-export const LAYOUT_GROUNDS = colormaps().map((m) => m.ground);
+/* The ground is no longer a property of the layout — it is the theme, and
+   every layout is drawn on it. `colormapAt(...).ground` still answers for it,
+   so nothing downstream has to know that, but the old LAYOUT_GROUNDS table
+   (one ground per layout, computed once at import) could not: the theme moves
+   after import. It is gone rather than made live, because nothing read it. */
 
 /** Step to the next layout — what ⇧⌘L has always done. */
 export async function cycleLayoutMode() {
@@ -185,9 +178,9 @@ export async function updateTetrahedron(limit_type, limit_value, max_exponent, v
         let spritePointColor = new THREE.Color(1, 1, 1);
         let spritePointOpacity = 0.7;
         /* On a light ground a translucent point washes out, so it is given
-           more body. A luminance test rather than a comparison with white:
-           the bright layouts sit on cream, blush and sage as well as on hard
-           white, and all of them want dark ink. */
+           more body. A luminance test rather than a comparison with white,
+           because the light ground is a near-white rather than #ffffff — a
+           full-brightness field the size of the viewport is a lamp. */
         const onLightGround = isLightGround(colormapAt(currentLayoutMode).ground);
         if (onLightGround) {
             spritePointOpacity = 0.9;

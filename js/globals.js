@@ -10,8 +10,10 @@ export let isShiftHeld = false; // To track if Shift key is currently held down
 export let isClickPlayModeActive = false; // To track if play mode is active via button click
 export let currentlyHovered = null; // To track the object the mouse is over
 /* Which colour layout is on. Counted in chip order — see colormaps() in
-   color-mapping.js, which is the dark column then the bright one. 2 is Magma. */
-export let currentLayoutMode = 2;
+   color-mapping.js: the five perceptually uniform ramps, then Constant. 3 is
+   Magma, which is what the app has always opened on. The GROUND is no longer
+   part of this — it is the theme, toggled at the foot of the rail. */
+export let currentLayoutMode = 3;
 export let playButton; // Declare playButton globally
 export let pivotButtons; // Declare pivotButtons globally
 export let currentPivotVoiceIndex = 0; // 0: Bass, 1: Tenor, 2: Alto, 3: Soprano (default Bass)

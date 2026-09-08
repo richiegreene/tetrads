@@ -66,6 +66,32 @@
           <circle cx="13" cy="13" r="9.5" /><path d="M13 11.5v6" /><path d="M13 8.6v.1" />
         </svg>
       </a>
+      <!-- ---- night or day ----
+           The ground every colour layout is drawn on, and the chrome with it.
+           It sits under the info button rather than in the run of modes above
+           because it is not a mode and it is not a setting of any one drawer:
+           it is a property of the whole window, and the foot of the rail is
+           where the app's own switches live.
+
+           Two glyphs, one shown at a time — the crescent while the app is
+           dark, the sun while it is light. The icon is the STATE rather than
+           the action, which is the reading Notation Dev's toggle uses and the
+           one people already have from every phone they own. -->
+      <button class="rail-btn" id="theme-toggle" title="Light or dark"
+        aria-label="Toggle light and dark">
+        <svg class="rail-icon theme-icon dark-icon" viewBox="0 0 26 26" fill="none"
+          stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15.4A8.6 8.6 0 0 1 10.6 5a8.6 8.6 0 1 0 10.4 10.4z" />
+        </svg>
+        <svg class="rail-icon theme-icon light-icon" viewBox="0 0 26 26" fill="none"
+          stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <circle cx="13" cy="13" r="4.6" />
+          <path d="M13 2.6v2.6M13 20.8v2.6M2.6 13h2.6M20.8 13h2.6" />
+          <path d="M5.65 5.65l1.85 1.85M18.5 18.5l1.85 1.85M20.35 5.65L18.5 7.5M7.5 18.5l-1.85 1.85" />
+        </svg>
+      </button>
     </div>
 
     <div class="panel-body">
@@ -538,22 +564,22 @@
           <fieldset>
             <legend>Visuals</legend>
 
-            <!-- Four ramps, each drawn on the ground it is actually used
-                 against, so the two greyscales read as the two different
-                 layouts they are rather than as one inverted. The swatches
-                 are painted from the colormap functions themselves — see
-                 COLORMAPS in ui-handlers.js — so a chip cannot advertise a
-                 ramp the scene does not use. -->
+            <!-- Five perceptually uniform ramps and one Constant. The
+                 swatches are painted by sampling the very functions the scene
+                 colours itself with — see colormaps() in color-mapping.js —
+                 so a chip cannot advertise a ramp the scene does not use, and
+                 each is drawn on the theme's ground because a ramp on black
+                 and the same ramp on paper are different pictures. -->
             <div class="tune-h">Colormap <span class="key-hint">⇧⌘L</span></div>
             <div class="maps" id="colormap-seg"></div>
 
             <!-- ---- how wet the surface is ----
                  Directly under the chips, because it is a property of the one
-                 that is lit. Petroleum and Porcelain are read by their
-                 highlight, and this is how much of one they get; the ordinary
-                 ramps have no light on them at all, so it lays a shine over
-                 their colours instead of shading them — the values stay
-                 exactly as legible as they were.
+                 that is lit. Constant is read by its highlight, and this is
+                 how much of one it gets; the five ramps have no light on them
+                 at all, so it lays a shine over their colours instead of
+                 shading them — the values stay exactly as legible as they
+                 were.
 
                  Triads only: the tetrahedron is drawn as flat sprites, and
                  there is no surface there for a light to catch. -->
@@ -563,7 +589,7 @@
             </div>
             <input type="range" id="triadGloss" min="0" max="100" step="1" value="50"
               data-mode="triads"
-              title="How wet the lifted surface is. On Petroleum and Porcelain this is matte through to a mirror; on the colour ramps it adds a highlight over the top without touching the colours underneath.">
+              title="How wet the lifted surface is. On Constant this is matte through to a mirror; on the colour ramps it adds a highlight over the top without touching the colours underneath.">
 
             <!-- ---- how fast the shape turns ----
                  The arrow keys have always turned the tetrahedron and [ ]

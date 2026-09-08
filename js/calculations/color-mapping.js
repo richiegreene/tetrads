@@ -1,131 +1,56 @@
 
 /* No three.js here on purpose. This module is pure arithmetic over colours —
    nothing in it touches a scene — and keeping it that way means the colour
-   model can be tested on its own, without a browser or a GPU. The import that
-   used to sit here was unused. */
-
-export function greyscaleColormap(value) {
-    // Clamp value between 0 and 1
-    value = Math.min(1, Math.max(0, value));
-
-    // High complexity (blue in plasma, value=0) -> #AAAAAA
-    // Low complexity (yellow in plasma, value=1) -> #000000
-    const startColor = { r: 170/255, g: 170/255, b: 170/255 }; // #AAAAAA
-    const endColor = { r: 0, g: 0, b: 0 }; // #000000
-
-    const r = startColor.r + value * (endColor.r - startColor.r);
-    const g = startColor.g + value * (endColor.g - startColor.g);
-    const b = startColor.b + value * (endColor.b - startColor.b);
-
-    return { r, g, b };
-}
-
-export function greyscaleBlackColormap(value) {
-    value = Math.min(1, Math.max(0, value));
-    const startColor = { r: 51/255, g: 51/255, b: 51/255 }; // #333333
-    const endColor = { r: 1, g: 1, b: 1 }; // #FFFFFF
-    const r = startColor.r + value * (endColor.r - startColor.r);
-    const g = startColor.g + value * (endColor.g - startColor.g);
-    const b = startColor.b + value * (endColor.b - startColor.b);
-    return { r, g, b };
-}
-
-export const viridis_data = [
-    [68,1,84],[68,2,85],[68,3,86],[68,4,87],[69,5,88],[69,6,89],[69,7,90],[69,8,91],[70,9,92],[70,10,93],[70,11,94],[70,12,95],[71,13,96],[71,14,97],[71,15,98],[71,16,99],[72,17,100],[72,18,101],[72,19,102],[72,20,103],[73,21,104],[73,22,105],[73,23,106],[73,24,107],[74,25,108],[74,26,109],[74,27,110],[74,28,111],[75,29,112],[75,30,113],[75,31,114],[75,32,115],[75,33,116],[76,34,117],[76,35,118],[76,36,119],[76,37,120],[76,38,121],[77,39,122],[77,40,123],[77,41,124],[77,42,125],[77,43,126],[77,44,127],[77,45,128],[78,46,129],[78,47,130],[78,48,131],[78,49,132],[78,50,133],[78,51,134],[78,52,135],[78,53,136],[78,54,137],[78,55,138],[78,56,139],[78,57,140],[78,58,141],[78,59,142],[77,60,143],[77,61,144],[77,62,145],[76,63,146],[76,64,146],[75,65,147],[75,66,148],[74,67,148],[74,68,149],[73,69,150],[73,70,150],[72,71,151],[71,72,152],[71,73,152],[70,74,153],[69,75,153],[69,76,154],[68,77,154],[67,78,155],[66,79,155],[66,80,156],[65,81,156],[64,82,156],[63,83,157],[62,84,157],[61,85,157],[60,86,157],[59,87,158],[58,88,158],[57,89,158],[56,90,158],[55,91,158],[54,92,158],[53,93,158],[52,94,158],[51,95,158],[50,96,158],[49,97,158],[48,98,158],[47,99,158],[46,100,158],[45,101,158],[44,102,157],[43,103,157],[42,104,157],[41,105,156],[40,106,156],[39,107,155],[38,108,154],[37,109,154],[36,110,153],[35,111,152],[34,112,151],[33,113,151],[32,114,150],[31,115,149],[31,116,148],[30,117,147],[29,118,146],[29,119,145],[28,120,144],[28,121,143],[27,122,142],[27,123,141],[26,124,140],[26,125,139],[26,126,138],[25,127,137],[25,128,136],[25,129,135],[25,130,134],[25,131,133],[25,132,132],[25,133,131],[25,134,130],[25,135,129],[26,136,128],[26,137,127],[27,138,126],[27,139,125],[28,140,124],[29,141,123],[30,142,122],[31,143,121],[32,144,120],[33,145,119],[34,146,118],[35,147,117],[36,148,116],[37,149,115],[38,150,114],[39,151,113],[40,152,112],[41,153,111],[42,154,110],[43,155,109],[44,156,108],[45,157,107],[46,158,106],[48,159,105],[49,160,104],[50,161,103],[52,162,102],[53,163,101],[55,164,100],[56,165,99],[58,166,98],[59,167,97],[61,168,96],[62,169,95],[64,170,94],[66,171,93],[67,172,92],[69,173,91],[71,174,90],[72,175,89],[74,176,88],[76,177,87],[78,178,86],[80,179,85],[82,180,84],[84,181,83],[86,182,82],[88,183,81],[90,184,80],[92,185,79],[94,186,78],[96,187,77],[98,188,76],[100,189,75],[102,190,74],[104,191,73],[106,192,72],[108,193,71],[110,194,70],[112,195,69],[114,196,68],[116,197,67],[118,198,66],[120,199,65],[122,200,64],[124,201,63],[126,202,62],[128,203,61],[130,204,60],[132,205,59],[134,206,58],[136,207,57],[138,208,56],[140,209,55],[142,210,54],[144,211,53],[146,212,52],[148,213,51],[150,214,50],[152,215,49],[154,216,48],[156,217,47],[158,218,46],[160,219,45],[162,220,44],[164,221,43],[166,222,42],[168,223,41],[170,224,40],[172,225,39],[174,226,38],[176,227,37],[178,228,36],[180,229,35],[182,230,34],[184,231,33],[186,232,32],[188,233,31],[190,234,30],[192,235,29],[194,236,28],[196,237,27],[198,238,26],[200,239,25],[202,240,24],[204,241,23],[206,242,22],[208,243,21],[210,244,20],[212,245,19],[214,246,18],[216,247,17],[218,248,16],[220,249,15],[222,250,14],[224,251,13],[226,252,12],[228,253,11],[230,254,10],[232,255,9],[234,255,8],[236,255,7],[238,255,6],[240,255,5],[242,255,4],[244,255,3],[246,255,2],[248,255,1],[250,255,0]
-].map(c => ({ r: c[0] / 255, g: c[1] / 255, b: c[2] / 255 }));
-
-export function viridisColormap(value) {
-    value = Math.min(1, Math.max(0, value));
-    const index = Math.floor(value * (viridis_data.length - 1));
-    return viridis_data[index];
-}
-
-// Plasma Colormap function
-export function plasmaColormap(value) {
-    // Clamp value between 0 and 1
-    value = Math.min(1, Math.max(0, value));
-
-    const colors = [
-        { r: 13/255, g: 8/255, b: 135/255 },   // #0d0887
-        { r: 75/255, g: 3/255, b: 161/255 },   // #4b03a1
-        { r: 133/255, g: 15/255, b: 186/255 },  // #850fba
-        { r: 185/255, g: 36/255, b: 177/255 },  // #b924b1
-        { r: 229/255, g: 74/255, b: 157/255 },  // #e54a9d
-        { r: 254/255, g: 113/255, b: 126/255 }, // #fe717e
-        { r: 255/255, g: 156/255, b: 84/255 },  // #ff9c54
-        { r: 255/255, g: 199/255, b: 40/255 },  // #ffc728
-        { r: 249/255, g: 248/255, b: 10/255 },  // #f9f80a
-        { r: 240/255, g: 249/255, b: 33/255 }   // #f0f921
-    ];
-    const stops = [0, 1/9, 2/9, 3/9, 4/9, 5/9, 6/9, 7/9, 8/9, 1];
-
-    // Find the segment index
-    let i = 0;
-    for (let j = 0; j < stops.length - 1; j++) {
-        if (value >= stops[j] && value <= stops[j + 1]) {
-            i = j;
-            break;
-        }
-    }
-    // Handle the case where value is exactly 1, it should map to the last color
-    if (value === 1) {
-        i = stops.length - 2; // This ensures endColor is colors[stops.length - 1]
-    }
-
-    const startColor = colors[i];
-    const endColor = colors[i + 1];
-    const startStop = stops[i];
-    const endStop = stops[i + 1];
-
-    let factor = 0;
-    if (endStop !== startStop) {
-        factor = (value - startStop) / (endStop - startStop);
-    }
-
-    const r = startColor.r + factor * (endColor.r - startColor.r);
-    const g = startColor.g + factor * (endColor.g - startColor.g);
-    const b = startColor.b + factor * (endColor.b - startColor.b);
-
-    return { r: r, g: g, b: b };
-}
+   model can be tested on its own, without a browser or a GPU. */
 
 /* =====================================================================
  *  THE COLOUR LAYOUTS
  * =====================================================================
  *
- * A layout is a ramp and the ground that ramp is drawn on — and, for the last
- * two, a body colour to be lit instead of a ramp to be read. Everything that
- * colours anything reads this one table: the panel's chips are painted by
- * sampling it, the tetrahedron's sprites are baked from it, and the triangle's
- * shading, contours, dots and surface all come out of it.
+ * Everything that colours anything reads this one table: the panel's chips are
+ * painted by sampling it, the tetrahedron's sprites are baked from it, and the
+ * triangle's shading, contours, dots and surface all come out of it.
  *
- * THE GROUND IS A COLOUR, NOT A SWITCH.  It used to be black or white and the
- * code tested for 0xffffff to mean "light". It is now any colour — the bright
- * layouts sit on warm paper, pale blue-grey, blush and sage rather than on
- * hard white, because a white ground is a lamp pointed at the reader and a
- * tinted one is a page. Everything that used to compare against 0xffffff now
- * asks `isLightGround`, which is a luminance test, so adding a ground of any
- * shade is one line here.
+ * WHAT IS ON OFFER, AND WHY ONLY THESE.  Five ramps, and they are matplotlib's
+ * five perceptually uniform sequential maps — viridis, plasma, inferno, magma,
+ * cividis. "Perceptually uniform" is the whole selection rule: equal steps in
+ * complexity have to look like equal steps in colour, or the picture says
+ * something the numbers do not. The ramps this replaced were hand-picked
+ * gradients through arbitrary stops, and a hand-picked gradient banded — it
+ * invented edges where the field was smooth and flattened real ridges where
+ * two of its stops happened to sit close together. Cividis earns its place
+ * separately: it is the one of the five that survives red-green colour
+ * blindness with its ordering intact.
  *
- * GRADIENT LAYOUTS vs CONSTANT LAYOUTS.  Most of these are ramps: value
- * becomes hue, and the 3D surface is coloured per-vertex so its height and its
- * colour say the same thing twice. That is legible, and it is also flat —
- * every facet is lit identically, so the shape reads as a contour map that
- * happens to be tilted.
+ * THE GROUND IS NO LONGER PART OF A LAYOUT.  It used to be: there were two
+ * columns of chips, a dark set drawn on black and a bright set drawn on paper,
+ * and picking a ramp also picked a background. That made twelve chips for what
+ * is really two decisions, and it meant the only way to read Magma on white
+ * was to give up Magma. The ground is now the app's theme — one toggle at the
+ * foot of the rail — and every layout is drawn on whichever ground is up.
  *
- * A CONSTANT layout does the opposite. The surface is one colour — the colour
- * YOU pick, from the swatch on the chip — and all of the modelling comes from
- * light: an angled key, a soft fill, and a specular highlight that slides
- * across the peaks as the shape turns. Height stops being redundant with
- * colour and starts being the only thing carrying the model, which is what
- * makes a shallow ridge you would miss in a ramp visible as a ridge. The flat
- * pane renders these as hillshading — the same light on the same surface, seen
- * from directly above — so the two panes stay two views of one thing.
+ * On a light ground the ramps are sampled backwards. This is not a second
+ * palette, it is the same ramp read the other way: a ramp's bright end is its
+ * signal end, and on black the simplest chords should glow while on paper they
+ * should go to ink. Leaving the direction alone would put the simplest chords
+ * — the ones the picture exists to show — at pale yellow on white paper, which
+ * is to say nowhere.
  *
- * There are two of them because there are two grounds. What reads as a wet
- * slick on black is invisible on paper, and what reads as a glazed relief on
- * paper is a grey smudge on black — so each column ends with a constant of its
- * own, and each remembers its own colour.
+ * GRADIENT LAYOUTS vs THE CONSTANT.  The five ramps turn value into hue, and
+ * the 3D surface is coloured per-vertex so its height and its colour say the
+ * same thing twice. That is legible, and it is also flat — every facet is lit
+ * identically, so the shape reads as a contour map that happens to be tilted.
+ *
+ * CONSTANT does the opposite. The surface is one colour — the colour YOU pick,
+ * from the swatch on its chip — and all of the modelling comes from light: an
+ * angled key, a soft fill, and a specular highlight that slides across the
+ * peaks as the shape turns. Height stops being redundant with colour and
+ * starts being the only thing carrying the model, which is what makes a
+ * shallow ridge you would miss in a ramp visible as a ridge. The flat pane
+ * renders it as hillshading — the same light on the same surface, seen from
+ * directly above — so the two panes stay two views of one thing. Its chip is
+ * drawn as a rectangle of flat colour rather than as a gradient strip,
+ * because that is what the layout is.
  * ------------------------------------------------------------------ */
 
 /** A ramp through a list of hex stops, evenly spaced. */
@@ -143,6 +68,35 @@ function rampFromStops(hexes) {
         return { r: a.r + f * (b.r - a.r), g: a.g + f * (b.g - a.g), b: a.b + f * (b.b - a.b) };
     };
 }
+
+/* matplotlib's own control points, ten evenly spaced samples of each map.
+   Ten is enough that linear interpolation between them stays inside the
+   uniformity the maps were built for — these curves are smooth by
+   construction, so the error between samples is well under a just-noticeable
+   difference. Written as stops rather than as a 256-entry table because a
+   table that long is unreadable and, in the one that used to be here, was
+   quietly wrong: it had been filled in by hand and drifted off viridis
+   entirely above the midpoint. */
+export const viridisColormap = rampFromStops([
+    0x440154, 0x482878, 0x3e4989, 0x31688e, 0x26828e,
+    0x1f9e89, 0x35b779, 0x6ece58, 0xb5de2b, 0xfde725,
+]);
+export const plasmaColormap = rampFromStops([
+    0x0d0887, 0x46039f, 0x7201a8, 0x9c179e, 0xbd3786,
+    0xd8576b, 0xed7953, 0xfb9f3a, 0xfdca26, 0xf0f921,
+]);
+export const infernoColormap = rampFromStops([
+    0x000004, 0x1b0c41, 0x4a0c6b, 0x781c6d, 0xa52c60,
+    0xcf4446, 0xed6925, 0xfb9b06, 0xf7d13d, 0xfcffa4,
+]);
+export const magmaColormap = rampFromStops([
+    0x000004, 0x180f3d, 0x440f76, 0x721f81, 0x9e2f7f,
+    0xcd4071, 0xf1605d, 0xfd9668, 0xfeca8d, 0xfcfdbf,
+]);
+export const cividisColormap = rampFromStops([
+    0x00224e, 0x123570, 0x3b496c, 0x575d6d, 0x707173,
+    0x8a8678, 0xa59c74, 0xc3b369, 0xe1cc55, 0xfee838,
+]);
 
 const rgb = (hex) => ({
     r: ((hex >> 16) & 255) / 255,
@@ -165,10 +119,10 @@ export function luminance(hex) {
  * Whether a ground counts as light — which decides the ink everything else is
  * drawn in, and whether the panel goes to day mode.
  *
- * A threshold rather than an equality test, so a ground can be cream or pale
- * sage rather than only #ffffff. Set well above mid so a mid-tone ground is
- * treated as dark, which is the safer way to be wrong: light ink on a medium
- * ground is dim, dark ink on a medium ground is unreadable.
+ * Still a luminance test rather than an equality one, even though there are
+ * now only two grounds. It is what every renderer already asks, and asking it
+ * of the colour means a ground can later be tinted — cream rather than hard
+ * white — without a single caller changing.
  */
 export function isLightGround(hex) {
     return luminance(hex) > 0.55;
@@ -179,40 +133,50 @@ export function groundCss(hex) {
     return '#' + (hex >>> 0).toString(16).padStart(6, '0');
 }
 
-const magmaRamp = rampFromStops([
-    0x000004, 0x1c1044, 0x4f127b, 0x812581, 0xb5367a, 0xe55064, 0xfb8761, 0xfec287, 0xfcfdbf,
-]);
+/* ---------------------------------------------------------------------
+ *  The theme
+ *
+ *  One switch, at the foot of the rail, and it decides the ground for every
+ *  layout as well as the chrome the panel is drawn in. It is state rather than
+ *  a constant because it is the user's; ui-handlers.js is what remembers it
+ *  across sessions, so this module stays free of the browser.
+ * ------------------------------------------------------------------ */
 
-/* Isoharmonics' own gradient, stop for stop — the blue the triangle has always
-   been drawn in there, so a harmonic entropy map made here can sit beside one
-   made in that app and be the same picture. */
-const blueRamp = rampFromStops([
-    0x23262f, 0x1e1861, 0x1a0ebe, 0x0437f2, 0x7895fc, 0xa7c6ed, 0xd0e1f9, 0xf0f4ff, 0xffffff,
-]);
+/* Not hard white on the light side. A full-brightness field the size of the
+   viewport is a lamp pointed at the reader, and the ramps' dark ends read
+   just as cleanly against a near-white as against a white — while the paler
+   middles of cividis and magma stop dissolving into the page. */
+export const GROUNDS = { dark: 0x000000, light: 0xf6f5f2 };
 
-/* ---- the bright ramps ----
-   These run the other way from the dark ones. On black the simplest chords
-   come out brightest and glow; on paper they go to ink, so t rises from a
-   mid tint into the darkest shade. Starting at the palest tint instead would
-   put the most complex chords at the same value as the paper and lose them. */
-const boneRamp   = rampFromStops([0xcbb894, 0xa8905f, 0x7d6738, 0x54421f, 0x2e2210]);
-const mistRamp   = rampFromStops([0xa8b6c8, 0x7d8ea6, 0x566880, 0x35455c, 0x1b2635]);
-const blushRamp  = rampFromStops([0xd7a8b4, 0xb87f92, 0x8f5468, 0x63313f, 0x381821]);
-const sageRamp   = rampFromStops([0xa8c2a0, 0x7fa077, 0x587a52, 0x365434, 0x1c331c]);
+let theme = 'dark';
+
+/** 'dark' | 'light'. */
+export function currentTheme() { return theme; }
+
+export function setTheme(next) {
+    theme = next === 'light' ? 'light' : 'dark';
+    return theme;
+}
+
+/** The ground every layout is drawn on right now. */
+export function themeGround() { return GROUNDS[theme]; }
+
+/** Whether the ground is the light one — the question renderers actually ask. */
+export function themeIsLight() { return theme === 'light'; }
 
 /* ---------------------------------------------------------------------
- *  The two constants
+ *  The constant
  *
- *  Their colour is the user's, so it is state rather than a literal, and the
- *  entries below are resolved against it every time they are read. The
- *  defaults are the two materials this replaced — a black slick and a pale
- *  glaze — so the layouts open looking like themselves and the swatch is an
- *  invitation rather than a blank.
+ *  Its colour is the user's, so it is state rather than a literal, and the
+ *  entry below is resolved against it every time it is read. One remembered
+ *  colour rather than one per ground: the swatch is a choice about the
+ *  material, and having it silently change out from under the toggle would
+ *  make the toggle look like it recoloured the surface.
  * ------------------------------------------------------------------ */
-export const constantColors = { dark: 0x15171c, light: 0xe8e4dc };
+export const constantColors = { body: 0x8894a6 };
 
-export function setConstantColor(which, hex) {
-    if (which in constantColors) constantColors[which] = hex & 0xffffff;
+export function setConstantColor(hex) {
+    constantColors.body = hex & 0xffffff;
 }
 
 /**
@@ -244,29 +208,26 @@ function specularFor(hex) {
 }
 
 /**
- * A constant's ramp — what its points, dots, labels, contours and curve are
+ * The constant's ramp — what its points, dots, labels, contours and curve are
  * coloured by.
  *
- * ONE COLOUR, AT EVERY VALUE. This used to spread the chosen colour across
- * five stops, from a shade of it to a tint of it, so a layout called Constant
- * was plainly a gradient and the complexity it was drawing was being said
- * twice — once by the size and once by a ramp the layout is supposed not to
- * have. Now it is flat, in all three modes: a tetrahedron of one colour, a
- * lattice of one colour, a curve of one colour.
+ * ONE COLOUR, AT EVERY VALUE. A layout called Constant that spread its colour
+ * across a range would be a gradient wearing another name, and the complexity
+ * it was drawing would be said twice — once by the size and once by a ramp the
+ * layout is supposed not to have. It is flat in all three modes: a tetrahedron
+ * of one colour, a lattice of one colour, a curve of one colour.
  *
  * What that costs is that COLOUR carries nothing here, which is the point of
  * the layout rather than a defect of it. A constant is for reading a shape off
  * its lighting and its geometry, so the measure is left to Size; if colour
- * should carry it, one of the ten ramps is the layout that does that.
+ * should carry it, one of the five ramps is the layout that does that.
  *
  * WHY IT IS NOT LITERALLY THE SWATCH COLOUR.  The swatch sets the BODY — the
- * lit surface, which is drawn in exactly that colour and read off its
- * highlight. Marks drawn ON that surface have the opposite job: they have to
- * be seen against it and against the ground, and the two constants are pale on
- * paper and near-black on black precisely because that is what makes a good
- * lit body. So the mark colour is the body's own hue taken to a brightness it
- * can be read at — which is what the old five stops were reaching for at their
- * ends, minus the gradient in between.
+ * lit surface, drawn in exactly that colour and read off its highlight. Marks
+ * drawn ON that surface have the opposite job: they have to be seen against it
+ * and against the ground. So the mark colour is the body's own hue taken to a
+ * brightness it can be read at, which is ink on the light ground and light on
+ * the dark one.
  *
  * Scaled rather than mixed toward white or black, so the hue and the
  * saturation survive: pick a red and the marks are a brighter red, not pink.
@@ -287,14 +248,71 @@ function constantRamp(hex, lightGround) {
     return () => ({ r: flat.r, g: flat.g, b: flat.b });
 }
 
-function constantEntry(which, ground, name, title) {
-    const hex = constantColors[which];
-    return {
-        name,
-        title,
-        constant: which,
+/**
+ * @typedef {object} Colormap
+ * @property {string} name        what the chip says
+ * @property {string} title       what the chip's tooltip says
+ * @property {(t:number)=>{r,g,b}} ramp
+ * @property {number} ground      the background — the theme's, for every layout
+ * @property {boolean} constant   true if its colour is the user's
+ * @property {?object} material   present iff the 3D surface is lit rather than
+ *                                value-coloured: `{ color, specular, shininess }`
+ */
+
+/* The order is the order the chips are laid out in. The five ramps run in
+   matplotlib's own order — viridis first, as the default of the family — and
+   Constant comes last because it is the one that is not a ramp. */
+const RAMPS = [
+    {
+        name: 'Viridis', ramp: viridisColormap,
+        title: 'Perceptually uniform: deep violet through green to yellow. The safe default — it survives greyscale printing and most colour blindness.',
+    },
+    {
+        name: 'Plasma', ramp: plasmaColormap,
+        title: 'Perceptually uniform: dark blue through magenta to yellow. The most saturated of the five, so fine structure separates hardest.',
+    },
+    {
+        name: 'Inferno', ramp: infernoColormap,
+        title: 'Perceptually uniform: near-black through crimson and orange to pale yellow. The widest brightness range of the five.',
+    },
+    {
+        name: 'Magma', ramp: magmaColormap,
+        title: 'Perceptually uniform: near-black through plum and rose to cream. Inferno’s cooler twin — gentler at the bright end.',
+    },
+    {
+        name: 'Cividis', ramp: cividisColormap,
+        title: 'Perceptually uniform and colour-vision-deficiency safe: navy through slate to gold, with its ordering intact for red-green colour blindness.',
+    },
+];
+
+/**
+ * The layouts, in chip order, resolved against the current theme and the
+ * current constant colour.
+ *
+ * A ramp is sampled backwards on the light ground. Its bright end is its
+ * signal end and the simplest chords sit there, so on black they glow and on
+ * paper they have to go to ink instead — the alternative is drawing the thing
+ * the picture is about in pale yellow on a pale page.
+ */
+export function colormaps() {
+    const ground = themeGround();
+    const light = isLightGround(ground);
+    const list = RAMPS.map((m) => ({
+        name: m.name,
+        title: m.title,
+        ramp: light ? (t) => m.ramp(1 - Math.min(1, Math.max(0, t))) : m.ramp,
         ground,
-        ramp: constantRamp(hex, isLightGround(ground)),
+        constant: false,
+        material: null,
+    }));
+
+    const hex = constantColors.body;
+    list.push({
+        name: 'Constant',
+        title: 'One colour of your choosing, modelled entirely by light rather than by a ramp — the shape is read off its highlight and its shading. Pick the colour with the swatch.',
+        ramp: constantRamp(hex, light),
+        ground,
+        constant: true,
         material: {
             color: hex,
             specular: specularFor(hex),
@@ -303,84 +321,12 @@ function constantEntry(which, ground, name, title) {
                anything; a pale one needs it up or the shadows go to mud. */
             ambient: 0.14 + luminance(hex) * 0.34,
         },
-    };
-}
-
-/**
- * @typedef {object} Colormap
- * @property {string} name        what the chip says
- * @property {string} title       what the chip's tooltip says
- * @property {(t:number)=>{r,g,b}} ramp
- * @property {number} ground      the background this layout is drawn on
- * @property {?string} constant   'dark'|'light' if its colour is the user's
- * @property {?object} material   present iff the 3D surface is lit rather than
- *                                value-coloured: `{ color, specular, shininess }`
- */
-
-/* The order is the order the chips are laid out in, and the grid runs them
-   down one column before starting the next — so the first six are the dark
-   column and the last six the bright one, each ending in its constant. See
-   `.maps` in style.css. */
-const DARK = [
-    {
-        name: 'Plasma', ramp: plasmaColormap, ground: 0x000000, material: null,
-        title: 'Perceptually uniform, dark blue through magenta to yellow.',
-    },
-    {
-        name: 'Viridis', ramp: viridisColormap, ground: 0x000000, material: null,
-        title: 'Perceptually uniform, deep violet through green to yellow.',
-    },
-    {
-        name: 'Magma', ramp: magmaRamp, ground: 0x000000, material: null,
-        title: 'Perceptually uniform, near-black through crimson to cream — the darkest of the ramps, so isolated peaks carry.',
-    },
-    {
-        name: 'Blue', ramp: blueRamp, ground: 0x000000, material: null,
-        title: "Isoharmonics' own gradient, stop for stop: slate through cobalt to white.",
-    },
-    {
-        name: 'Black', ramp: greyscaleBlackColormap, ground: 0x000000, material: null,
-        title: 'Greyscale on a black ground: the simplest chords come out brightest.',
-    },
-];
-
-const BRIGHT = [
-    {
-        name: 'White', ramp: greyscaleColormap, ground: 0xffffff, material: null,
-        title: 'Greyscale on hard white: the simplest chords go to ink — the layout to print.',
-    },
-    {
-        name: 'Bone', ramp: boneRamp, ground: 0xf7f2e8, material: null,
-        title: 'Sepia on warm paper. A tinted ground rather than hard white, which stops the page reading as a lamp.',
-    },
-    {
-        name: 'Mist', ramp: mistRamp, ground: 0xeef1f6, material: null,
-        title: 'Slate on pale blue-grey — the coolest of the bright layouts.',
-    },
-    {
-        name: 'Blush', ramp: blushRamp, ground: 0xfaf0f1, material: null,
-        title: 'Plum on soft pink.',
-    },
-    {
-        name: 'Sage', ramp: sageRamp, ground: 0xeef3ed, material: null,
-        title: 'Deep green on pale sage.',
-    },
-];
-
-/** The layouts, in chip order, resolved against the current constant colours. */
-export function colormaps() {
-    return [
-        ...DARK,
-        constantEntry('dark', 0x000000, 'Constant',
-            'One colour of your choosing on black, modelled entirely by light — the shape is read off the highlight rather than off a ramp. Pick it with the swatch.'),
-        ...BRIGHT,
-        constantEntry('light', 0xf4f4f2, 'Constant',
-            'The same lighting on a pale ground: one colour of your choosing, glazed. Pick it with the swatch.'),
-    ];
+    });
+    return list;
 }
 
 /** How many there are. Used by the cycling shortcut and the mode arithmetic. */
-export const COLORMAP_COUNT = DARK.length + BRIGHT.length + 2;
+export const COLORMAP_COUNT = RAMPS.length + 1;
 
 /** The layout currently counted by `currentLayoutMode`. */
 export function colormapAt(index) {
@@ -392,9 +338,10 @@ export function colormapAt(index) {
  * Everything about a layout that a rendered picture depends on.
  *
  * The renderers cache what they have drawn, and they used to key that cache on
- * the layout's INDEX — which is wrong for the constants, whose colour can
- * change without the index moving. Anything holding a painted surface should
- * hold this beside it instead.
+ * the layout's INDEX — which is wrong for the constant, whose colour can
+ * change without the index moving, and wrong now for every layout, since the
+ * theme moves the ground under all of them. Anything holding a painted surface
+ * should hold this beside it instead.
  */
 export function layoutSignature(index) {
     const m = colormapAt(index);
@@ -413,12 +360,12 @@ export function layoutSignature(index) {
  *   numbers. So gloss adds only a highlight over the top — a varnish on the
  *   map rather than a light on it.
  *
- *   A CONSTANT layout is one colour modelled by light, so gloss runs its full
+ *   THE CONSTANT is one colour modelled by light, so gloss runs its full
  *   range: at 0 the surface is MATTE — shaded by the key and the fill, with no
  *   highlight at all — and at 1 it is a mirror. The shading alone still
  *   carries the relief, so matte is a reading of the shape rather than the
  *   absence of one; how legible it is depends on the colour you picked, which
- *   is now yours to pick.
+ *   is yours to pick.
  *
  * @param {Colormap} map
  * @param {number} gloss 0..1
