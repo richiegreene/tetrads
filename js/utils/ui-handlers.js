@@ -54,7 +54,7 @@ import {
 } from '../app-mode.js';
 import {
     triadModel, triadDots, triadLabels, setTriadModel, setTriadFill, setTriadLines,
-    setTriadContours, setTriadRelief, setTriadDots, setTriadLabels,
+    setTriadContours, setTriadLineWidth, setTriadRelief, setTriadDots, setTriadLabels,
     setTriadSnap, setTriadGlide, setTriadGloss, heParams, smParams,
 } from '../triads/triad-state.js';
 import {
@@ -815,6 +815,13 @@ export function setupUIEventListeners() {
     press('triadContours', 'contours-v',
         (v) => { setTriadContours(v); invalidateTriads({ rebuild: true }); },
         (v) => `${v}`);
+    /* A repaint, not a rebuild. The flat pane just strokes wider, and the
+       lifted one carries the width as a uniform that draw() assigns — see
+       triad-3d.js. Neither needs the surface regenerated, which is what makes
+       this smooth to drag. */
+    press('triadLineWidth', 'triad-width-v',
+        (v) => { setTriadLineWidth(v); invalidateTriads(); },
+        (v) => `${v.toFixed(1)} px`);
     press('triadRelief', 'relief-v',
         (v) => { setTriadRelief(v / 100); invalidateTriads(); },
         (v) => `${Math.round(v)}%`);

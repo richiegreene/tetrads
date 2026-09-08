@@ -23,8 +23,8 @@ import {
     sampleField, normalise, SQRT3_2,
 } from './triad-geometry.js';
 import {
-    triadFill, triadLines, triadContours, triadDots, triadLabels, triadSnap,
-    triadRelief, triadGloss, cursor,
+    triadFill, triadLines, triadContours, triadLineWidth, triadDots, triadLabels,
+    triadSnap, triadRelief, triadGloss, cursor,
 } from './triad-state.js';
 import { currentTriads, currentField, complexityRange } from './triad-surface.js';
 import { currentLayoutMode } from '../globals.js';
@@ -414,9 +414,17 @@ export function draw(o) {
         g.imageSmoothingEnabled = true;
         g.drawImage(img, fit.originX, fit.originY - fit.side * SQRT3_2,
                     fit.side, fit.side * SQRT3_2);
-    } else {
-        /* No field, or fill turned off: a plain ground, dark or light with the
-           layout, so the lattice keeps the contrast it was coloured for. */
+    } else if (!(field && triadLines)) {
+        /* A plain ground, dark or light with the layout, so the lattice keeps
+           the contrast it was coloured for.
+         *
+         * NOT WHEN THE LINES ARE THE PICTURE.  Lines without Fill is a
+         * drawing of the field and nothing else, so it is given nothing to
+         * sit on: no plate, and the pane's own ground showing through. The
+         * contours hover, which is the point — the cost is that a line whose
+         * value lands on the ground's own colour disappears into it, and that
+         * is accepted rather than worked around, because papering over it
+         * means putting the plate back. */
         g.fillStyle = light ? '#f2f3f6' : '#0b0c10';
         g.fill(path);
     }
@@ -424,7 +432,7 @@ export function draw(o) {
     if (field && triadLines) {
         const segs = buildContours(field, triadContours);
         const map = colormapFn();
-        g.lineWidth = 1.1;
+        g.lineWidth = triadLineWidth;
         for (let i = 0; i < segs.length; i += 5) {
             const c = map(segs[i + 4]);
             g.strokeStyle = triadFill

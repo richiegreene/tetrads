@@ -22,6 +22,17 @@
 
 import * as THREE from 'https://unpkg.com/three@0.126.0/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.126.0/examples/jsm/controls/OrbitControls.js';
+/* FAT LINES, because WebGL has no thick ones.
+   `LineBasicMaterial.linewidth` is silently ignored on every desktop GL
+   driver — the spec allows a driver to support only a single pixel, and they
+   all do exactly that — so a thickness control over ordinary LineSegments
+   would move a number and change nothing on screen. These three build each
+   segment as a screen-facing quad instead, which is what makes the Line size
+   slider mean the same thing in the lifted pane as it does in the flat one.
+   Same version and same CDN as the controls above. */
+import { LineSegments2 } from 'https://unpkg.com/three@0.126.0/examples/jsm/lines/LineSegments2.js';
+import { LineSegmentsGeometry } from 'https://unpkg.com/three@0.126.0/examples/jsm/lines/LineSegmentsGeometry.js';
+import { LineMaterial } from 'https://unpkg.com/three@0.126.0/examples/jsm/lines/LineMaterial.js';
 
 import {
     centsToShape, shapeToCents, clampCents, equaveCents,
@@ -29,7 +40,7 @@ import {
 } from './triad-geometry.js';
 import {
     triadRelief, triadDots, triadLabels, triadSnap, triadFill, triadLines,
-    triadContours, triadGloss, cursor,
+    triadContours, triadLineWidth, triadGloss, cursor,
 } from './triad-state.js';
 import { currentTriads, currentField, complexityRange } from './triad-surface.js';
 import { currentLayoutMode } from '../globals.js';
@@ -101,19 +112,38 @@ function place(gx, gy, z = 0) {
  * ------------------------------------------------------------------ */
 const HOME_ELEVATION = 30 * Math.PI / 180;
 
+/**
+ * How far the opening view is turned back toward the viewer, off the edge.
+ *
+ * Dead edge-on is the cleanest statement of the idea — that edge projects to a
+ * perfectly vertical line — but it is also the most foreshortened the triangle
+ * can be, and it hides the face you are meant to be reading. Ten degrees off
+ * opens the surface toward the viewer at almost no cost to the datum: the
+ * right edge leans by a couple of percent of the pane's width rather than
+ * standing exactly plumb, which reads as a a shape sitting naturally in space
+ * rather than as a diagram that has slipped.
+ *
+ * NEGATIVE turns toward the front. The heading's azimuth is measured from the
+ * +Z axis, which is where the baseline faces; the edge-on view sits at +30°,
+ * and subtracting brings it back down toward face-on.
+ */
+const HOME_FACE_TURN = -10 * Math.PI / 180;
+
 const HOME_DIR = (() => {
-    /* The edge that is to end up vertical: base-right to apex. */
+    /* The edge the view is built on: base-right to apex. */
     const b = place(1, 0), c = place(0.5, 1);
     const along = new THREE.Vector3().subVectors(c, b);
     along.y = 0;
     along.normalize();
     /* The camera looks ALONG that edge, so it stands at the other end of it —
-       the heading is the edge reversed, laid back by the elevation. */
+       the heading is the edge reversed, laid back by the elevation — and is
+       then turned back toward the viewer. Rotating about Y leaves the
+       elevation alone and moves only the azimuth. */
     return new THREE.Vector3(
         -along.x * Math.cos(HOME_ELEVATION),
         Math.sin(HOME_ELEVATION),
         -along.z * Math.cos(HOME_ELEVATION),
-    ).normalize();
+    ).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), HOME_FACE_TURN);
 })();
 
 /** And back — the inverse, which is the whole of picking. */
@@ -203,23 +233,16 @@ export function resize() {
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    /* A RESIZE IS NOT A REQUEST TO REFRAME.  This used to call frameCamera
-       every time the pane changed size, which meant that opening or shutting
-       the side rail threw away whatever the user had set up: the drawer
-       animates the panel's width, the pane resizes with it, and the camera
-       was pulled back to the app's own distance and target on the way. The
-       shape you had turned to and zoomed into was gone because you went to
-       look at a setting.
-     *
-     * So a camera the user has placed is left exactly where it is, and only
-     * the aspect ratio follows the pane — which is the whole of what a resize
-     * actually invalidates. A camera nobody has touched is still reframed,
-     * because there is no intent to preserve and staying well framed across a
-     * rail toggle is the better default.
-     *
-     * Reframing on demand did not go away; it moved to where it is meant to
-     * be, which is fitView. */
-    if (!userPlaced) frameCamera();
+    /* The fat lines size themselves in pixels, so they have to be told what a
+       pixel is now worth. */
+    if (lines && lines.material && lines.material.resolution) {
+        lines.material.resolution.set(w, h);
+    }
+    /* A resize re-fits, but it re-fits AROUND the user rather than over them —
+       see refitPreservingUser. The surface goes on filling the pane the way
+       the flat one does, and an orbit or a zoom survives the side rail being
+       opened, which it did not when this simply called frameCamera. */
+    refitPreservingUser();
 }
 
 /**
@@ -245,34 +268,113 @@ export function fitView() {
 }
 
 /**
- * Pull the camera back to exactly hold the surface, and no further.
+ * Where the camera would sit to hold the whole surface, centred, right now.
  *
- * The pane is not a fixed shape — in "Both" it is half the width it is on its
- * own — so a distance that framed the triangle in one crops it in the other.
- * The distance is therefore solved rather than guessed: the eight corners of
- * the box the surface lives in are put into camera space for the direction
- * currently being looked from, and each one says how far back the camera would
- * have to be for it to clear both edges of the frustum. The furthest such
- * demand wins.
+ * WHAT IS BEING FRAMED.  The six corners of the triangular prism the surface
+ * lives in — the three corners of the triangle, at the ground and at the top
+ * of the relief. This used to be the eight corners of the surface's BOUNDING
+ * BOX, which is a rectangular block half of which the triangle does not
+ * occupy, so the frame was solved against a phantom that stuck out past the
+ * shape on one side and the picture sat off-centre by the difference.
+ *
+ * HOW IT IS CENTRED: IN SCREEN SPACE, NOT IN CAMERA SPACE.  The obvious thing
+ * is to measure the corners along the camera's own axes and aim at the middle
+ * of what they span. That is an ORTHOGRAPHIC answer, and this is a perspective
+ * camera: depth changes how far from the centre a point lands, so the near
+ * corners throw out further than the far ones and the true middle of the
+ * picture is not the middle of the span. Solving it that way left the surface
+ * sitting 7% right of centre and low in the pane.
+ *
+ * So the corners are PROJECTED and the answer is iterated. Each pass puts the
+ * camera where the current guess says, projects the six corners, and reads off
+ * how far the picture's box is from the centre of the frame and how much of
+ * the frame it fills; the target slides by the first and the distance scales
+ * by the second. It converges in a handful of passes because each correction
+ * is very nearly right, and it costs six projections a pass on a routine that
+ * runs when the pane changes size — not per frame.
  *
  * A bounding sphere would be simpler and would waste most of the pane: a
  * triangle with a low relief is a wide flat thing, and the sphere that holds
  * it is mostly empty air above and below.
  *
- * Only the distance and the target are set. The DIRECTION is left alone, so a
- * surface the user has turned stays turned when the pane resizes.
+ * The DIRECTION is read from the camera and never written, so a surface the
+ * user has turned stays turned.
  */
-function frameCamera(margin = 1.06) {
-    if (!camera || !controls || !host) return;
-    if (host.clientWidth < 2 || host.clientHeight < 2) return;
-    const half = SIDE / 2;
-    const depth = (SIDE * SQRT3_2) / 2;
-    const lift = triadRelief * SIDE;
+/**
+ * A thinned copy of what is actually being drawn, for the framing to aim at.
+ *
+ * The frame used to be solved against the triangular PRISM — the footprint
+ * swept from the ground to the height of the tallest peak. The footprint is
+ * exact, but the lid is not: it is a flat ceiling at peak height stretched
+ * over the whole triangle, and almost all of it is empty air, because a peak
+ * is a peak precisely by being somewhere rather than everywhere. Framing
+ * against that reserved room at the top of the pane for nothing, and pushed
+ * the picture down by a couple of percent.
+ *
+ * So the surface says where it really is — but not with every vertex, which
+ * would be tens of thousands of points to settle a hull.
+ *
+ * WHICH POINTS ARE KEPT IS NOT A MATTER OF TASTE.  A plain stride is the
+ * obvious thinning and it is wrong here: the points that decide the outline
+ * are the ones on the edge of the mask, and a stride steps straight over most
+ * of them. Framed against what was left, the picture came out believing it was
+ * narrower than it is and overflowed the margin it was supposed to be sitting
+ * inside — 97% of the pane against the 94% asked for.
+ *
+ * So the EDGE is taken in full — the first and last live vertex of every row
+ * and of every column, which is the exact footprint and cheap at a few hundred
+ * points — and the interior is thinned by stride on top of it, since an
+ * interior point only ever matters if it is a peak. The highest vertex is kept
+ * by name, because that one is never optional and a stride can miss it.
+ */
+let framePoints = [];
 
-    /* Aim at the middle of the body of the thing rather than at the ground
-       plane, or a tall relief sits in the top half of the pane with the
-       bottom half empty. */
-    const target = new THREE.Vector3(0, lift / 2, 0);
+function pushPoint(positions, i) {
+    framePoints.push(new THREE.Vector3(
+        positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]));
+}
+
+function setFramePoints(positions, index, w, h) {
+    framePoints = [];
+    const n = positions.length / 3;
+    if (!n) return;
+
+    if (index) {
+        for (let y = 0; y < h; y++) {
+            let first = -1, last = -1;
+            for (let x = 0; x < w; x++) {
+                const v = index[y * w + x];
+                if (v < 0) continue;
+                if (first < 0) first = v;
+                last = v;
+            }
+            if (first >= 0) { pushPoint(positions, first); pushPoint(positions, last); }
+        }
+        for (let x = 0; x < w; x++) {
+            let first = -1, last = -1;
+            for (let y = 0; y < h; y++) {
+                const v = index[y * w + x];
+                if (v < 0) continue;
+                if (first < 0) first = v;
+                last = v;
+            }
+            if (first >= 0) { pushPoint(positions, first); pushPoint(positions, last); }
+        }
+    }
+
+    const stride = Math.max(1, Math.ceil(n / 600));
+    let top = 0;
+    for (let i = 0; i < n; i++) {
+        if (positions[i * 3 + 1] > positions[top * 3 + 1]) top = i;
+        if (i % stride === 0) pushPoint(positions, i);
+    }
+    pushPoint(positions, top);
+}
+
+function solveFrame(margin = 1.06) {
+    if (!camera || !controls || !host) return null;
+    if (host.clientWidth < 2 || host.clientHeight < 2) return null;
+    const lift = triadRelief * SIDE;
 
     const dir = camera.position.clone().sub(controls.target);
     if (dir.lengthSq() < 1e-6) dir.copy(HOME_DIR);
@@ -284,27 +386,154 @@ function frameCamera(margin = 1.06) {
     if (!Number.isFinite(right.x)) right.set(1, 0, 0);
     const camUp = new THREE.Vector3().crossVectors(right, forward).normalize();
 
+    /* The surface's own points where there is a surface; failing that, the
+       prism it would occupy — which is all there is to go on before a field
+       has been generated. */
+    const corners = framePoints.length ? framePoints : (() => {
+        const box = [];
+        for (const [gx, gy] of [[0, 0], [1, 0], [0.5, 1]]) {
+            box.push(place(gx, gy, 0), place(gx, gy, lift));
+        }
+        return box;
+    })();
+
+    /* A first guess, orthographic and cheap, so the iteration starts close. */
+    const target = new THREE.Vector3();
+    for (const c of corners) target.add(c);
+    target.multiplyScalar(1 / corners.length);
+
     const vfov = (camera.fov * Math.PI) / 180;
     const tanV = Math.tan(vfov / 2);
-    const tanH = tanV * camera.aspect;
+    let distance = 0;
+    for (const c of corners) {
+        const o = c.clone().sub(target);
+        distance = Math.max(distance,
+            o.dot(forward) + Math.abs(o.dot(right)) / (tanV * camera.aspect),
+            o.dot(forward) + Math.abs(o.dot(camUp)) / tanV);
+    }
+    distance = Math.max(distance, camera.near + 0.1) * margin;
 
-    let distance = camera.near + 0.1;
-    for (const sx of [-1, 1]) {
-        for (const sy of [0, 1]) {
-            for (const sz of [-1, 1]) {
-                const corner = new THREE.Vector3(sx * half, sy * lift, sz * depth).sub(target);
-                const along = corner.dot(forward);
-                const x = Math.abs(corner.dot(right));
-                const y = Math.abs(corner.dot(camUp));
-                distance = Math.max(distance, along + x / tanH, along + y / tanV);
-            }
+    /* A scratch camera, so the solve never disturbs the live one — it is the
+       thing being drawn, and half-solved positions must not reach the screen. */
+    const probe = new THREE.PerspectiveCamera(camera.fov, camera.aspect, camera.near, camera.far);
+    const v = new THREE.Vector3();
+    /* UNDER-RELAXED, AND THE BEST PASS WINS.
+     *
+     * Correcting the offset and the distance in one step over-couples them:
+     * moving the camera closer changes what "off-centre" is worth, so a
+     * correction sized at the old distance overshoots at the new one. Applied
+     * in full the pair can sit and oscillate — and since the loop simply
+     * returned wherever it had got to, an oblique view came back with the
+     * surface a fifth of a frame off-centre and overflowing the bottom, while
+     * every measurement said the distance was the fitting one.
+     *
+     * Taking a fraction of each correction converges instead of ringing, and
+     * remembering the best pass rather than the last means a run that does not
+     * settle still returns its closest approach instead of its final stumble.
+     */
+    const RELAX = 0.6;
+    let best = null, bestErr = Infinity;
+    for (let pass = 0; pass < 48; pass++) {
+        probe.position.copy(target).addScaledVector(dir, distance);
+        probe.up.copy(up);
+        probe.lookAt(target);
+        probe.updateMatrixWorld(true);
+        probe.updateProjectionMatrix();
+
+        let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+        for (const c of corners) {
+            v.copy(c).project(probe);
+            if (v.x < xMin) xMin = v.x; if (v.x > xMax) xMax = v.x;
+            if (v.y < yMin) yMin = v.y; if (v.y > yMax) yMax = v.y;
+        }
+        if (!Number.isFinite(xMin) || !Number.isFinite(yMin)) break;
+
+        /* Where the picture's middle is, in fractions of a half-frame, and how
+           much of the half-frame it takes up. */
+        const offX = (xMin + xMax) / 2, offY = (yMin + yMax) / 2;
+        const fill = Math.max((xMax - xMin) / 2, (yMax - yMin) / 2);
+
+        const err = Math.max(Math.abs(offX), Math.abs(offY), Math.abs(fill * margin - 1));
+        if (err < bestErr) {
+            bestErr = err;
+            best = { target: target.clone(), distance };
+        }
+        if (err < 1e-3) break;
+
+        /* Slide the target to cancel the offset. A screen fraction is worth
+           this much world at the target's own depth. */
+        const halfH = tanV * distance, halfW = halfH * camera.aspect;
+        target.addScaledVector(right, offX * halfW * RELAX)
+            .addScaledVector(camUp, offY * halfH * RELAX);
+
+        /* And scale the distance so the picture just fits inside the margin. */
+        if (fill > 1e-6) {
+            distance = Math.max(camera.near + 0.1,
+                distance * Math.pow(fill * margin, RELAX));
         }
     }
 
-    controls.target.copy(target);
-    camera.position.copy(target).addScaledVector(dir, distance * margin);
+    if (best) { target.copy(best.target); distance = best.distance; }
+    return { dir, target, distance };
+}
+
+/**
+ * The framing this pane would open on, as it was last solved.
+ *
+ * Kept so a resize can tell how far the user has moved from it — see resize,
+ * which reapplies that difference against the NEW framing rather than
+ * throwing it away or ignoring the new pane.
+ */
+let lastIdeal = null;
+
+function applyFrame(f) {
+    controls.target.copy(f.target);
+    camera.position.copy(f.target).addScaledVector(f.dir, f.distance);
     camera.updateProjectionMatrix();
     controls.update();
+}
+
+function frameCamera(margin = 1.06) {
+    const f = solveFrame(margin);
+    if (!f) return;
+    applyFrame(f);
+    lastIdeal = { target: f.target.clone(), distance: f.distance };
+}
+
+/**
+ * Re-fit after the pane changed size, WITHOUT discarding what the user set up.
+ *
+ * The two things asked of a resize pull in opposite directions. The surface
+ * has to keep filling the pane the way the flat one does — widen the pane and
+ * the triangle should get bigger, not sit in the middle of new empty space —
+ * and yet a resize is not a request to undo somebody's orbit and zoom, which
+ * is what reframing outright used to do every time the side rail was opened.
+ *
+ * They are only in conflict if the user's framing is stored in absolute terms.
+ * Stored RELATIVE to the framing the app would have chosen, both fall out at
+ * once: how far they have zoomed is a ratio against the fitting distance, and
+ * where they have panned to is an offset from the fitting target. Recompute
+ * the fit for the new pane, put the ratio and the offset back on top, and the
+ * picture scales with the pane while staying exactly where it was put.
+ *
+ * A user who has not touched anything has a ratio of 1 and no offset, so this
+ * reduces to a plain fit — the flat pane's behaviour exactly.
+ */
+function refitPreservingUser() {
+    const f = solveFrame();
+    if (!f) return;
+    if (!lastIdeal || !userPlaced) {
+        applyFrame(f);
+    } else {
+        const ratio = camera.position.distanceTo(controls.target) / lastIdeal.distance;
+        const pan = controls.target.clone().sub(lastIdeal.target);
+        controls.target.copy(f.target).add(pan);
+        camera.position.copy(controls.target)
+            .addScaledVector(f.dir, f.distance * (Number.isFinite(ratio) && ratio > 0 ? ratio : 1));
+        camera.updateProjectionMatrix();
+        controls.update();
+    }
+    lastIdeal = { target: f.target.clone(), distance: f.distance };
 }
 
 /**
@@ -316,7 +545,12 @@ function frameCamera(margin = 1.06) {
  */
 export function frameTight(margin = 1.002) {
     if (!camera || !controls || !renderer || !scene) return null;
-    const saved = { pos: camera.position.clone(), target: controls.target.clone() };
+    const saved = {
+        pos: camera.position.clone(),
+        target: controls.target.clone(),
+        ideal: lastIdeal,
+        placed: userPlaced,
+    };
     frameCamera(margin);
     renderer.render(scene, camera);
     return saved;
@@ -327,6 +561,10 @@ export function restoreFrame(saved) {
     if (!saved || !camera || !controls || !renderer || !scene) return;
     camera.position.copy(saved.pos);
     controls.target.copy(saved.target);
+    /* The export's tight crop is not a framing the live pane should measure
+       itself against later, so what it overwrote comes back with it. */
+    lastIdeal = saved.ideal;
+    userPlaced = saved.placed;
     camera.updateProjectionMatrix();
     controls.update();
     renderer.render(scene, camera);
@@ -388,6 +626,24 @@ export function rebuild(o, force = false) {
     }
 
     surface = field ? buildSurface(field) : buildPlate();
+    /* LINES WITHOUT FILL DRAWS NO SURFACE.  The contours are meant to hang in
+       space, so the thing they were lying on is not rendered — but it is still
+       ADDED, because it is what the pointer picks against: hovering and
+       playing a chord both raycast the surface, and a mode that quietly
+       stopped responding to the mouse would be a poor trade for a look.
+     *
+     * Turned off through the material rather than through `visible`, which is
+     * the part worth stating: an invisible object is skipped by some versions
+     * of the raycaster, and picking is exactly what has to keep working.
+     * Writing neither colour nor depth draws literally nothing and, just as
+     * importantly, leaves the depth buffer alone — a surface that still wrote
+     * depth would hide every contour line behind it. */
+    if (field && triadLines && !triadFill) {
+        for (const m of [].concat(surface.material)) {
+            m.colorWrite = false;
+            m.depthWrite = false;
+        }
+    }
     world.add(surface);
 
     if (field && triadLines) { lines = buildContourLines(field); if (lines) world.add(lines); }
@@ -486,6 +742,8 @@ function buildSurface(field) {
         }
     }
 
+    setFramePoints(positions, index, w, h);
+
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     if (!material) geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -517,6 +775,8 @@ function buildSurface(field) {
 function buildPlate() {
     const geo = new THREE.BufferGeometry();
     const [a, b, c] = [place(0, 0), place(1, 0), place(0.5, 1)];
+    /* A flat triangle: the three corners are the whole of it. */
+    setFramePoints([a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z], null, 0, 0);
     geo.setAttribute('position', new THREE.Float32BufferAttribute(
         [a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z], 3));
     geo.computeVertexNormals();
@@ -558,13 +818,31 @@ function buildContourLines(field) {
             cols.push(c.r, c.g, c.b);
         }
     }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-    geo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
-    return new THREE.LineSegments(geo, new THREE.LineBasicMaterial({
-        vertexColors: true, transparent: true,
+    const geo = new LineSegmentsGeometry();
+    geo.setPositions(pts);
+    geo.setColors(cols);
+    /* `resolution` is how the shader turns a width in pixels into a quad in
+       clip space, so it is the pane's size and has to be re-set whenever the
+       pane is resized — see resize(). Left stale, the lines keep the thickness
+       they had at the old size. */
+    const mat = new LineMaterial({
+        vertexColors: true,
+        linewidth: triadLineWidth,
+        transparent: true,
         opacity: (triadFill && !colormapMaterial()) ? 0.35 : 0.9,
-    }));
+    });
+    mat.resolution.set(
+        Math.max(1, host ? host.clientWidth : 1),
+        Math.max(1, host ? host.clientHeight : 1));
+    const seg = new LineSegments2(geo, mat);
+    /* LineSegmentsGeometry stores its endpoints in instanced attributes, and
+       the bounding sphere three derives from those comes out empty — so the
+       whole object tests as off-screen and is culled before it is ever drawn.
+       There is exactly one of these and it is always inside the view the
+       camera was just framed to, so the test is not worth having. */
+    seg.frustumCulled = false;
+    seg.computeLineDistances();
+    return seg;
 }
 
 /** Where a triad sits on the surface — on the field if there is one. */
@@ -677,6 +955,18 @@ export function draw(o) {
     opts = o;
     if (!renderer) return;
     rebuild(o);
+
+    /* Line size, without a rebuild.
+     *
+     * It is deliberately NOT part of rebuild's key. Everything in that key
+     * changes the GEOMETRY, and rebuilding is a hundred thousand vertices —
+     * far too much to spend on a slider being dragged. The width is a uniform
+     * on the line material, so it can simply be assigned, and LineMaterial's
+     * setter writes it straight through to the shader. One comparison a frame
+     * buys a control that keeps up with the hand moving it. */
+    if (lines && lines.material.linewidth !== triadLineWidth) {
+        lines.material.linewidth = triadLineWidth;
+    }
 
     if (cursor.live) {
         const E = equaveCents(o.equaveRatio);
@@ -840,3 +1130,5 @@ function pick(ev) {
 
 /** The canvas, for the PNG exporter. */
 export function domElement() { return renderer ? renderer.domElement : null; }
+
+

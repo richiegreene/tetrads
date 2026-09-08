@@ -50,6 +50,16 @@ export function setTriadLines(v) { triadLines = v; }
 export let triadContours = 24;
 export function setTriadContours(v) { triadContours = v; }
 
+/* How thick a contour line is drawn, in pixels — the same control Dyads has
+   over its curve, and for the same reason: at a hair's width the lines are a
+   reading of the field, and at six pixels they are a drawing of it. Pixels
+   rather than world units so the two panes agree: the flat pane strokes them
+   on a canvas and the lifted one draws them as screen-space ribbons, and a
+   line that thinned as the surface receded would be a different control in
+   each. */
+export let triadLineWidth = 1.5;
+export function setTriadLineWidth(v) { triadLineWidth = v; }
+
 /**
  * How wet the surface is, 0 to 1.
  *

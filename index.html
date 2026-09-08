@@ -442,6 +442,18 @@
             <input type="range" id="triadContours" min="4" max="60" step="1" value="24"
               title="How many contour lines the field is cut into.">
 
+            <!-- Directly under Levels, because the two are one decision about
+                 the same marks: how many lines there are, and how heavy each
+                 one is. Dyads' own control over its curve, same range and
+                 same default, so a line drawn in either mode is set the same
+                 way. -->
+            <div class="pressrow">
+              <label for="triadLineWidth">Line size</label>
+              <span class="pressval" id="triad-width-v">1.5 px</span>
+            </div>
+            <input type="range" id="triadLineWidth" min="0.5" max="8" step="0.1" value="1.5"
+              title="How thick the contour lines are drawn, in both panes. At a hair's width they are a reading; at six pixels they are a drawing.">
+
             <div class="pressrow">
               <label for="triadRelief">Relief</label>
               <span class="pressval" id="relief-v">34%</span>
