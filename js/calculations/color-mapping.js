@@ -142,11 +142,22 @@ export function groundCss(hex) {
  *  across sessions, so this module stays free of the browser.
  * ------------------------------------------------------------------ */
 
-/* Not hard white on the light side. A full-brightness field the size of the
-   viewport is a lamp pointed at the reader, and the ramps' dark ends read
-   just as cleanly against a near-white as against a white — while the paler
-   middles of cividis and magma stop dissolving into the page. */
-export const GROUNDS = { dark: 0x000000, light: 0xf6f5f2 };
+export const DARK_GROUND = 0x000000;
+
+/* The lightness every light ground is mixed at, and it is Xenachord
+   Designer's viewport grey: its 3D view clears to [214,214,214], and a
+   colourless source run through `groundFor` below comes back at exactly that.
+   So the neutral case is that app's own grey to the byte, and every tinted
+   ground is the same value of it wearing a hue. The two apps get looked at in
+   one sitting and share their whole chrome, so a shape lifted out of one and
+   set beside a shape from the other should be sitting at the same brightness. */
+const LIGHT_GROUND_L = 214 / 255;
+
+/* How much hue a ground is allowed. A ground is furniture: it has to be
+   plainly warm or plainly cool without becoming a colour in its own right and
+   competing with the field drawn on it. Well under the source's own
+   saturation, which for these ramps is near-total. */
+const LIGHT_GROUND_S = 0.28;
 
 let theme = 'dark';
 
@@ -158,11 +169,87 @@ export function setTheme(next) {
     return theme;
 }
 
-/** The ground every layout is drawn on right now. */
-export function themeGround() { return GROUNDS[theme]; }
-
 /** Whether the ground is the light one — the question renderers actually ask. */
 export function themeIsLight() { return theme === 'light'; }
+
+/* ---- hue arithmetic, for the tinted grounds ---- */
+
+function hslOf(hex) {
+    const { r, g, b } = rgb(hex);
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    const l = (max + min) / 2;
+    if (d === 0) return { h: 0, s: 0, l };
+    const s = d / (1 - Math.abs(2 * l - 1));
+    let h;
+    if (max === r) h = 60 * (((g - b) / d) % 6);
+    else if (max === g) h = 60 * ((b - r) / d + 2);
+    else h = 60 * ((r - g) / d + 4);
+    return { h: (h + 360) % 360, s, l };
+}
+
+function hexFromHsl(h, s, l) {
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = l - c / 2;
+    const i = Math.floor(h / 60) % 6;
+    const [r, g, b] = [
+        [c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x],
+    ][i];
+    return hexOf({ r: r + m, g: g + m, b: b + m });
+}
+
+/**
+ * Where along a ramp the ground takes its hue from.
+ *
+ * NOT THE END. The end is where the ground was read from first, and it did
+ * not work: these five maps are all built to finish at maximum brightness, and
+ * at maximum brightness there is almost no hue left to have. Their final
+ * colours land between 53° and 63° — five yellows — so five grounds came back
+ * within two units of each other and the background was, in practice, static.
+ *
+ * THE MIDPOINT, then — the part of a ramp that actually identifies it. Halfway
+ * along, these five are as far apart as they ever get: viridis is teal at
+ * 172°, cividis a warm grey at 45°, and the three fire maps fan out across the
+ * reds — inferno 359°, plasma 351°, magma 337°. Every other sample point pulls
+ * them together, because they converge at both ends by construction: all five
+ * start near-black and all five finish near-yellow, and only the middle is
+ * theirs alone.
+ *
+ * What it costs is that the ground no longer echoes the colour at the end of
+ * the ramp. It echoes the colour the ramp is KNOWN by instead, which is the
+ * more useful of the two things a ground can say — and it is the only one of
+ * them that can be said at all, since the ends do not differ.
+ */
+const GROUND_SAMPLE = 0.5;
+
+function groundSourceOf(ramp) {
+    return hexOf(ramp(GROUND_SAMPLE));
+}
+
+/**
+ * The ground a layout is drawn on.
+ *
+ * ON BLACK, ALWAYS BLACK. Nothing to derive: a dark ground's whole job is to
+ * be absent, and tinting it would put a colour under a picture whose own
+ * colours are the data.
+ *
+ * ON PAPER, THE LAYOUT'S OWN HUE. The ground takes its hue from the ramp's
+ * midpoint — see GROUND_SAMPLE for why there and not from either end — held at
+ * one fixed lightness and a low saturation. So the page a map is drawn on
+ * belongs to that map: viridis gets a cool green ground, magma and plasma
+ * rosy ones, cividis a warm neutral, and changing the colormap changes the
+ * room as well as the ink.
+ *
+ * The constant has no ramp to look at, so it uses the body colour itself —
+ * the same rule, since that colour is the whole of what the layout is. Its
+ * ground is the only one here that can be any hue at all, and a grey chosen
+ * in the swatch gives back Xenachord's grey exactly.
+ */
+function groundFor(sourceHex) {
+    if (theme !== 'light') return DARK_GROUND;
+    const { h, s } = hslOf(sourceHex);
+    return hexFromHsl(h, Math.min(s, LIGHT_GROUND_S), LIGHT_GROUND_L);
+}
 
 /* ---------------------------------------------------------------------
  *  The constant
@@ -295,13 +382,15 @@ const RAMPS = [
  * the picture is about in pale yellow on a pale page.
  */
 export function colormaps() {
-    const ground = themeGround();
-    const light = isLightGround(ground);
+    const light = themeIsLight();
     const list = RAMPS.map((m) => ({
         name: m.name,
         title: m.title,
         ramp: light ? (t) => m.ramp(1 - Math.min(1, Math.max(0, t))) : m.ramp,
-        ground,
+        /* Each ramp brings its own ground rather than all of them sharing
+           one, so switching colormaps in day mode repaints the page as well
+           as the picture. Derived from the ramp itself — see groundFor. */
+        ground: groundFor(groundSourceOf(m.ramp)),
         constant: false,
         material: null,
     }));
@@ -311,7 +400,7 @@ export function colormaps() {
         name: 'Constant',
         title: 'One colour of your choosing, modelled entirely by light rather than by a ramp — the shape is read off its highlight and its shading. Pick the colour with the swatch.',
         ramp: constantRamp(hex, light),
-        ground,
+        ground: groundFor(hex),
         constant: true,
         material: {
             color: hex,

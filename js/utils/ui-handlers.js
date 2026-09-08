@@ -41,7 +41,7 @@ import { saveTriadSVG, saveTriadPNG, exportTriadCSV } from '../triads/triad-expo
 import { saveDyadSVG, saveDyadPNG, exportDyadCSV } from '../dyads/dyad-export.js';
 import {
     colormaps, COLORMAP_COUNT, constantColors, setConstantColor,
-    isLightGround, groundCss, currentTheme, setTheme, themeGround,
+    isLightGround, groundCss, currentTheme, setTheme, themeIsLight,
 } from '../calculations/color-mapping.js';
 import { estimateWork, sayWork, WORK_BUDGET } from '../calculations/work-estimate.js';
 import { initMidiOutput, sendMpePressure, mpeChannels } from '../midi/midi-output.js';
@@ -135,6 +135,168 @@ function seg(segId, onPick) {
  */
 function constantCss(mat) {
     return '#' + mat.color.toString(16).padStart(6, '0');
+}
+
+/* ---------------------------------------------------------------------
+ *  The constant's colour picker
+ *
+ *  A drag, not a dialogue. The swatch used to be an <input type="color">,
+ *  which on this platform hands the whole job to the operating system: a
+ *  separate panel opens over the app, the picture you are choosing a colour
+ *  FOR is behind it, and what you are choosing is a value in a box rather than
+ *  a thing you can see happening. That is the wrong shape for this control.
+ *  The constant layout has no ramp — its colour IS the layout — so choosing it
+ *  is not filling in a field, it is looking at the model and stopping when it
+ *  looks right.
+ *
+ *  So: a saturation/value square and a hue strip, both dragged, both live. The
+ *  scene is repainted on every pointer move, which is what makes the choice a
+ *  judgement about the picture instead of a guess about a number.
+ *
+ *  IT IS DRAWN ON <body>, NOT IN THE CHIP.  The drawer scrolls, and anything
+ *  positioned inside it is clipped at the drawer's edge — the popover would
+ *  lose its bottom half. Fixed to the viewport and positioned against the
+ *  swatch's rectangle instead, so it can hang outside the panel entirely.
+ * ------------------------------------------------------------------ */
+
+const hex6 = (n) => '#' + (n >>> 0).toString(16).padStart(6, '0');
+
+function hsvOf(hex) {
+    const r = ((hex >> 16) & 255) / 255, g = ((hex >> 8) & 255) / 255, b = (hex & 255) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+    let h = 0;
+    if (d) {
+        if (mx === r) h = 60 * (((g - b) / d) % 6);
+        else if (mx === g) h = 60 * ((b - r) / d + 2);
+        else h = 60 * ((r - g) / d + 4);
+    }
+    return { h: (h + 360) % 360, s: mx ? d / mx : 0, v: mx };
+}
+
+function hexFromHsv(h, s, v) {
+    const c = v * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = v - c;
+    const i = Math.floor(h / 60) % 6;
+    const [r, g, b] = [[c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x]][i];
+    return (Math.round((r + m) * 255) << 16)
+        | (Math.round((g + m) * 255) << 8)
+        | Math.round((b + m) * 255);
+}
+
+/* One picker for the app, reused. Two would be two states to keep in step. */
+let pickerEl = null, pickerClose = null;
+
+/**
+ * Open the picker against `anchor`, calling `onPick(hex)` on every movement.
+ *
+ * @param {Element} anchor   the swatch it belongs to
+ * @param {number} startHex  the colour it opens on
+ * @param {(hex:number)=>void} onPick  called live, on every drag step
+ */
+function openColorPicker(anchor, startHex, onPick) {
+    closeColorPicker();
+    let { h, s, v } = hsvOf(startHex);
+
+    const el = document.createElement('div');
+    el.className = 'cpick';
+    el.innerHTML = '<div class="cpick-sv"><i></i></div>'
+        + '<div class="cpick-hue"><i></i></div>'
+        + '<div class="cpick-foot"><span class="cpick-chip"></span>'
+        + '<input class="cpick-hex" spellcheck="false" maxlength="7"></div>';
+    document.body.append(el);
+
+    const sv = el.querySelector('.cpick-sv'), svDot = sv.querySelector('i');
+    const hue = el.querySelector('.cpick-hue'), hueDot = hue.querySelector('i');
+    const chip = el.querySelector('.cpick-chip'), hexIn = el.querySelector('.cpick-hex');
+
+    /* The square's own colour is the hue, so it is repainted when the hue
+       moves; the dots are positioned rather than redrawn. */
+    const render = (typing) => {
+        const hexv = hexFromHsv(h, s, v);
+        sv.style.background =
+            `linear-gradient(to top, #000, rgba(0,0,0,0)),`
+            + `linear-gradient(to right, #fff, hsl(${h.toFixed(1)},100%,50%))`;
+        svDot.style.left = (s * 100) + '%';
+        svDot.style.top = ((1 - v) * 100) + '%';
+        hueDot.style.left = (h / 360 * 100) + '%';
+        chip.style.background = hex6(hexv);
+        if (!typing) hexIn.value = hex6(hexv);
+        onPick(hexv);
+    };
+
+    /* Pointer capture, so a drag that leaves the square keeps steering it —
+       sliding off the edge should pin to the edge, not drop the gesture. */
+    const drag = (surface, onMove) => {
+        const step = (ev) => {
+            const r = surface.getBoundingClientRect();
+            onMove(
+                Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)),
+                Math.min(1, Math.max(0, (ev.clientY - r.top) / r.height)),
+            );
+            render();
+        };
+        surface.addEventListener('pointerdown', (ev) => {
+            ev.preventDefault();
+            surface.setPointerCapture(ev.pointerId);
+            step(ev);
+            const move = (e) => step(e);
+            const up = () => {
+                surface.removeEventListener('pointermove', move);
+                surface.removeEventListener('pointerup', up);
+                surface.removeEventListener('pointercancel', up);
+            };
+            surface.addEventListener('pointermove', move);
+            surface.addEventListener('pointerup', up);
+            surface.addEventListener('pointercancel', up);
+        });
+    };
+    drag(sv, (x, y) => { s = x; v = 1 - y; });
+    drag(hue, (x) => { h = Math.min(359.9, x * 360); });
+
+    hexIn.addEventListener('input', () => {
+        const m = /^#?([0-9a-f]{6})$/i.exec(hexIn.value.trim());
+        if (!m) return;
+        ({ h, s, v } = hsvOf(parseInt(m[1], 16)));
+        render(true);
+    });
+
+    /* Anchored to the swatch, then pulled back inside the viewport — the chip
+       sits low in a scrolling drawer, so the popover often has to open
+       upwards. Measured after insertion because the height depends on the
+       styling rather than being known here. */
+    const place = () => {
+        const a = anchor.getBoundingClientRect(), b = el.getBoundingClientRect();
+        let x = a.left, y = a.bottom + 6;
+        if (y + b.height > innerHeight - 8) y = Math.max(8, a.top - b.height - 6);
+        x = Math.min(x, innerWidth - b.width - 8);
+        el.style.left = Math.max(8, x) + 'px';
+        el.style.top = y + 'px';
+    };
+    render();
+    place();
+
+    /* Dismissal. `pointerdown` rather than `click` so it shuts on the press
+       that begins an interaction elsewhere, and capture so it is seen before
+       whatever it lands on acts. */
+    const away = (ev) => {
+        if (!el.contains(ev.target) && ev.target !== anchor) closeColorPicker();
+    };
+    const key = (ev) => { if (ev.key === 'Escape') closeColorPicker(); };
+    setTimeout(() => document.addEventListener('pointerdown', away, true), 0);
+    document.addEventListener('keydown', key);
+    window.addEventListener('resize', place);
+
+    pickerEl = el;
+    pickerClose = () => {
+        document.removeEventListener('pointerdown', away, true);
+        document.removeEventListener('keydown', key);
+        window.removeEventListener('resize', place);
+        el.remove();
+        pickerEl = null; pickerClose = null;
+    };
+}
+
+function closeColorPicker() {
+    if (pickerClose) pickerClose();
 }
 
 /** A colormap as a CSS gradient, sampled at enough stops to read as smooth. */
@@ -417,6 +579,36 @@ export function setupUIEventListeners() {
      * highlight and ambient are all derived from those two. */
     const mapsEl = $('colormap-seg');
 
+    /* ---- repainting while the colour is being dragged ----
+     *
+     * Three modes, and they do not cost the same, so this is not one call.
+     *
+     * The triangle and the plot keep their fields as NUMBERS and colour them
+     * at paint time, so a new constant is a dirty flag and a repaint on the
+     * next frame — cheap enough to run on every pointer move, which is what
+     * makes the drag live.
+     *
+     * The tetrahedron bakes its colours into sprites, so the same move means
+     * regenerating the set: far too slow to run per event, and firing them
+     * off in parallel would just queue a hundred rebuilds behind a drag that
+     * finished long ago. So it is COALESCED — one rebuild in flight, one
+     * remembered as pending, and the pending one always uses whatever the
+     * colour has become by the time it starts. The drag stays smooth and the
+     * shape catches up in steps rather than lagging by the whole gesture.
+     */
+    let tetraBusy = false, tetraPending = false;
+    const repaintConstant = async () => {
+        if (appMode !== 'tetrads') { restyle({ rebuild: true }); return; }
+        tetraPending = true;
+        if (tetraBusy) return;
+        tetraBusy = true;
+        while (tetraPending) {
+            tetraPending = false;
+            await setLayoutMode(currentLayoutMode);
+        }
+        tetraBusy = false;
+    };
+
     const paintChips = () => {
         mapsEl.textContent = '';
         colormaps().forEach((m, i) => {
@@ -437,25 +629,39 @@ export function setupUIEventListeners() {
             b.append(swatch);
 
             if (m.constant) {
-                /* The picker sits on the chip rather than in a row underneath,
+                /* The swatch sits on the chip rather than in a row underneath,
                    because the colour is not a setting of the panel — it is
                    what this one layout IS, and it belongs where the layout is
                    chosen. */
                 const row = document.createElement('span');
                 row.className = 'const-row';
-                const picker = document.createElement('input');
-                picker.type = 'color';
-                picker.value = groundCss(constantColors.body);
-                picker.title = 'The colour the light is applied to';
-                /* The press underneath selects the layout; the picker must not
-                   also toggle it on the way to opening. */
-                picker.addEventListener('click', (ev) => ev.stopPropagation());
-                picker.addEventListener('input', () => {
-                    setConstantColor(parseInt(picker.value.slice(1), 16));
-                    paintChips();
-                    if (currentLayoutMode === i) applyColormap(i);
+                const dot = document.createElement('button');
+                dot.className = 'const-swatch';
+                dot.type = 'button';
+                dot.style.background = groundCss(constantColors.body);
+                dot.title = 'The colour the light is applied to — drag to choose';
+                /* The press underneath selects the layout; opening the picker
+                   must not also toggle it on the way. */
+                dot.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    if (pickerEl) { closeColorPicker(); return; }
+                    /* Choosing a colour you cannot see is guesswork, and this
+                       picker's whole argument is that you watch the model
+                       while you drag. So opening it puts the constant layout
+                       up if it is not already the one showing. */
+                    if (currentLayoutMode !== i) applyColormap(i);
+                    openColorPicker(dot, constantColors.body, (hex) => {
+                        setConstantColor(hex);
+                        /* The two things on the chip that ARE the colour are
+                           repainted here rather than by rebuilding the grid:
+                           paintChips() would destroy the swatch the picker is
+                           anchored to, mid-drag. */
+                        dot.style.background = groundCss(hex);
+                        swatch.style.background = groundCss(hex);
+                        repaintConstant();
+                    });
                 });
-                row.append(picker, document.createTextNode(m.name));
+                row.append(dot, document.createTextNode(m.name));
                 b.append(row);
             } else {
                 b.append(document.createTextNode(m.name));
@@ -473,12 +679,13 @@ export function setupUIEventListeners() {
      * chrome reads off the same custom properties, so overriding them on
      * `body.bright` recolours the subtree without a second stylesheet.
      *
-     * Still a luminance test on the ground rather than a string comparison on
-     * the theme, so the chrome and the renderers are deciding from the same
-     * fact: if the light ground is ever tinted further, nothing here moves.
+     * Asked of the theme rather than of a ground, because there is no longer
+     * one ground to ask: each colormap now brings its own, tinted from its own
+     * brightest colour. They are all light in day mode and all black in night
+     * mode, so the theme is the fact the chrome actually depends on.
      */
     const applyBrightMode = () => {
-        const light = isLightGround(themeGround());
+        const light = themeIsLight();
         document.body.classList.toggle('bright', light);
         document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
     };

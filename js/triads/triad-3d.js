@@ -72,6 +72,50 @@ function place(gx, gy, z = 0) {
     );
 }
 
+/* ---------------------------------------------------------------------
+ *  The view the pane opens on
+ *
+ *  Looking ALONG one of the triangle's own edges, from slightly above.
+ *
+ *  The default used to be straight down the Z axis from a little way up
+ *  — (0, 2.6, 4.2) — which puts the baseline across the bottom of the frame
+ *  and the apex in the middle of it. That is the flat pane's composition
+ *  rendered in perspective: symmetrical, square-on, and telling you nothing
+ *  the topology pane was not already telling you better.
+ *
+ *  An edge-on view is the one a lifted surface is worth turning to. Put the
+ *  camera's horizontal heading parallel to the base-right → apex edge and that
+ *  edge recedes directly away from the eye, so it projects as a VERTICAL LINE
+ *  down the right of the shape — a clean straight datum to read the relief
+ *  against — while the third vertex swings out to the left and the whole
+ *  triangle tilts away into the frame. Every ridge is now crossed at an angle
+ *  instead of head-on, which is what makes a relief read as relief.
+ *
+ *  The heading is derived from the two vertices rather than written out as a
+ *  vector, so it stays correct if the triangle is ever placed differently.
+ *  The elevation is the one number here that is a matter of taste; 30° is a
+ *  comfortable iso — high enough to see the surface as a surface, low enough
+ *  that the peaks still stand against the sky rather than being looked down
+ *  on. It is a named constant because it is exactly the kind of thing that
+ *  wants nudging by eye.
+ * ------------------------------------------------------------------ */
+const HOME_ELEVATION = 30 * Math.PI / 180;
+
+const HOME_DIR = (() => {
+    /* The edge that is to end up vertical: base-right to apex. */
+    const b = place(1, 0), c = place(0.5, 1);
+    const along = new THREE.Vector3().subVectors(c, b);
+    along.y = 0;
+    along.normalize();
+    /* The camera looks ALONG that edge, so it stands at the other end of it —
+       the heading is the edge reversed, laid back by the elevation. */
+    return new THREE.Vector3(
+        -along.x * Math.cos(HOME_ELEVATION),
+        Math.sin(HOME_ELEVATION),
+        -along.z * Math.cos(HOME_ELEVATION),
+    ).normalize();
+})();
+
 /** And back — the inverse, which is the whole of picking. */
 function unplace(p) {
     return {
@@ -91,8 +135,9 @@ export function attach3D(el, gestureHandler) {
 
     camera = new THREE.PerspectiveCamera(45, 1, 0.05, 200);
     /* Only a direction — frameCamera works out how far back it has to be once
-       the pane has a size and the relief has a height. */
-    camera.position.set(0, 2.6, 4.2);
+       the pane has a size and the relief has a height. The 5 is arbitrary and
+       is replaced on the first frame; what matters is the heading. */
+    camera.position.copy(HOME_DIR).multiplyScalar(5);
     camera.lookAt(0, 0, 0);
 
     renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -100,6 +145,10 @@ export function attach3D(el, gestureHandler) {
     host.appendChild(renderer.domElement);
 
     controls = new OrbitControls(camera, renderer.domElement);
+    /* `start` fires on the gesture that begins an orbit, a pan or a wheel, and
+       on nothing else — `change` would also fire for the app's own framing and
+       for damping's own settling, which would latch the flag immediately. */
+    controls.addEventListener('start', () => { userPlaced = true; });
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
     controls.minDistance = 1.2;
@@ -133,6 +182,16 @@ export function attach3D(el, gestureHandler) {
     return { draw, resize, rebuild, render, renderer: () => renderer };
 }
 
+/**
+ * Whether the view on screen is the user's rather than the app's.
+ *
+ * Set by the controls' own `start`, which fires on the gesture that begins a
+ * drag, a pan or a wheel — so it means "somebody has placed this camera",
+ * never "something moved it". Cleared by fitView, which is the app saying it
+ * is taking the framing back.
+ */
+let userPlaced = false;
+
 export function resize() {
     if (!renderer || !host) return;
     const w = Math.max(1, host.clientWidth);
@@ -144,7 +203,23 @@ export function resize() {
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    frameCamera();
+    /* A RESIZE IS NOT A REQUEST TO REFRAME.  This used to call frameCamera
+       every time the pane changed size, which meant that opening or shutting
+       the side rail threw away whatever the user had set up: the drawer
+       animates the panel's width, the pane resizes with it, and the camera
+       was pulled back to the app's own distance and target on the way. The
+       shape you had turned to and zoomed into was gone because you went to
+       look at a setting.
+     *
+     * So a camera the user has placed is left exactly where it is, and only
+     * the aspect ratio follows the pane — which is the whole of what a resize
+     * actually invalidates. A camera nobody has touched is still reframed,
+     * because there is no intent to preserve and staying well framed across a
+     * rail toggle is the better default.
+     *
+     * Reframing on demand did not go away; it moved to where it is meant to
+     * be, which is fitView. */
+    if (!userPlaced) frameCamera();
 }
 
 /**
@@ -158,6 +233,11 @@ export function resize() {
  */
 export function fitView() {
     if (!renderer || !host) return;
+    /* An explicit reframe: the app is taking the framing back, so whatever the
+       user had placed is being replaced on purpose and the flag goes with it.
+       Cleared BEFORE the deferred work so the resize inside it does not take
+       the preserving branch. */
+    userPlaced = false;
     requestAnimationFrame(() => {
         resize();
         frameCamera();
@@ -195,7 +275,7 @@ function frameCamera(margin = 1.06) {
     const target = new THREE.Vector3(0, lift / 2, 0);
 
     const dir = camera.position.clone().sub(controls.target);
-    if (dir.lengthSq() < 1e-6) dir.set(0, 2.6, 4.2);
+    if (dir.lengthSq() < 1e-6) dir.copy(HOME_DIR);
     dir.normalize();
 
     const forward = dir.clone().negate();
@@ -367,13 +447,42 @@ function buildSurface(field) {
     }
     if (!n) return buildPlate();
 
+    /* ---- the boundary cells ----
+     *
+     * A cell used to be emitted only when all four of its corners were inside
+     * the triangle, and dropped entirely otherwise. That is right for the
+     * baseline, which runs along a row of the grid and so has cells that are
+     * cleanly all-in or all-out — and it is why the bottom edge came out
+     * straight. It is wrong for the two slanted edges, which cut diagonally
+     * across the grid: every cell they pass through has three corners in and
+     * one out, so every one of them was thrown away and the silhouette became
+     * a staircase of whole cells.
+     *
+     * Emitting the triangle formed by the three corners that ARE inside costs
+     * one test and closes the staircase exactly. Exactly, not approximately:
+     * the mask's diagonal is the line x + y = constant in grid indices, and
+     * when the far corner (x+1, y+1) is the one outside, that line passes
+     * precisely through the other two — so the triangle a-b-d has the mask's
+     * own edge as its hypotenuse. The same holds on the other slant.
+     *
+     * The corners are taken in cycle order, so dropping one leaves the
+     * remaining three wound the same way as the two triangles of a full cell.
+     */
     const tris = [];
     for (let y = 0; y < h - 1; y++) {
         for (let x = 0; x < w - 1; x++) {
             const a = index[y * w + x], b = index[y * w + x + 1];
             const c = index[(y + 1) * w + x + 1], d = index[(y + 1) * w + x];
-            if (a < 0 || b < 0 || c < 0 || d < 0) continue;
-            tris.push(a, b, c, a, c, d);
+            const out = (a < 0) + (b < 0) + (c < 0) + (d < 0);
+            if (out === 0) { tris.push(a, b, c, a, c, d); continue; }
+            /* Two or more corners missing is a corner of the mask rather than
+               a crossing of it: there is no three-corner face to make, and
+               anything drawn would be outside the triangle. */
+            if (out > 1) continue;
+            if (a < 0) tris.push(b, c, d);
+            else if (b < 0) tris.push(a, c, d);
+            else if (c < 0) tris.push(a, b, d);
+            else tris.push(a, b, c);
         }
     }
 

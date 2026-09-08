@@ -73,6 +73,30 @@ export function attach2D(el, gestureHandler) {
 /** Throw the cached paint away — a new field, a new colormap, a new level. */
 export function invalidate() { shadeKey = ''; contourKey = ''; }
 
+/* ---- the scratch layer the triangle is cut out of ----
+   Kept between frames and only resized when the pane is, because allocating a
+   full-size canvas every frame would cost more than the clip it replaces.
+   Returns null if a 2D context cannot be had, and `draw` then falls back to
+   the old hard clip — a staircase is worse than a picture, but both beat
+   nothing on screen. */
+let scratch = null, scratchCtx2 = null;
+
+function scratchLayer(w, h) {
+    const dpr = window.devicePixelRatio || 1;
+    const pw = Math.max(1, Math.round(w * dpr)), ph = Math.max(1, Math.round(h * dpr));
+    if (!scratch) {
+        scratch = document.createElement('canvas');
+        scratchCtx2 = scratch.getContext('2d');
+    }
+    if (!scratchCtx2) return null;
+    if (scratch.width !== pw || scratch.height !== ph) {
+        scratch.width = pw; scratch.height = ph;
+    }
+    scratchCtx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+    scratchCtx2.clearRect(0, 0, w, h);
+    return scratchCtx2;
+}
+
 export function resize() {
     if (!canvas) return;
     const parent = canvas.parentElement;
@@ -220,6 +244,46 @@ export function paintField(field, img, lit) {
             img.data[o + 3] = 255;
         }
     }
+    bleedEdge(img, field.w, field.h);
+}
+
+/**
+ * Carry the edge colour one cell out into the empty ground around it.
+ *
+ * The field is a rectangle with the triangle stamped out of it, and everything
+ * outside is left fully transparent. That image is then drawn scaled up to the
+ * pane and smoothed, and smoothing does not know the difference between a
+ * colour and a hole: along the two slanted edges it mixes each border cell
+ * with the transparent nothing beside it, so the outermost band of the picture
+ * fades out and the ground shows through it. At field resolution that band is
+ * a whole cell wide, which is what made the slants look eaten away while the
+ * baseline — where the mask lands on a grid row and there is nothing to mix
+ * with — stayed clean.
+ *
+ * So the transparent cells that touch the picture are given their neighbour's
+ * colour and made opaque. They are still outside the triangle and are still
+ * cut off by the mask in `draw`; they exist only so that the interpolation has
+ * something of the right colour to reach for. One cell is enough because the
+ * smoothing is bilinear, and bilinear never reaches past the adjacent texel.
+ */
+function bleedEdge(img, w, h) {
+    const d = img.data;
+    const src = new Uint8ClampedArray(d);      // read from the unbled copy
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const o = (y * w + x) * 4;
+            if (src[o + 3]) continue;
+            for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+                const nx = x + dx, ny = y + dy;
+                if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+                const p = (ny * w + nx) * 4;
+                if (!src[p + 3]) continue;
+                d[o] = src[p]; d[o + 1] = src[p + 1]; d[o + 2] = src[p + 2];
+                d[o + 3] = 255;
+                break;
+            }
+        }
+    }
 }
 
 /* ---------------------------------------------------------------------
@@ -329,40 +393,63 @@ export function draw(o) {
 
     const field = currentField();
 
-    ctx.save();
-    ctx.clip(path);
+    /* ---- the shading, cut to the triangle ----
+     *
+     * Through a scratch layer and `destination-in` rather than through
+     * `ctx.clip`. A canvas clip is a hard per-pixel test — a pixel is in or it
+     * is out, with nothing in between — so a clipped edge that does not lie
+     * along a pixel row comes out as a staircase. A FILL of the same path is
+     * antialiased, and using that fill as the layer's alpha gives the two
+     * slanted edges the partial coverage they should have had.
+     *
+     * The contours go in the same layer: they are marks on the surface, and
+     * they have to stop where it stops.
+     */
+    const layer = scratchLayer(w, h);
+    const g = layer || ctx;
+    if (!layer) { ctx.save(); ctx.clip(path); }
 
     if (field && triadFill) {
         const img = buildShade(field);
-        ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(img, fit.originX, fit.originY - fit.side * SQRT3_2,
-                      fit.side, fit.side * SQRT3_2);
+        g.imageSmoothingEnabled = true;
+        g.drawImage(img, fit.originX, fit.originY - fit.side * SQRT3_2,
+                    fit.side, fit.side * SQRT3_2);
     } else {
         /* No field, or fill turned off: a plain ground, dark or light with the
            layout, so the lattice keeps the contrast it was coloured for. */
-        ctx.fillStyle = light ? '#f2f3f6' : '#0b0c10';
-        ctx.fill(path);
+        g.fillStyle = light ? '#f2f3f6' : '#0b0c10';
+        g.fill(path);
     }
 
     if (field && triadLines) {
         const segs = buildContours(field, triadContours);
         const map = colormapFn();
-        ctx.lineWidth = 1.1;
+        g.lineWidth = 1.1;
         for (let i = 0; i < segs.length; i += 5) {
             const c = map(segs[i + 4]);
-            ctx.strokeStyle = triadFill
+            g.strokeStyle = triadFill
                 ? `rgba(${light ? '0,0,0' : '255,255,255'},0.30)`
                 : `rgb(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)})`;
             const p0 = fit.toPx(segs[i], segs[i + 1]);
             const p1 = fit.toPx(segs[i + 2], segs[i + 3]);
-            ctx.beginPath();
-            ctx.moveTo(p0[0], p0[1]);
-            ctx.lineTo(p1[0], p1[1]);
-            ctx.stroke();
+            g.beginPath();
+            g.moveTo(p0[0], p0[1]);
+            g.lineTo(p1[0], p1[1]);
+            g.stroke();
         }
     }
 
-    ctx.restore();
+    if (layer) {
+        /* The path fill IS the alpha: antialiased, so the slants get partial
+           coverage instead of a staircase. */
+        layer.globalCompositeOperation = 'destination-in';
+        layer.fillStyle = '#fff';
+        layer.fill(path);
+        layer.globalCompositeOperation = 'source-over';
+        ctx.drawImage(scratch, 0, 0, w, h);
+    } else {
+        ctx.restore();
+    }
 
     /* The outline last of the ground marks, so the shading cannot bleed past
        it and the triangle always reads as a closed shape. */

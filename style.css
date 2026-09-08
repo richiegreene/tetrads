@@ -34,15 +34,18 @@ body.bright #panel, body.bright #loading-overlay{
   --scope-bg:#dcdde2;
 }
 /* The two lit states are drawn against a light panel now, so the dark-mode
-   fills that carried them would read as ink blots. */
+   fills that carried them would read as ink blots.
+
+   The segmented buttons are NOT in this list. Day mode used to give a lit
+   segment a white fill, which lifted it above its neighbours — the opposite
+   of what the same control does in Xenachord Designer, where --panel-bright
+   is DARKER than --panel2 and the lit segment is the recessed one. It now
+   reads the token like everything else, so the lit segment presses in on both
+   grounds rather than popping out on one and in on the other. */
 body.bright #playButton.play-button-active,
 body.bright button.latched,
 body.bright button.primary{background:#dbe7f7;border-color:#9dbde6;color:#12325e}
 body.bright button.primary:hover{border-color:var(--accent);color:#0b2a52}
-body.bright .seg button.on{background:#fff}
-body.bright input[type=range]{background:#c9cad0}
-body.bright input[type=range]::-webkit-slider-runnable-track{background:#c9cad0}
-body.bright input[type=range]::-moz-range-track{background:#c9cad0}
 /* The readout floats over the VIEW rather than living in the panel, so it
    follows the view's ground rather than the panel's. */
 body.bright #notation-display{background:rgba(255,255,255,.92);
@@ -197,14 +200,34 @@ button.latched{background:#24405c;border-color:var(--accent);color:#cfe6ff}
 .tune-h{display:block;color:var(--text);font-weight:600;font-size:11.5px;margin:10px 0 5px}
 .tune-h:first-child{margin-top:0}
 
-/* ---------- segmented buttons ---------- */
+/* ---------- segmented buttons ----------
+   Xenachord Designer's, rule for rule. The two apps share this whole chrome,
+   and a control that looks different in each would suggest it does something
+   different — which is the argument that put the palette, the rail and the
+   drawer here in the first place, and it applies hardest to the one control
+   that appears in every drawer of both.
+
+   WHICH ONE IS ON IS SAID TWICE, BY THE STRIP AND BY A LINE UNDER IT. The lit
+   segment is lifted to --panel-bright and carries a 2px accent rule along its
+   bottom edge. It used to be ringed instead — an inset accent border on all
+   four sides — which drew a box INSIDE a box: the group already has an outline
+   of its own, so a second one a pixel in read as a rendering fault rather than
+   as a state. An underline has no such competition, and it sits where a tab's
+   indicator sits, which is the thing this control most nearly is.
+
+   THE UNLIT SEGMENTS ARE NOT DIMMED. They used to be --dim, on the reasoning
+   that off should be quieter than on. But these are all live choices, equally
+   available and equally readable, and greying them made a four-way switch look
+   like one live button beside three disabled ones. The lift and the underline
+   are already the whole of the difference; taking the labels down as well was
+   a third statement of it, and the one that cost legibility to make. */
 .seg{display:flex;gap:0;margin:0 0 9px;flex-wrap:wrap}
 .seg button{flex:1 1 0;min-width:0;border-radius:0;padding:4px 6px;font-size:11px;
-  border-left-width:0;color:var(--dim)}
+  border-left-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .seg button:first-child{border-radius:6px 0 0 6px;border-left-width:1px}
 .seg button:last-child{border-radius:0 6px 6px 0}
 .seg button.on{background:var(--panel-bright);color:var(--text);
-  box-shadow:inset 0 0 0 1px var(--accent)}
+  box-shadow:inset 0 -2px 0 var(--accent)}
 .seg button:hover{color:var(--accent)}
 /* Six readouts do not fit one row legibly, so this one is allowed to wrap and
    every button keeps its own corners rather than pretending to be a strip. */
@@ -262,16 +285,47 @@ button.latched{background:#24405c;border-color:var(--accent);color:#cfe6ff}
    like an oversight rather than a statement. Same bevel, different fill. */
 .map[data-kind="constant"] .ramp{border-radius:3px}
 
-/* The picker sits on the chip, beside the name, because the colour is not a
+/* The swatch sits on the chip, beside the name, because the colour is not a
    setting of the panel — it is what this one layout IS, and it belongs where
    the layout is chosen. */
 .const-row{display:flex;align-items:center;gap:5px}
-.const-row input[type=color]{-webkit-appearance:none;appearance:none;
-  width:16px;height:16px;padding:0;border:1px solid rgba(128,128,128,.55);
-  border-radius:4px;background:none;cursor:pointer;flex:0 0 auto}
-.const-row input[type=color]::-webkit-color-swatch-wrapper{padding:0}
-.const-row input[type=color]::-webkit-color-swatch{border:none;border-radius:3px}
-.const-row input[type=color]::-moz-color-swatch{border:none;border-radius:3px}
+.const-swatch{width:16px;height:16px;padding:0;flex:0 0 auto;
+  border:1px solid rgba(128,128,128,.55);border-radius:4px;cursor:pointer}
+.const-swatch:hover{border-color:var(--accent)}
+
+/* ---------- the constant's colour picker ----------
+   A drag, not a dialogue — see openColorPicker in ui-handlers.js for why the
+   native <input type="color"> was the wrong shape for this control.
+
+   Fixed to the viewport rather than positioned in the chip, because the drawer
+   scrolls and an absolutely positioned popover inside it would be clipped at
+   the drawer's edge. Its z-index only has to beat the panel.
+
+   `touch-action:none` on the two drag surfaces is what stops a touch drag
+   being stolen by the drawer's scroll — without it the gesture picks one
+   colour on contact and then scrolls the panel out from under itself. */
+.cpick{position:fixed;z-index:60;width:186px;padding:9px;
+  background:var(--panel);border:1px solid var(--line);border-radius:9px;
+  box-shadow:0 8px 26px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:8px}
+body.bright .cpick{--panel:#f2f2f4;--line:#c9cad0;--text:#1b1c20;
+  box-shadow:0 8px 26px rgba(0,0,0,.18)}
+.cpick-sv,.cpick-hue{position:relative;border-radius:5px;cursor:crosshair;
+  touch-action:none;border:1px solid rgba(128,128,128,.4)}
+.cpick-sv{height:124px}
+.cpick-hue{height:13px;
+  background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)}
+/* Both handles are a white ring with a dark halo, so they stay visible over
+   any colour underneath — a solid dot disappears into whatever it is picking. */
+.cpick-sv i,.cpick-hue i{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;
+  border-radius:50%;border:2px solid #fff;pointer-events:none;
+  box-shadow:0 0 0 1px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.35)}
+.cpick-hue i{top:50%}
+.cpick-foot{display:flex;align-items:center;gap:6px}
+.cpick-chip{width:22px;height:22px;flex:0 0 auto;border-radius:4px;
+  border:1px solid rgba(128,128,128,.5)}
+.cpick-hex{flex:1;min-width:0;background:var(--panel2);color:var(--text);
+  border:1px solid var(--line);border-radius:5px;padding:3px 6px;
+  font:11px ui-monospace,Menlo,monospace}
 
 /* ---------- checkbox rows ---------- */
 .vis{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;
@@ -279,15 +333,23 @@ button.latched{background:#24405c;border-color:var(--accent);color:#cfe6ff}
 .vis:hover{color:var(--text)}
 .vis input{accent-color:var(--accent);margin:0}
 
-/* ---------- sliders ---------- */
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;
-  margin:5px 0 0;background:#3d3d3d;border-radius:6px;outline:none;accent-color:var(--accent)}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
-  width:14px;height:14px;border-radius:50%;background:var(--accent);border:none;margin-top:-4px}
-input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
-  background:var(--accent);border:none}
-input[type=range]::-webkit-slider-runnable-track{height:6px;background:#3d3d3d;border-radius:6px}
-input[type=range]::-moz-range-track{height:6px;background:#3d3d3d;border-radius:6px}
+/* ---------- sliders ----------
+   Xenachord Designer's, which is to say the browser's own, tinted and left
+   alone. The one property is what makes the travelled part of the track fill
+   with the accent colour, so the slider says how far along it is twice —
+   by where the thumb sits and by how much of the track is blue.
+
+   This used to be a hand-built control: `appearance:none`, a flat #3d3d3d
+   track and a round accent thumb drawn on top. Turning the appearance off is
+   precisely what threw the fill away — a native range paints its lower
+   portion in `accent-color`, and a track you draw yourself is one uniform
+   colour with a dot on it, because there is nothing in CSS that knows where
+   the value is. So the redundancy was lost, and with it the only part of the
+   control readable at a glance from across the panel. The custom track also
+   needed its own day-mode override to stop being a dark bar on a light
+   panel; the native one follows the accent token and the page's own scheme,
+   so that override is gone too. */
+input[type=range]{width:100%;margin:5px 0 0;accent-color:var(--accent)}
 
 /* ---------- the synth's two drawn controls ---------- */
 .scope{display:block;width:100%;height:74px;background:var(--scope-bg);

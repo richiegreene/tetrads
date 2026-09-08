@@ -25,7 +25,13 @@
  * where. Side by side, linked to one cursor, each answers the other's
  * question about the same chord.
  */
-export let triadView = 'topo'; // 'topo' | '3d' | 'both'
+/* 'both' is the default: the flat pane and the lifted one are two readings of
+   the same field, and the pair is what the mode is for. Opening on the
+   topology alone made the 3D pane a thing you had to go and find, and the
+   linked cursor — one position, shown in both — cannot say anything at all
+   until both are up. Kept in step with the lit chip in `#triad-view-seg`;
+   the markup is the single statement of which one that is. */
+export let triadView = 'both'; // 'topo' | '3d' | 'both'
 export function setTriadView(v) { triadView = v; }
 
 /** Which field is under the triangle. 'blank' is the JI dots on their own. */
