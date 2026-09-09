@@ -67,7 +67,43 @@ export function start() {
  * the time it is asked the graph it needs is already standing.
  */
 export function warm() {
-  start().catch(() => {});
+  start().then(() => bang('load')).catch(() => {});
+}
+
+/**
+ * THE BANG — a nudge of the timbre, out and straight back.
+ *
+ * Everything above gets the engine STANDING; this proves it is awake. The
+ * timbre is moved by half a unit and returned to where it was, which sends a
+ * real shape message down the port and back again: the context is touched, the
+ * worklet is given something to do, and the audio thread produces its first
+ * output before anybody is listening for a note. On the browsers that need
+ * shaking — a phone that has resumed a context on paper while its audio
+ * session is still asleep — that is the difference between the first chord
+ * sounding and the first chord being the one that wakes it up.
+ *
+ * It ENDS where it started, so the timbre the user hears is the timbre the
+ * panel says, and it stays there until they move it themselves. Half a unit
+ * cannot cross a family boundary, so a bang never turns a wavetable into a
+ * filtered saw; within the wavetable family it costs one table build, cached
+ * from then on, and within the filtered family it is two small messages.
+ *
+ * Fired at most once per occasion, and there are two: once when the page has
+ * finished loading, and once on the first note anybody plays — the first tap
+ * on the triangle or the surface. The first happens with no gesture behind it
+ * and so can only do half the job; the second is inside a gesture and can do
+ * all of it. Neither repeats.
+ */
+const BANG_STEP = 0.5;
+const banged = new Set();
+
+export function bang(occasion) {
+  if (banged.has(occasion)) return;
+  banged.add(occasion);
+  resumeNow();
+  const home = timbre;
+  setTimbre(home + BANG_STEP);
+  setTimbre(home);
 }
 
 /**
@@ -185,6 +221,9 @@ export function noteOn(id, freq, vel = 1) {
      resumeNow unlocks it there. The message itself can wait for the worklet. */
   start().catch(() => {});
   resumeNow();
+  /* A sign of use, and the one bang that happens inside a gesture — see bang.
+     Before the note, so the engine is awake by the time it arrives. */
+  bang('first-note');
   send({ t: 'on', id, freq, vel });
 }
 
