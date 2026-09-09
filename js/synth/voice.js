@@ -49,6 +49,28 @@ export function start() {
 }
 
 /**
+ * BUILD THE GRAPH BEFORE ANYBODY PLAYS IT.
+ *
+ * The context and the worklet used to be built by the first note, which is to
+ * say DURING the gesture that was trying to sound one — and building them
+ * takes a fetch and a module compile. The note's ON went into the queue, the
+ * finger came up a moment later and put its OFF in behind it, and both were
+ * delivered together the instant the node appeared: a note zero milliseconds
+ * long, which is silence. The first tap on a fresh page was therefore always
+ * lost, and everything after it worked, which is exactly what "I can't play
+ * until I touch something in the Play tab" looks like from the outside — any
+ * earlier interaction, on anything at all, gave the load time to finish.
+ *
+ * Creating a context without a gesture is allowed; what is not allowed is
+ * RUNNING one, and this leaves it suspended for resumeNow to pick up on the
+ * first press. So the page still makes no sound until it is asked to, and by
+ * the time it is asked the graph it needs is already standing.
+ */
+export function warm() {
+  start().catch(() => {});
+}
+
+/**
  * RESUME, NOW, IN THE GESTURE — the whole of why the phone was silent.
  *
  * A context created by a script starts suspended on a phone and is only
@@ -67,7 +89,19 @@ export function start() {
  * read.
  */
 function resumeNow() {
-  if (ctx && ctx.state !== 'running') ctx.resume?.().catch(() => {});
+  if (!ctx || ctx.state === 'running') return;
+  ctx.resume?.().catch(() => {});
+  /* And the old iOS handshake on top of it. A resume alone is not always
+     enough there — the audio session stays asleep until something has actually
+     been PLAYED through it — so a single silent sample is started in the same
+     gesture. It costs nothing, it is inaudible, and on the browsers that do not
+     need it the resume above has already done the work. */
+  try {
+    const src = ctx.createBufferSource();
+    src.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+    src.connect(ctx.destination);
+    src.start(0);
+  } catch (e) {}
 }
 
 /**

@@ -38,6 +38,11 @@ export function initAudio() {
     voice.start();
 }
 
+/** Build the graph ahead of the first note, still silent — see voice.warm. */
+export function warmAudio() {
+    voice.warm();
+}
+
 export function setTimbre(v) { voice.setTimbre(v); }
 export function setAdsr(e) { voice.setAdsr(e); }
 

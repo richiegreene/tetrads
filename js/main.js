@@ -8,7 +8,7 @@ import {
     setCurrentLayoutDisplay
 } from './globals.js';
 import { initThreeJS, animate, onWindowResize, updatePivotButtonSelection } from './components/three-visualizer.js';
-import { initAudio, stopChord, playChord } from './components/audio-engine.js';
+import { initAudio, stopChord, playChord, warmAudio } from './components/audio-engine.js';
 import { updateTetrahedron, cycleLayoutMode } from './calculations/tetrahedron-updater.js';
 import { setupUIEventListeners } from './utils/ui-handlers.js';
 import { initMidiOutput } from './midi/midi-output.js';
@@ -404,6 +404,11 @@ def generate_ji_tetra_labels(limit_value, equave_ratio, limit_mode='odd', max_ex
 
     // Setup all UI event listeners
     setupUIEventListeners();
+
+    /* The audio graph, built now and left suspended, so the first tap on the
+       triangle has something to play rather than something to wait for — see
+       warm. It makes no sound until a gesture resumes it. */
+    warmAudio();
 
     /* The app opens in Triads, so the triangle is what gets generated. The
        other two cost a blocked thread nobody has asked for yet, so they wait
