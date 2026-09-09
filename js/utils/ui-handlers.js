@@ -478,6 +478,23 @@ export function setupUIEventListeners() {
         });
     }
 
+    /* ON A SMALL SCREEN THE DRAWER STARTS SHUT.
+     *
+     * The markup opens on Complexity, which is right at a desk: the drawer is
+     * 340px of a wide window and the surface still has most of it. On a phone
+     * held upright that same 340px is nearly the whole screen, so the app
+     * would open on its settings with the thing they are settings for reduced
+     * to a strip — and the first thing anyone would do is shut it.
+     *
+     * Measured in geometry rather than by pointer type, because it is the
+     * width that is the problem: a phone on its side is under the height, a
+     * narrow desktop window is under the width and is no better off for having
+     * a mouse. The rail itself stays — it is 60px, and it is how you get the
+     * drawer back. */
+    if (window.matchMedia('(max-width: 900px), (max-height: 500px)').matches) {
+        setMode(null);
+    }
+
     /* ---------------- which app you are in ----------------
      * Pinned above the drawers. switchMode does the visible half — hiding the
      * controls of the mode you are not in, retitling the drawers, laying the
