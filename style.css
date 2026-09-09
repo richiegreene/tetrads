@@ -146,7 +146,12 @@ body[data-mode="dyads"] .panel-foot{grid-template-columns:1fr}
    swapped, so "Both" is the same two panes at half the width and not another
    arrangement that has to be kept working separately. */
 #main{flex:1;position:relative;min-width:0;display:flex;flex-direction:column}
-#stage{flex:1;min-height:0;display:flex;gap:1px;background:var(--line)}
+/* No gap: the 1px of stage background that used to show between the panes
+   drew a rule down the middle of "Both", and the two panes read better
+   butted together — the flat triangle and the lifted one are the same
+   surface twice, not two documents. The background stays for the moment
+   before either pane has painted. */
+#stage{flex:1;min-height:0;display:flex;gap:0;background:var(--line)}
 #stage > *{display:none;min-width:0;position:relative;overflow:hidden}
 #stage[data-view="tetra"] #container{display:block;flex:1}
 #stage[data-view="dyad"] #dyad-pane{display:block;flex:1}

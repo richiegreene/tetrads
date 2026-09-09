@@ -104,13 +104,15 @@ function place(gx, gy, z = 0) {
  *
  *  The heading is derived from the two vertices rather than written out as a
  *  vector, so it stays correct if the triangle is ever placed differently.
- *  The elevation is the one number here that is a matter of taste; 30° is a
- *  comfortable iso — high enough to see the surface as a surface, low enough
- *  that the peaks still stand against the sky rather than being looked down
- *  on. It is a named constant because it is exactly the kind of thing that
- *  wants nudging by eye.
+ *  The elevation is the one number here that is a matter of taste. It was
+ *  30°, a comfortable iso; 45° looks down on the triangle enough to open its
+ *  FACE toward the viewer — which is the thing being read, and at the shallower
+ *  angle it was foreshortened to a band — while still leaving the peaks
+ *  standing against the sky rather than being looked straight down on. It is a
+ *  named constant because it is exactly the kind of thing that wants nudging
+ *  by eye.
  * ------------------------------------------------------------------ */
-const HOME_ELEVATION = 30 * Math.PI / 180;
+const HOME_ELEVATION = 45 * Math.PI / 180;
 
 /**
  * How far the opening view is turned back toward the viewer, off the edge.
@@ -175,29 +177,10 @@ export function attach3D(el, gestureHandler) {
     host.appendChild(renderer.domElement);
 
     controls = new OrbitControls(camera, renderer.domElement);
-    /* THE SURFACE IS PINNED TO THE MIDDLE OF THE PANE.
-     *
-     * Turning it and zooming it are the two things the view is for; sliding
-     * it around is not, and a pane you can drag the subject out of is a pane
-     * you can lose the subject in — there is nothing else in the scene to
-     * navigate back by. So panning is off, which leaves the orbit target where
-     * the app put it: the middle of the surface. Every orbit is therefore a
-     * turn about the shape's own centre, and every zoom is towards it.
-     *
-     * With no pan, right-drag and the two-finger drag do nothing; the wheel and
-     * the pinch still dolly. */
-    controls.enablePan = false;
-    /* `start` fires on the gesture that begins an orbit or a wheel, and on
-       nothing else — `change` would also fire for the app's own framing and
+    /* `start` fires on the gesture that begins an orbit, a pan or a wheel, and
+       on nothing else — `change` would also fire for the app's own framing and
        for damping's own settling, which would latch the flag immediately. */
     controls.addEventListener('start', () => { userPlaced = true; });
-    /* An orbit leaves the target alone, but the target that CENTRES the
-       picture depends on the heading: the surface is not a sphere, so what was
-       dead centre from one side sits a little off it from another. Recentring
-       when the gesture ends puts it back, keeping whatever zoom was set. Done
-       on `end` rather than per frame so the target never moves underneath a
-       drag that is still being made. */
-    controls.addEventListener('end', recentre);
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
     controls.minDistance = 1.2;
@@ -235,10 +218,9 @@ export function attach3D(el, gestureHandler) {
  * Whether the view on screen is the user's rather than the app's.
  *
  * Set by the controls' own `start`, which fires on the gesture that begins a
- * drag or a wheel — so it means "somebody has placed this camera", never
- * "something moved it". Cleared by fitView, which is the app saying it is
- * taking the framing back. Since panning is off, the only thing it can mean
- * the app has to preserve is a zoom.
+ * drag, a pan or a wheel — so it means "somebody has placed this camera",
+ * never "something moved it". Cleared by fitView, which is the app saying it
+ * is taking the framing back.
  */
 let userPlaced = false;
 
@@ -269,10 +251,10 @@ export function resize() {
         lines.material.resolution.set(w, h);
     }
     /* A resize re-fits, but it re-fits AROUND the user rather than over them —
-       see recentre. The surface goes on filling the pane the way the flat one
-       does, and an orbit or a zoom survives the side rail being opened, which
-       it did not when this simply called frameCamera. */
-    recentre();
+       see refitPreservingUser. The surface goes on filling the pane the way
+       the flat one does, and an orbit, a pan or a zoom survives the side rail
+       being opened, which it did not when this simply called frameCamera. */
+    refitPreservingUser();
 }
 
 /**
@@ -402,31 +384,21 @@ function setFramePoints(positions, index, w, h) {
 }
 
 /**
- * HOW MUCH OF THE PANE THE SURFACE TAKES, AND WHERE IN IT.
+ * HOW MUCH OF THE PANE THE SURFACE TAKES.
  *
- * The margin is the reciprocal of the fill: 1.25 puts the picture's longer
- * side across 80% of the pane. It was 1.06 — 94%, so tight that the corner
- * spikes ran to the edges and the surface read as something too big for the
- * window it was in rather than an object being looked at. A relief map is a
- * silhouette with a lot of air in it; it needs a frame it is sitting inside.
+ * The margin is the reciprocal of the fill: 1.06 puts the picture's longer
+ * side across 94% of the pane, which is as close to the edges as the surface
+ * can sit and still have somewhere to swing when it is turned.
  *
- * The rise is the second half of that. Centring the projected BOX puts the
- * arithmetic middle of the outline in the middle of the pane, and for this
- * shape that is not where it looks centred: the surface's mass is the dense
- * mat of peaks in the lower half, while the upper half is the one or two
- * tallest spikes and the sky between them. A box centred on that reads low,
- * because the eye centres the mass and not the extremes. Aiming the box a few
- * percent of a frame ABOVE centre puts the mass on the middle line, which is
- * what "centred" means when somebody is looking at it rather than measuring
- * it. In NDC, where the frame runs -1 to 1, so 0.04 is 2% of the height —
- * enough to settle the mat on the middle line, small enough that a surface
- * with the relief slider at zero, which has no sky above it to correct for,
- * still looks centred rather than pushed up.
+ * It was briefly loosened to 1.25, along with an upward bias on the aim,
+ * because the pane looked too big and sat low. Neither was true: the canvas
+ * was being laid out at twice the pane on a 2x display (see resize), so the
+ * picture on screen was a magnified crop of a correctly framed render. With
+ * the canvas the size it says it is, a plain tight fit is right again.
  */
-const FIT_MARGIN = 1.25;
-const FIT_RISE = 0.04;
+const FIT_MARGIN = 1.06;
 
-function solveFrame(margin = FIT_MARGIN, rise = FIT_RISE) {
+function solveFrame(margin = FIT_MARGIN) {
     if (!camera || !controls || !host) return null;
     if (host.clientWidth < 2 || host.clientHeight < 2) return null;
     const lift = triadRelief * SIDE;
@@ -508,10 +480,7 @@ function solveFrame(margin = FIT_MARGIN, rise = FIT_RISE) {
         const offX = (xMin + xMax) / 2, offY = (yMin + yMax) / 2;
         const fill = Math.max((xMax - xMin) / 2, (yMax - yMin) / 2);
 
-        /* offY is measured against the LIFTED aim, not against dead centre, so
-           the loop converges on the picture sitting a little high rather than
-           treating that as the error it is there to remove. */
-        const err = Math.max(Math.abs(offX), Math.abs(offY - rise), Math.abs(fill * margin - 1));
+        const err = Math.max(Math.abs(offX), Math.abs(offY), Math.abs(fill * margin - 1));
         if (err < bestErr) {
             bestErr = err;
             best = { target: target.clone(), distance };
@@ -522,7 +491,7 @@ function solveFrame(margin = FIT_MARGIN, rise = FIT_RISE) {
            this much world at the target's own depth. */
         const halfH = tanV * distance, halfW = halfH * camera.aspect;
         target.addScaledVector(right, offX * halfW * RELAX)
-            .addScaledVector(camUp, (offY - rise) * halfH * RELAX);
+            .addScaledVector(camUp, offY * halfH * RELAX);
 
         /* And scale the distance so the picture just fits inside the margin. */
         if (fill > 1e-6) {
@@ -551,18 +520,15 @@ function applyFrame(f) {
     controls.update();
 }
 
-function frameCamera(margin = FIT_MARGIN, rise = FIT_RISE) {
-    const f = solveFrame(margin, rise);
+function frameCamera(margin = FIT_MARGIN) {
+    const f = solveFrame(margin);
     if (!f) return;
     applyFrame(f);
     lastIdeal = { target: f.target.clone(), distance: f.distance };
 }
 
 /**
- * Put the surface back in the middle of the pane, WITHOUT discarding the zoom.
- *
- * Called after anything that can move the picture off centre while leaving the
- * framing otherwise valid: a resize, and the end of an orbit.
+ * Re-fit after the pane changed size, WITHOUT discarding what the user set up.
  *
  * The two things asked of a resize pull in opposite directions. The surface
  * has to keep filling the pane the way the flat one does — widen the pane and
@@ -571,35 +537,38 @@ function frameCamera(margin = FIT_MARGIN, rise = FIT_RISE) {
  * is what reframing outright used to do every time the side rail was opened.
  *
  * They are only in conflict if the user's framing is stored in absolute terms.
- * Stored RELATIVE to the framing the app would have chosen, it falls out at
- * once: how far they have zoomed is a ratio against the fitting distance.
- * Recompute the fit for the new pane and the current heading, put the ratio
- * back on top, and the picture scales with the pane while staying as close in
- * as it was put — and centred, because the target is always the fit's own.
+ * Stored RELATIVE to the framing the app would have chosen, both fall out at
+ * once: how far they have zoomed is a ratio against the fitting distance, and
+ * where they have panned to is an offset from the fitting target. Recompute
+ * the fit for the new pane, put the ratio and the offset back on top, and the
+ * picture scales with the pane while staying exactly where it was put.
  *
- * A user who has not touched anything has a ratio of 1, so this reduces to a
- * plain fit — the flat pane's behaviour exactly.
+ * A user who has not touched anything has a ratio of 1 and no offset, so this
+ * reduces to a plain fit — the flat pane's behaviour exactly.
  */
-function recentre() {
+function refitPreservingUser() {
     const f = solveFrame();
     if (!f) return;
-    const raw = userPlaced && lastIdeal
-        ? camera.position.distanceTo(controls.target) / lastIdeal.distance
-        : 1;
-    const ratio = Number.isFinite(raw) && raw > 0 ? raw : 1;
-    applyFrame({ dir: f.dir, target: f.target, distance: f.distance * ratio });
+    if (!lastIdeal || !userPlaced) {
+        applyFrame(f);
+    } else {
+        const ratio = camera.position.distanceTo(controls.target) / lastIdeal.distance;
+        const pan = controls.target.clone().sub(lastIdeal.target);
+        controls.target.copy(f.target).add(pan);
+        camera.position.copy(controls.target)
+            .addScaledVector(f.dir, f.distance * (Number.isFinite(ratio) && ratio > 0 ? ratio : 1));
+        camera.updateProjectionMatrix();
+        controls.update();
+    }
     lastIdeal = { target: f.target.clone(), distance: f.distance };
 }
 
 /**
  * Pull in as tight as the frustum allows, render once, and hand back what the
  * camera was before — for a PNG capture, where the live view's 6% breathing
- * room (frameCamera's default margin, kept so the surface sits inside the
- * pane rather than filling it) would leave the export looking like a
- * screenshot rather than a crop. The pane's upward rise goes too: it is there
- * so a surface with air above it looks centred inside a frame, and a crop with
- * no frame around it has nowhere to sit high in.
- * Restore with restoreFrame once the pixels are read.
+ * room (frameCamera's default margin, kept so orbiting never clips the
+ * surface against the edge) would leave the export looking like a screenshot
+ * rather than a crop. Restore with restoreFrame once the pixels are read.
  */
 export function frameTight(margin = 1.002) {
     if (!camera || !controls || !renderer || !scene) return null;
@@ -609,7 +578,7 @@ export function frameTight(margin = 1.002) {
         ideal: lastIdeal,
         placed: userPlaced,
     };
-    frameCamera(margin, 0);
+    frameCamera(margin);
     renderer.render(scene, camera);
     return saved;
 }

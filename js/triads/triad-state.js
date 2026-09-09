@@ -72,11 +72,11 @@ export function setTriadLineWidth(v) { triadLineWidth = v; }
  * The constant layouts use the full range: at 0 they are matte, shaded by the
  * light but with no highlight, and at 1 they are a mirror.
  */
-export let triadGloss = 0.5;
+export let triadGloss = 0.3;
 export function setTriadGloss(v) { triadGloss = v; }
 
 /** How far the 3D pane lifts the field, as a fraction of the triangle's side. */
-export let triadRelief = 0.34;
+export let triadRelief = 0.15;
 export function setTriadRelief(v) { triadRelief = v; }
 
 /* ---- the JI triads themselves ----
