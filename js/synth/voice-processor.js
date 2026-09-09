@@ -157,7 +157,7 @@ class XenachordVoiceProcessor extends AudioWorkletProcessor {
     this.mips = null;             // Float32Array[MIP_COUNT], wavetable family
     this.filtered = false;
     this.drive = 2; this.even = 0; // saw, the default
-    this.adsr = { a: 0.016, d: 0.067, s: 0.38, r: 0.544 };
+    this.adsr = { a: 0.016, d: 0.120, s: 0.66, r: 0.544 };
     this.gain = 0.22;
     this.pole = Math.pow(0.5, 44100 / sampleRate); // synth.js FILTERED.pole
     this.port.onmessage = (e) => this.handle(e.data);

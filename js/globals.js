@@ -42,7 +42,12 @@ export let autoRotate = false;
 export let autoRotateDir = 'ArrowLeft'; // the turntable: about Y, leftward
 
 // Notation state
-export let enableNotation = true;
+/* Off to begin with. The readout is a study tool — it names what you just
+   played — and it draws a panel over the corner of the view, so it is
+   something to turn ON when it is wanted rather than something in the way
+   until it is turned off. The seg button, its hidden checkbox and the
+   options block below it all start to match; see the Notation fieldset. */
+export let enableNotation = false;
 export let notationDisplay;
 /* Ratio, Cents and 12EDO are independent — any combination can be shown at
    once, so each gets its own switch rather than one choice among them. */

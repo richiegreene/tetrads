@@ -91,7 +91,7 @@ export function updateMpePressureSliderUI() {
 const STORE = 'tetrads.synth.v1';
 const S = {
     timbre: FILTERED_MIN + 200,          // filtered saw, the default
-    adsr: { a: 0.016, d: 0.067, s: 0.38, r: 0.544 },
+    adsr: { a: 0.016, d: 0.120, s: 0.66, r: 0.544 },
 };
 try { Object.assign(S, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) {}
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} };

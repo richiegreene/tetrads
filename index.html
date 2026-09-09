@@ -536,11 +536,12 @@
           <fieldset>
             <legend>Notation</legend>
             <div class="seg" id="notation-enable-seg">
-              <button data-v="enableNotation" class="on">Display Notation</button>
+              <button data-v="enableNotation">Display Notation</button>
             </div>
-            <input type="checkbox" id="enableNotation" checked hidden>
+            <input type="checkbox" id="enableNotation" hidden>
 
-            <div id="notation-options">
+            <!-- Shut with the switch above it; toggleSeg reopens it. -->
+            <div id="notation-options" style="display:none">
               <div class="tune-h">Readout</div>
               <div class="seg" id="notation-spelling-seg">
                 <button data-v="heji" class="on" title="Helmholtz-Ellis Just Intonation">HEJI</button>

@@ -21,7 +21,7 @@ let ctx = null;
 let node = null;
 let ready = null;          // the promise the worklet module is loading on
 let timbre = FILTERED_MIN + 200;   // filtered saw
-let adsr = { a: 0.016, d: 0.067, s: 0.38, r: 0.544 };
+let adsr = { a: 0.016, d: 0.120, s: 0.66, r: 0.544 };
 
 /** Bring the audio up, once, on a gesture. Safe to call on every key. */
 export function start() {
