@@ -29,6 +29,9 @@ export function start() {
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return (ready = Promise.reject(new Error('no Web Audio')));
   ctx = new AC();
+  /* Synchronously, while the gesture that called this is still on the stack —
+     see resumeNow. */
+  resumeNow();
   ready = ctx.audioWorklet.addModule('js/synth/voice-processor.js').then(() => {
     node = new AudioWorkletNode(ctx, 'xenachord-voice', {
       outputChannelCount: [2],
@@ -37,8 +40,69 @@ export function start() {
       processorOptions: { setup: setup() },
     });
     node.connect(ctx.destination);
+    /* Whatever was played while the module was loading, in the order it was
+       played — see send. */
+    const q = queued; queued = [];
+    for (const m of q) node.port.postMessage(m);
   });
   return ready;
+}
+
+/**
+ * RESUME, NOW, IN THE GESTURE — the whole of why the phone was silent.
+ *
+ * A context created by a script starts suspended on a phone and is only
+ * allowed to run if something resumes it from inside a user gesture. Resuming
+ * it in the `then` above misses that window by a turn of the event loop: the
+ * gesture is over by the time the worklet has loaded, and the resume is
+ * refused. Whether the refusal was audible depended on how fast the module
+ * came off the network and on whether the browser had already decided the page
+ * was activated, which is why it looked random: the same tap worked on a warm
+ * cache and did nothing on a cold one. Touching a slider first "fixed" it only
+ * because that gesture created the context early enough for the load to finish
+ * inside it.
+ *
+ * Called synchronously from every path that a gesture reaches, and cheap
+ * enough to call on every note: a context already running is one property
+ * read.
+ */
+function resumeNow() {
+  if (ctx && ctx.state !== 'running') ctx.resume?.().catch(() => {});
+}
+
+/**
+ * Post a message, or hold it until there is something to post it to.
+ *
+ * The first note of a session is played into a node that does not exist yet —
+ * the worklet module is still loading — and a message dropped there is a note
+ * that never sounds or, worse, a note-OFF that never arrives while its ON is
+ * delivered later and hangs. Queued instead, the pair keeps its order and the
+ * chord behaves the same whether it was the first of the session or the
+ * hundredth.
+ */
+let queued = [];
+function send(m) {
+  if (node) node.port.postMessage(m);
+  else queued.push(m);
+}
+
+/**
+ * AND EVERY GESTURE AFTERWARDS GETS A CHANCE TO UNLOCK IT.
+ *
+ * One resume in one gesture is not enough on a phone. A context can be
+ * suspended again by the system at any time — a call, a switch to another app,
+ * the screen going off — and it comes back suspended with nothing having gone
+ * wrong that the page can see. Every press on the document is therefore an
+ * opportunity to put it back, taken only when it is actually needed.
+ *
+ * Registered in the capture phase so it runs before the handler that is about
+ * to play something, and left registered for the life of the page rather than
+ * `once`, because "the first gesture" is not the only one that matters. It
+ * creates nothing on its own: with no context yet there is nothing to resume,
+ * and the app still opens silent until somebody asks for a sound.
+ */
+for (const type of ['pointerdown', 'touchend', 'mousedown', 'keydown']) {
+  window.addEventListener(type, resumeNow, { capture: true, passive: true });
 }
 
 /**
@@ -82,14 +146,16 @@ export function setAdsr(next) {
 
 export function noteOn(id, freq, vel = 1) {
   if (!(freq > 0)) return;
-  start().then(() => {
-    if (ctx.state === 'suspended') ctx.resume();
-    node.port.postMessage({ t: 'on', id, freq, vel });
-  }).catch(() => {});
+  /* Both of these have to happen on THIS stack, not in a callback: start
+     builds the context inside the gesture that asked for the note, and
+     resumeNow unlocks it there. The message itself can wait for the worklet. */
+  start().catch(() => {});
+  resumeNow();
+  send({ t: 'on', id, freq, vel });
 }
 
 export function noteOff(id) {
-  if (node) node.port.postMessage({ t: 'off', id });
+  send({ t: 'off', id });
 }
 
 /**
@@ -112,5 +178,8 @@ export function isRunning() {
 }
 
 export function allOff() {
-  if (node) node.port.postMessage({ t: 'allOff' });
+  /* Through the queue as well, so it cannot overtake the notes it is meant to
+     be stopping — an allOff dropped ahead of a queued ON leaves that note
+     sounding with nothing left to stop it. */
+  send({ t: 'allOff' });
 }

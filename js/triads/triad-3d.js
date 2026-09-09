@@ -114,6 +114,9 @@ function place(gx, gy, z = 0) {
  * ------------------------------------------------------------------ */
 const HOME_ELEVATION = 45 * Math.PI / 180;
 
+/** No gesture at all — see the `touches` assignment in attach3D. */
+const TOUCH_NONE = -1;
+
 /**
  * How far the opening view is turned back toward the viewer, off the edge.
  *
@@ -181,6 +184,22 @@ export function attach3D(el, gestureHandler) {
        on nothing else — `change` would also fire for the app's own framing and
        for damping's own settling, which would latch the flag immediately. */
     controls.addEventListener('start', () => { userPlaced = true; });
+    /* ON A TOUCH SCREEN, ONE FINGER PLAYS AND TWO TURN.
+     *
+     * The mouse arrangement is a plain drag to turn and Shift-drag to sound,
+     * which a phone cannot express: there is no Shift to hold, so with the
+     * mouse rules the lifted pane was the one pane in the app you could not
+     * play. Something has to give, and it is not the playing — this is an
+     * instrument, and the first thing anyone does with a picture of a chord
+     * space is touch it.
+     *
+     * So one finger is handed to the gesture (see bindPointer, which lets a
+     * touch through without the modifier) and turning moves to two, along with
+     * the pinch that was already there. TOUCH_NONE is any value the control's
+     * own switch does not name, which it answers with STATE.NONE — the
+     * supported way to say a gesture is spoken for. Mouse behaviour is
+     * untouched: `touches` is consulted for touch input only. */
+    controls.touches = { ONE: TOUCH_NONE, TWO: THREE.TOUCH.DOLLY_ROTATE };
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
     controls.minDistance = 1.2;
@@ -1059,7 +1078,11 @@ function bindPointer() {
     el.style.touchAction = 'none';
 
     el.addEventListener('pointerdown', (ev) => {
-        if (ev.button !== 0 || !ev.shiftKey) return;   // a plain drag orbits
+        /* A finger needs no modifier — it has none to give, and two-finger
+           turning has been kept clear for it above. A mouse still holds Shift,
+           so a plain drag goes on orbiting for anyone who has one. */
+        if (ev.button !== 0) return;
+        if (!ev.shiftKey && ev.pointerType !== 'touch') return;  // a plain drag orbits
         const hit = pick(ev);
         if (!hit) return;
         /* OrbitControls has already seen this press, so it is not enough to
