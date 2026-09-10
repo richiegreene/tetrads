@@ -42,7 +42,7 @@ export function setDyadModel(v) { dyadModel = v; }
    Fill and Line are independent rather than a choice of one, drawn with the
    same flagSeg the other modes use: the curve can be shaded under, stroked,
    both, or neither with only the lattice left. */
-export let dyadFill = true;
+export let dyadFill = false;
 export let dyadLine = true;
 export function setDyadFill(v) { dyadFill = v; }
 export function setDyadLine(v) { dyadLine = v; }
@@ -55,7 +55,7 @@ export function setDyadLine(v) { dyadLine = v; }
  * pixels it is a drawing. Neither is more correct and the plot is used for
  * both.
  */
-export let dyadLineWidth = 1.5;
+export let dyadLineWidth = 4.3;
 export function setDyadLineWidth(v) { dyadLineWidth = v; }
 
 /**
@@ -71,7 +71,7 @@ export function setDyadLineWidth(v) { dyadLineWidth = v; }
  * picture of the same plot rather than a curve floating loose over furniture
  * drawn at full size.
  */
-export let dyadRelief = 1;
+export let dyadRelief = 0.5;
 export function setDyadRelief(v) { dyadRelief = v; }
 
 /**
@@ -83,14 +83,14 @@ export function setDyadRelief(v) { dyadRelief = v; }
  * once you already know what the axes are. The cursor loses its crosshair and
  * its readout to match: a dot on a line, and nothing else on screen.
  */
-export let dyadGrid = true;
+export let dyadGrid = false;
 export function setDyadGrid(v) { dyadGrid = v; }
 
 /* ---- the JI dyads themselves ----
    Two questions, so two switches: whether the lattice is marked at all, and
    whether each mark says which interval it is. */
-export let dyadDots = true;
-export let dyadLabels = true;
+export let dyadDots = false;
+export let dyadLabels = false;
 export function setDyadDots(v) { dyadDots = v; }
 export function setDyadLabels(v) { dyadLabels = v; }
 

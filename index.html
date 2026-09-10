@@ -23,7 +23,7 @@
            measurement taken across the set. -->
       <button class="rail-btn" data-drawer="complexity" aria-expanded="true"
         title="Complexity Measures — which tetrads exist at all">
-        <svg class="rail-icon" viewBox="0 0 26 26" fill="none" stroke="currentColor"
+        <svg class="rail-icon rail-icon-diagonal" viewBox="0 0 26 26" fill="none" stroke="currentColor"
           stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <rect x="3" y="9.5" width="20" height="7" rx="1" />
           <path d="M7.5 9.5v3M11.5 9.5v3M15.5 9.5v3M19.5 9.5v3" />
@@ -347,7 +347,7 @@
           <fieldset id="dyad-curve-fieldset" data-mode="dyads" class="mode-off">
             <legend>Curve</legend>
             <div class="seg" id="dyad-curve-seg">
-              <button data-v="dyadFill" class="on"
+              <button data-v="dyadFill"
                 title="Shade the area under the curve through the colormap, by height — so the colour says what the height says">Fill</button>
               <button data-v="dyadLine" class="on"
                 title="Stroke the curve itself">Line</button>
@@ -355,9 +355,9 @@
 
             <div class="pressrow">
               <label for="dyadLineWidth">Line size</label>
-              <span class="pressval" id="dyad-width-v">1.5 px</span>
+              <span class="pressval" id="dyad-width-v">4.3 px</span>
             </div>
-            <input type="range" id="dyadLineWidth" min="0.5" max="8" step="0.1" value="1.5"
+            <input type="range" id="dyadLineWidth" min="0.5" max="8" step="0.1" value="4.3"
               title="How thick the curve is drawn. At a hair's width it is a reading; at six pixels it is a drawing.">
           </fieldset>
 
@@ -369,7 +369,7 @@
           <fieldset data-mode="dyads" class="mode-off">
             <legend>Plot</legend>
             <div class="seg" id="dyad-grid-seg">
-              <button data-v="dyadGrid" class="on"
+              <button data-v="dyadGrid"
                 title="The cents ruler, the gridlines, the tick labels, the axis title and the frame. Turned off they all go, the margins they were being kept for go with them, and the cursor loses its crosshair and readout — a dot on a line, and nothing else on screen.">Grid lines</button>
             </div>
 
@@ -379,9 +379,9 @@
                  edge. The lattice and the floor it stands on go with it. -->
             <div class="pressrow">
               <label for="dyadRelief">Relief</label>
-              <span class="pressval" id="dyad-relief-v">100%</span>
+              <span class="pressval" id="dyad-relief-v">50%</span>
             </div>
-            <input type="range" id="dyadRelief" min="0" max="100" step="1" value="100"
+            <input type="range" id="dyadRelief" min="0" max="100" step="1" value="50"
               title="How much of the pane's height the measure is allowed to use. At 100% it spans the whole box; at nothing it is a straight line across the middle.">
           </fieldset>
 
@@ -393,9 +393,9 @@
           <fieldset id="dyad-lattice-fieldset" data-mode="dyads" class="mode-off">
             <legend>Lattice</legend>
             <div class="seg" id="dyad-lattice-seg">
-              <button data-v="dyadDots" class="on"
+              <button data-v="dyadDots"
                 title="Stem every interval the limit admits up to the curve">Dots</button>
-              <button data-v="dyadLabels" class="on"
+              <button data-v="dyadLabels"
                 title="Name each one with its ratio. Names are placed simplest-first and any that would collide is dropped, so 3/2 is never buried under 27/16.">Labels</button>
             </div>
 
