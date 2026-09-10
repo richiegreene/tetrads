@@ -12,8 +12,14 @@
  * ------------------------------------------------------------------ */
 
 :root {
-  --bg:#15161a; --panel:#1e1f25; --panel2:#25262e; --panel-bright:#2f313a; --line:#33343d;
-  --text:#e9e9ec; --dim:#9a9ba4; --accent:#6fb7ff; --warn:#ffb454; --ok:#79d18b;
+  /* Night mode is the Notation app's chrome, token for token: neutral greys
+     rather than the blue-black the panel used to be drawn in, and the one
+     #007bff blue that app uses for "this is the one that is true". The
+     three apps sit side by side, and a panel that is tinted in one and not
+     the others reads as a different panel. The VIEW's own ground (--bg) is
+     not part of the chrome and is left as it was. */
+  --bg:#15161a; --panel:#1a1a1a; --panel2:#2a2a2a; --panel-bright:#343434; --line:#555;
+  --text:#fff; --dim:#9a9aa4; --accent:#007bff; --warn:#ffb454; --ok:#79d18b;
   --scope-bg:#12161c;
 }
 
@@ -52,8 +58,11 @@ body.bright #notation-display{background:rgba(255,255,255,.92);
   border-color:#c9cad0;color:#1b1c20}
 
 *{box-sizing:border-box}
+/* Same Inter the Notation app is set in, so the three apps read as one. */
+@font-face{font-family:"Inter";src:url("fonts/inter.ttf") format("opentype")}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
-  font:13px/1.45 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+  font:13px/1.45 "Inter",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+button,input,select,textarea{font-family:inherit}
 
 /* ---------- fonts ----------
    The same five faces Xenachord loads, and for the same reason: a name
@@ -63,7 +72,6 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 @font-face{font-family:"HEJIExtensions2022";src:url("fonts/HEJIExtensions2025-Text.ttf") format("opentype")}
 @font-face{font-family:"Bravura";src:url("fonts/Bravura.woff2") format("woff2");font-display:block}
 @font-face{font-family:"EdoAccidentals";src:url("fonts/notes.otf") format("opentype")}
-@font-face{font-family:"Inter";src:url("fonts/inter.ttf") format("opentype")}
 
 #app{display:flex;height:100%;min-height:0}
 
