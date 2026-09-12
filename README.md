@@ -1,5 +1,5 @@
 # Tetrads
-## https://tetrads.richiegreene.com/
+## https://models.richiegreene.com/
 
 Interactive tetrahedron of JI tetrads with the ability to scale via harmonic complexity models.  
 Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of Sintel's [triangle](https://sintel.website/posts/triangle.html). While drawing inspiration from tetradic [harmonic entropy](https://en.xen.wiki/w/Harmonic_entropy) (4HE) this does not render 3D gaussian (multivariate normal) distributions, which are pivotal when considering HE.
