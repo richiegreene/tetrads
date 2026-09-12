@@ -62,7 +62,7 @@ export let notationSpelling = 'heji'; // 'heji' | 'sagittal'
 /* Sagittal's own two readings, which only mean anything while notationSpelling
    is 'sagittal': how finely the comma is spelled, and whether the symbol
    carries the whole alteration (revo) or stands beside a conventional sharp
-   or flat (evo). Same pair Xenachord's Play drawer offers, and named the
+   or flat (evo). Same pair Keyboard Designer's Play drawer offers, and named the
    same. */
 export let sagittalPrecision = 'medium';
 export let sagittalEvo = false;

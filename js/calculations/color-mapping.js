@@ -144,7 +144,7 @@ export function groundCss(hex) {
 
 export const DARK_GROUND = 0x000000;
 
-/* The lightness every light ground is mixed at, and it is Xenachord
+/* The lightness every light ground is mixed at, and it is Keyboard
    Designer's viewport grey: its 3D view clears to [214,214,214], and a
    colourless source run through `groundFor` below comes back at exactly that.
    So the neutral case is that app's own grey to the byte, and every tinted
@@ -243,7 +243,7 @@ function groundSourceOf(ramp) {
  * The constant has no ramp to look at, so it uses the body colour itself —
  * the same rule, since that colour is the whole of what the layout is. Its
  * ground is the only one here that can be any hue at all, and a grey chosen
- * in the swatch gives back Xenachord's grey exactly.
+ * in the swatch gives back Keyboard Designer's grey exactly.
  */
 function groundFor(sourceHex) {
     if (theme !== 'light') return DARK_GROUND;

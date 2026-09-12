@@ -1,5 +1,5 @@
-# Tetrads
-## https://tetrads.richiegreene.com/
+# Models
+## https://models.richiegreene.com/
 
 Interactive tetrahedron of JI tetrads — a playable triangle of JI triads, and a playable line of JI dyads — with the ability to scale via harmonic complexity models.  
 Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of Sintel's [triangle](https://sintel.website/posts/triangle.html). While drawing inspiration from tetradic [harmonic entropy](https://en.xen.wiki/w/Harmonic_entropy) (4HE) this does not render 3D gaussian (multivariate normal) distributions, which are pivotal when considering HE.
@@ -7,7 +7,7 @@ Sounds, shapes, colors ... Go nuts! Approaching this as a sort of 3D take off of
 ## Demo
 ![display demo](https://github.com/user-attachments/assets/4247d114-28db-4907-9da5-dc5b3bece989)
 
-The panel is a side rail of four modes — Complexity Measures, Display, Play and Export — borrowed, along with the synth and the JI notation engines, from [Xenachord Designer](https://github.com/richiegreene/xenachord). Pressing the mode you are already in shuts the drawer and gives the width back to the view.
+The panel is a side rail of four modes — Complexity Measures, Display, Play and Export — borrowed, along with the synth and the JI notation engines, from [Keyboard Designer](https://github.com/richiegreene/keyboards). Pressing the mode you are already in shuts the drawer and gives the width back to the view.
 
 **Nothing needs applying.** There is no Update and no Generate: every control in every drawer applies itself a beat after you stop moving it. The wait is deliberate — the models run in Python, on the page's own thread, so recomputing on every intermediate value of a drag would freeze the slider being dragged. What used to be the Update button is now the line at the foot of the panel saying what came of it: how many chords are in the set, which model is under the triangle, and what it cost.
 
@@ -104,7 +104,7 @@ The **Pivot** — **S**, **A** or **T** — is the voice held still while the ot
   * Black and White — greyscale, named for the ground the set is drawn on: on black the simplest chords come out brightest, on white they go to ink
   * Petroleum and Porcelain — **material** layouts rather than ramps. The 3D surface is one colour and every bit of the modelling comes from light: an angled key, a soft fill, and a specular highlight that travels across the peaks as the shape turns. Height stops being redundant with colour and becomes the only thing carrying the model, so a shallow ridge a ramp would flatten into one band shows up as a ridge. Petroleum is the extreme case — a black slick with almost no body, read entirely off the sheen. The flat pane renders these as hillshading — the same light on the same surface, seen from straight above — so the two panes stay two views of one thing.
 * **Gloss** (Triads only, under the swatches) is how wet the lifted surface is. On the two material layouts it runs from matte to a mirror. On the ordinary ramps it lays a highlight *over* the colours without shading them — the colours are the values there, and dimming them by the local slope would make the map lie about its own numbers — so at 0 they are exactly the flat surfaces they were before the control existed. It only appears in Triads: the tetrahedron is drawn as flat sprites, and there is no surface for a light to catch.
-* **Day mode** comes on by itself whenever the view is drawn on white (White, Porcelain): the rail and the drawer go light with the viewport, on Xenachord Designer's own tokens. A dark panel against a white view is a bezel with a lamp behind it.
+* **Day mode** comes on by itself whenever the view is drawn on white (White, Porcelain): the rail and the drawer go light with the viewport, on Keyboard Designer's own tokens. A dark panel against a white view is a bezel with a lamp behind it.
 * (Beta Feature) Hand Tracking: ⇧⌘K 
 
 ### Settings

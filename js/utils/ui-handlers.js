@@ -2,7 +2,7 @@
  *  THE PANEL
  * =====================================================================
  *
- * Four drawers behind one rail, in Xenachord Designer's own idiom, and the
+ * Four drawers behind one rail, in Keyboard Designer's own idiom, and the
  * split between them is by what a control is FOR rather than by what it acts
  * on:
  *
@@ -83,7 +83,7 @@ export function updateMpePressureSliderUI() {
 /* ---------------------------------------------------------------------
  *  The synth's settings, kept where the app it came from keeps them
  *
- *  Same store shape and same defaults as Xenachord's play.js, under a key of
+ *  Same store shape and same defaults as Keyboard Designer's play.js, under a key of
  *  this app's own — the two are separate instruments that happen to be built
  *  the same way, so a shape chosen here does not reach over and change one
  *  chosen there.
@@ -690,7 +690,7 @@ export function setupUIEventListeners() {
     /**
      * Day mode, when the theme is day.
      *
-     * Xenachord Designer's own arrangement, and its own tokens: when the
+     * Keyboard Designer's own arrangement, and its own tokens: when the
      * viewport goes light the rail and the drawer go with it, because a dark
      * panel against a light view is a bezel with a lamp behind it. The whole
      * chrome reads off the same custom properties, so overriding them on
@@ -1127,7 +1127,7 @@ export function setupUIEventListeners() {
     seg('pivot-seg', (v, btn) => setCurrentPivotVoiceIndex(parseInt(btn.dataset.pivotIndex)));
 
     /* ---------------- Play: the synth ----------------
-     * Xenachord's own picker and ADSR editor, built from the same modules, so
+     * Keyboard Designer's own picker and ADSR editor, built from the same modules, so
      * the two apps cannot come to offer different shapes. */
     const picker = createTimbrePicker(
         { family: $('s-family'), slider: $('s-timbre'), ticks: $('s-ticks'),

@@ -1,13 +1,13 @@
 /* =====================================================================
- *  TETRADS — the panel, and the readout
+ *  MODELS — the panel, and the readout
  * =====================================================================
  *
- * The chrome is Xenachord Designer's, token for token: the same palette, the
+ * The chrome is Keyboard Designer's, token for token: the same palette, the
  * same rail and drawer, the same fieldsets, segmented buttons, scopes and
  * checkboxes. The two apps share a synth and a notation engine, and a control
  * that looks different in each would suggest it does something different.
  *
- * What is Tetrads' own is everything under "the readout" at the foot of this
+ * What is Models' own is everything under "the readout" at the foot of this
  * file — the notation panel, which has no counterpart there.
  * ------------------------------------------------------------------ */
 
@@ -24,7 +24,7 @@
 }
 
 /* ---------- day mode ----------
-   Xenachord Designer's own arrangement, token for token: when the VIEW is
+   Keyboard Designer's own arrangement, token for token: when the VIEW is
    drawn on white, the rail and the drawer go light with it. A dark panel
    against a white viewport is a bezel with a lamp behind it — the eye adapts
    to the larger surface, and the panel then reads as a hole.
@@ -44,7 +44,7 @@ body.bright #panel, body.bright #loading-overlay{
 
    The segmented buttons are NOT in this list. Day mode used to give a lit
    segment a white fill, which lifted it above its neighbours — the opposite
-   of what the same control does in Xenachord Designer, where --panel-bright
+   of what the same control does in Keyboard Designer, where --panel-bright
    is DARKER than --panel2 and the lit segment is the recessed one. It now
    reads the token like everything else, so the lit segment presses in on both
    grounds rather than popping out on one and in on the other. */
@@ -65,7 +65,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 button,input,select,textarea{font-family:inherit}
 
 /* ---------- fonts ----------
-   The same five faces Xenachord loads, and for the same reason: a name
+   The same five faces Keyboard Designer loads, and for the same reason: a name
    spelled by the shared engines is drawn from the glyphs those engines were
    written against. */
 @font-face{font-family:"HEJI2";src:url("fonts/HEJI2.otf") format("opentype")}
@@ -232,7 +232,7 @@ button.latched{background:#24405c;border-color:var(--accent);color:#cfe6ff}
 .tune-h:first-child{margin-top:0}
 
 /* ---------- segmented buttons ----------
-   Xenachord Designer's, rule for rule. The two apps share this whole chrome,
+   Keyboard Designer's, rule for rule. The two apps share this whole chrome,
    and a control that looks different in each would suggest it does something
    different — which is the argument that put the palette, the rail and the
    drawer here in the first place, and it applies hardest to the one control
@@ -365,7 +365,7 @@ body.bright .cpick{--panel:#f2f2f4;--line:#c9cad0;--text:#1b1c20;
 .vis input{accent-color:var(--accent);margin:0}
 
 /* ---------- sliders ----------
-   Xenachord Designer's, which is to say the browser's own, tinted and left
+   Keyboard Designer's, which is to say the browser's own, tinted and left
    alone. The one property is what makes the travelled part of the track fill
    with the accent colour, so the slider says how far along it is twice —
    by where the thumb sits and by how much of the track is blue.
@@ -409,7 +409,7 @@ input[type=range]{width:100%;margin:5px 0 0;accent-color:var(--accent)}
   color:var(--text);padding:10px 15px;font-family:monospace;font-size:1.2em;
   display:none;text-align:left;line-height:1.2;pointer-events:none;z-index:10}
 
-/* The engines emit these class names, and Xenachord's metrics for them are
+/* The engines emit these class names, and Keyboard Designer's metrics for them are
    reproduced exactly — 1em Inter nominal, 1.5em HEJI, 1.333em Bravura for
    Sagittal — so a name reads the same in both apps. */
 .tune-letter{font-family:"Inter",sans-serif;font-size:1em}

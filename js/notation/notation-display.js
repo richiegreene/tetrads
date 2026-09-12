@@ -8,12 +8,12 @@ import {
     notationShowRatio, notationShowCents, notationShowDeviation,
     initialBaseFreq, sagittalPrecision, sagittalEvo
 } from '../globals.js';
-/* Sagittal comes over from Xenachord whole — the Calculator, the Key, the
+/* Sagittal comes over from Keyboard Designer whole — the Calculator, the Key, the
    Boundaries and the comma tables — rather than being rewritten here, so a
    pitch spelled in this app is spelled the way that one spells it. */
 import { sagittalSpellings } from '../xen-notation/tuner-notation.js';
 
-// Helper functions for _getPC (minimal UI interaction, mainly fixed defaults for Tetrads context)
+// Helper functions for _getPC (minimal UI interaction, mainly fixed defaults for Models context)
 export function getRefOctave() { return 9; } // Default to C4 (index 9) for octave
 export function getRefNote() { return 1; } // Default to C (index 1) for note
 export function getRefAccidental() { return 1; } // Default to natural (index 1) for accidental
@@ -83,7 +83,7 @@ export function _getPC(monzo) {
 
 	var refNat = 7 * hejiState.ref12acc;
 	var note = U.mod(((((ref12 * 100) + hejiState.jiCents ) / 100).toFixed(0) - hejiState.ref12acc),12);
-	// We don't have midi notes in Tetrads, so mock this or use a default.
+	// We don't have midi notes in Models, so mock this or use a default.
     var refMidiNoteOutput = C.refMidiNote[note] || "*ntC"; 
 
 	var natural = "";
@@ -586,7 +586,7 @@ export function _getPC(monzo) {
 		displayedHeji2String = displayedHeji2String.replace(/n/g, ' '); // Replace all 'n' with ' ' in this specific context
 	}
     
-    // For Tetrads, we don't need jQuery based styling changes or column indexing
+    // For Models, we don't need jQuery based styling changes or column indexing
     // Instead, just return the constructed HTML strings and diatonic note
     const notationString = '<span class="heji-extensions">' + hejiExtensionsPath + '</span>' + '<span class="heji2">' + displayedHeji2String + '</span>';
     
@@ -650,7 +650,7 @@ export function getCentDeviation(){
     }
     
     // hejiState.cents_toRef calculation needed for Notation Dev's _getBend.
-    // In Tetrads, we need this for the overall output formatting.
+    // In Models, we need this for the overall output formatting.
     hejiState.cents_toRef = 1200 * Math.log2(hejiState.centsNumValue / hejiState.centsDenValue);
     // hejiState.cents_toRef is not normalized here, but can be if needed.
 
@@ -874,7 +874,7 @@ function getSagittalNotationHtmlPerVoice(ratioString, effectiveBaseFreq) {
         } catch (err) {
             console.warn(`Sagittal could not spell ${r.num}/${r.den}`, err);
         }
-        // Xenachord's own fallback: a pitch Sagittal cannot spell at this
+        // Keyboard Designer's own fallback: a pitch Sagittal cannot spell at this
         // precision is shown as the ratio it is, rather than as nothing.
         if (!spellings.length) return `<span class="tune-letter">${r.num}/${r.den}</span>`;
         const { letter, symbol } = spellings[0];

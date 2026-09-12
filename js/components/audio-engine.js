@@ -2,10 +2,10 @@
  *  AUDIO — the tetrad as four sounding voices
  * =====================================================================
  *
- * The oscillators are Xenachord's: the same two timbre families over the same
+ * The oscillators are Keyboard Designer's: the same two timbre families over the same
  * four shapes, the same band-limited tables, the same ADSR, run a sample at a
  * time in ../synth/voice-processor.js. Nothing about the sound is defined
- * here — this file is only the part that is Tetrads' own, which is how a
+ * here — this file is only the part that is Models' own, which is how a
  * chord becomes four notes and what happens when the pointer moves to the
  * next one.
  *
